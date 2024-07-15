@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/typescript-config/nestjs.json",
+  "extends": "@chess-d/configs/typescript/nestjs.json",
   "compilerOptions": {
     "allowJs": true,
     "baseUrl": "src",

@@ -1,0 +1,11 @@
+{
+	"name": "@chess-d/configs",
+	"version": "0.0.0",
+	"files": [
+		"./eslint/*",
+		"./prettier/*",
+		"./typescript/*",
+		"./vite/*"
+	],
+	"devDependencies": {}
+}
