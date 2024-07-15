@@ -1,0 +1,55 @@
+name: Releases
+
+on:
+  workflow_run:
+    workflows: [Lint]
+    branches: [master]
+    types: [completed]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository Workflow
+        uses: actions/checkout@v4
+
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: "Install PNPM"
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: "pnpm"
+
+      - name: "Install Dependencies"
+        shell: bash
+        run: pnpm install --frozen-lockfile
+
+      - name: Create Release Pull Request or Release
+        uses: changesets/action@v1
+        with:
+          commit: "chore(version): upgrade packages"
+          title: "chore(version): upgrade packages"
+          createGithubReleases: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
