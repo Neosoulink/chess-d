@@ -24,6 +24,9 @@ importers:
       '@jest/globals':
         specifier: ^29.7.0
         version: 29.7.0
+      '@quick-threejs/config':
+        specifier: ^0.1.7
+        version: 0.1.7
       '@types/express':
         specifier: ^4.17.17
         version: 4.17.21
@@ -135,6 +138,10 @@ importers:
         version: 4.2.0
 
   apps/web:
+    dependencies:
+      '@quick-threejs/reactive':
+        specifier: ^0.1.9
+        version: 0.1.9
     devDependencies:
       '@chess-d/configs':
         specifier: workspace:*
@@ -159,7 +166,11 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@20.11.24)(typescript@5.3.3)
 
-  packages/configs: {}
+  packages/configs:
+    devDependencies:
+      '@quick-threejs/config':
+        specifier: ^0.1.7
+        version: 0.1.7
 
 packages:
 
@@ -920,6 +931,15 @@ packages:
   '@pkgr/core@0.1.1':
     resolution: {integrity: sha512-cq8o4cWH0ibXh9VGi5P20Tu9XF/0fFXl9EUinr9QfTM7a7p0oTA4iJRCQWppXR1Pg8dSM0UCItCkPwsk9qWWYA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
+
+  '@quick-threejs/config@0.1.7':
+    resolution: {integrity: sha512-xTEeYzSQUl4/OonJcmHGBpo2j3aEtYXh85wACgwhrO5SpA+zFBdZ2g80ovEyRYeyDeSHp3JPTp+GiRMXEmxVyg==}
+
+  '@quick-threejs/reactive@0.1.9':
+    resolution: {integrity: sha512-2NYRpm1cANjoM/dcmj59JXk3J4AGwhHYBoCH3/irIVye7lnLoeswFEV96Rg+kZpbL4e6bHQwxSPvcfGmeaKzJw==}
+
+  '@quick-threejs/utils@0.1.6':
+    resolution: {integrity: sha512-sHns2pemVYGVwFUFc1vl58ptygDQ2oo22A+wZk1g2YZo/RDsmkphtsQft4oUkGnMFdSfvlMx3U6RlBznFDBeTg==}
 
   '@rollup/rollup-android-arm-eabi@4.18.1':
     resolution: {integrity: sha512-lncuC4aHicncmbORnx+dUaAgzee9cm/PbIqgWz1PpXuwc+sa1Ct83tnqUDy/GFKleLiN7ZIeytM6KJ4cAn1SxA==}
@@ -2207,6 +2227,10 @@ packages:
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     hasBin: true
 
+  esm@3.2.25:
+    resolution: {integrity: sha512-U1suiZ2oDVWv4zPO56S0NcR5QriEahGtdN2OR6FiOG4WJvcjBVFB0qI4+eKoWFH483PKGuLuu6V8Z4T5g63UVA==}
+    engines: {node: '>=6'}
+
   espree@10.1.0:
     resolution: {integrity: sha512-M1M6CpiE6ffoigIOWYO9UDP8TMUw9kqb21tf+08IgDYjCsOvCuDt4jQcZmoYxx+w7zlKw9/N0KXfto+I8/FrXA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -2750,6 +2774,10 @@ packages:
 
   is-obj@2.0.0:
     resolution: {integrity: sha512-drqDG3cbczxxEJRoOXcOjtdp1J/lyp1mNn0xaznRs8+muBhgQcrnbspox5X5fOw0HnMnbfDzvnEMEtqDEJEo8w==}
+    engines: {node: '>=8'}
+
+  is-observable@2.1.0:
+    resolution: {integrity: sha512-DailKdLb0WU+xX8K5w7VsJhapwHLZ9jjmazqCJq4X12CTgqq73TKnbRcnSLuXYPOoLQgV5IrD7ePiX/h1vnkBw==}
     engines: {node: '>=8'}
 
   is-path-inside@3.0.3:
@@ -3412,6 +3440,9 @@ packages:
   object.values@1.2.0:
     resolution: {integrity: sha512-yBYjY9QX2hnRmZHAjG/f13MzmBzxzYgQhFrke06TTyKY5zSTEqkOeukBzIdVA3j3ulu8Qa3MbVFShV7T2RmGtQ==}
     engines: {node: '>= 0.4'}
+
+  observable-fns@0.6.1:
+    resolution: {integrity: sha512-9gRK4+sRWzeN6AOewNBTLXir7Zl/i3GB6Yl26gK4flxz8BXVpD3kt8amREmWNb0mxYOGDotvE5a4N+PtGGKdkg==}
 
   on-finished@2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
@@ -4105,8 +4136,17 @@ packages:
   text-table@0.2.0:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
 
+  threads@1.7.0:
+    resolution: {integrity: sha512-Mx5NBSHX3sQYR6iI9VYbgHKBLisyB+xROCBGjjWm1O9wb9vfLxdaGtmT/KCjUqMsSNW6nERzCW3T6H43LqjDZQ==}
+
+  three@0.166.1:
+    resolution: {integrity: sha512-LtuafkKHHzm61AQA1be2MAYIw1IjmhOUxhBa0prrLpEMWbV7ijvxCRHjSgHPGp2493wLBzwKV46tA9nivLEgKg==}
+
   through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
+
+  tiny-worker@2.3.0:
+    resolution: {integrity: sha512-pJ70wq5EAqTAEl9IkGzA+fN0836rycEuz2Cn6yeZ6FRzlVS5IDOkFHpIoEsksPRQV34GDqXm65+OlnZqUSyK2g==}
 
   tmp@0.0.33:
     resolution: {integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==}
@@ -5581,6 +5621,24 @@ snapshots:
     optional: true
 
   '@pkgr/core@0.1.1': {}
+
+  '@quick-threejs/config@0.1.7': {}
+
+  '@quick-threejs/reactive@0.1.9':
+    dependencies:
+      '@quick-threejs/utils': 0.1.6
+      threads: 1.7.0
+      three: 0.166.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@quick-threejs/utils@0.1.6':
+    dependencies:
+      rxjs: 7.8.1
+      threads: 1.7.0
+      three: 0.166.1
+    transitivePeerDependencies:
+      - supports-color
 
   '@rollup/rollup-android-arm-eabi@4.18.1':
     optional: true
@@ -7116,6 +7174,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  esm@3.2.25:
+    optional: true
+
   espree@10.1.0:
     dependencies:
       acorn: 8.12.1
@@ -7737,6 +7798,8 @@ snapshots:
   is-number@7.0.0: {}
 
   is-obj@2.0.0: {}
+
+  is-observable@2.1.0: {}
 
   is-path-inside@3.0.3: {}
 
@@ -8555,6 +8618,8 @@ snapshots:
       define-properties: 1.2.1
       es-object-atoms: 1.0.0
 
+  observable-fns@0.6.1: {}
+
   on-finished@2.4.1:
     dependencies:
       ee-first: 1.1.1
@@ -9280,7 +9345,25 @@ snapshots:
 
   text-table@0.2.0: {}
 
+  threads@1.7.0:
+    dependencies:
+      callsites: 3.1.0
+      debug: 4.3.4
+      is-observable: 2.1.0
+      observable-fns: 0.6.1
+    optionalDependencies:
+      tiny-worker: 2.3.0
+    transitivePeerDependencies:
+      - supports-color
+
+  three@0.166.1: {}
+
   through@2.3.8: {}
+
+  tiny-worker@2.3.0:
+    dependencies:
+      esm: 3.2.25
+    optional: true
 
   tmp@0.0.33:
     dependencies:
