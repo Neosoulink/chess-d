@@ -1,11 +1,10 @@
 import { Module } from "@nestjs/common";
 
-import { ExperienceService } from "./experience.service";
-import { ExperienceResolver } from "./experience.resolver";
-import { PubSubModule } from "../pub-sub/pub-sub.module";
+import { ExperienceService } from "./services/experience.service";
+import { ExperienceResolver } from "./resolvers/experience.resolver";
+import { ExperienceGateway } from "./gateways/experience.gateway";
 
 @Module({
-	imports: [PubSubModule],
-	providers: [ExperienceResolver, ExperienceService]
+	providers: [ExperienceResolver, ExperienceService, ExperienceGateway]
 })
 export class ExperienceModule {}

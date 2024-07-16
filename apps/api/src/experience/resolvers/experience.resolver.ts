@@ -1,5 +1,5 @@
 import { Query, Resolver } from "@nestjs/graphql";
-import { ExperienceService } from "./experience.service";
+import { ExperienceService } from "../services/experience.service";
 
 @Resolver()
 export class ExperienceResolver {
