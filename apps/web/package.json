@@ -11,6 +11,13 @@
 		"test": "jest --passWithNoTests"
 	},
 	"devDependencies": {
-		"@chess-d/configs": "workspace:*"
+		"@chess-d/configs": "workspace:*",
+		"@types/three": "^0.166.0",
+		"stats.js": "^0.17.0"
+	},
+	"dependencies": {
+		"@quick-threejs/reactive": "^0.1.9",
+		"three": "^0.166.1",
+		"tsyringe": "^4.8.0"
 	}
 }
