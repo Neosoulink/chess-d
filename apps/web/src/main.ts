@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import { register } from "@quick-threejs/reactive";
 
 import "./assets/styles/main.css";
@@ -14,7 +16,7 @@ register({
 			?.add({ torusX: 0 }, "torusX")
 			.step(0.01)
 			.onChange((value: any) => {
-				app.worker()?.postMessage({ type: "torus-x-gui-event", value });
+				app.worker()?.postMessage({ type: "tile_pos", value });
 			});
 	}
 });
