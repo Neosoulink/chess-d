@@ -8,17 +8,18 @@ import { WorldController } from "./world.controller";
 @singleton()
 export class WorldModule implements Module {
 	constructor(
+		@inject(AppModule) private readonly appModule: AppModule,
 		@inject(WorldComponent) private readonly component: WorldComponent,
 		@inject(WorldController) private readonly controller: WorldController
 	) {}
 
-	public init(app: AppModule) {
-		this.component.init(app.world.scene());
+	public init() {
+		this.component.init(this.appModule.world.scene());
 
 		this.component.scene.background = new Color("#211d20");
 		this.component.directionalLight.position.set(0, 0, 1);
 
-		app.world
+		this.appModule.world
 			.scene()
 			.add(this.component.ambientLight, this.component.directionalLight);
 	}

@@ -1,1 +1,1 @@
-export * from "./core-props.model";
+export * from "./piece.model";

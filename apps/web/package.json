@@ -19,6 +19,9 @@
 	"dependencies": {
 		"@quick-threejs/reactive": "^0.1.12",
 		"@quick-threejs/utils": "^0.1.7",
-		"three": "^0.166.1"
+		"rxjs": "^7.8.1",
+		"threads": "^1.7.0",
+		"three": "^0.166.1",
+		"typescript-ioc": "^3.2.2"
 	}
 }
