@@ -3,7 +3,7 @@ import "reflect-metadata";
 import { singleton } from "tsyringe";
 import { Color, InstancedMesh, PlaneGeometry } from "three";
 
-import { BoardMatrix } from "../../common";
+import { BoardCell } from "../../common";
 
 @singleton()
 export class ChessBoardComponent {
@@ -11,7 +11,7 @@ export class ChessBoardComponent {
 	public readonly size = 8;
 	public readonly midSize =
 		this.size * this.cellSize * 0.5 + this.cellSize * 0.5;
-	public readonly matrixes: BoardMatrix[][] = [];
+	public readonly cells: BoardCell[][] = [];
 	public readonly cellGeometry = new PlaneGeometry(
 		this.cellSize,
 		this.cellSize,

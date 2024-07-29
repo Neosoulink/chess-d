@@ -1,8 +1,8 @@
-export interface BoardPosition {
+export interface BoardCoords {
 	col: number;
 	row: number;
 }
 
-export interface BoardMatrix extends BoardPosition {
+export interface BoardCell extends BoardCoords {
 	isBlack: boolean;
 }

@@ -29,9 +29,9 @@ export class ChessBoardModule implements Module {
 			const row = Math.floor(i / this.component.size) + 1;
 			const col = Math.floor(i % this.component.size) + 1;
 
-			if (!this.component.matrixes[row - 1]) {
+			if (!this.component.cells[row - 1]) {
 				isBlack = !isBlack;
-				this.component.matrixes.push([]);
+				this.component.cells.push([]);
 			}
 
 			this.component.board.getMatrixAt(i, MATRIX);
@@ -48,7 +48,7 @@ export class ChessBoardModule implements Module {
 				i,
 				isBlack ? this.component.blackAccent : this.component.whiteAccent
 			);
-			this.component.matrixes[row - 1]?.push({
+			this.component.cells[row - 1]?.push({
 				col,
 				row,
 				isBlack
