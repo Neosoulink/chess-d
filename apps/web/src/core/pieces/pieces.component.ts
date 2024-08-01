@@ -1,305 +1,195 @@
 import { inject, singleton } from "tsyringe";
-import { BoxGeometry, Color, DynamicDrawUsage } from "three";
 
+import {
+	PiecesGroupModel,
+	PiecesGroups,
+	PieceType,
+	ColorVariant,
+	COLOR_BLACK,
+	COLOR_WHITE
+} from "../../common";
 import { ChessBoardComponent } from "../chess-board/chess-board.component";
-import { PiecesGroupModel, PieceModel } from "../../common";
+import { ResourceComponent } from "../resource/resource.component";
 
 @singleton()
 export class PiecesComponent {
-	private _pawns: { b?: PiecesGroupModel; w?: PiecesGroupModel } = {};
-	private _rocks: { b?: PiecesGroupModel; w?: PiecesGroupModel } = {};
-	private _bishops: { b?: PiecesGroupModel; w?: PiecesGroupModel } = {};
-	private _knights: { b?: PiecesGroupModel; w?: PiecesGroupModel } = {};
-	private _queens: { b?: PiecesGroupModel; w?: PiecesGroupModel } = {};
-	private _kings: { b?: PiecesGroupModel; w?: PiecesGroupModel } = {};
-
-	public readonly blackAccent = new Color(0x222222);
-	public readonly whiteAccent = new Color(0xbbbbbb);
+	public groups?: PiecesGroups;
 
 	constructor(
 		@inject(ChessBoardComponent)
-		private readonly chessBoardComponent: ChessBoardComponent
+		private readonly chessBoardComponent: ChessBoardComponent,
+		@inject(ResourceComponent)
+		private readonly resourceComponent: ResourceComponent
 	) {}
 
-	public initPawns(isBlack?: boolean) {
-		const oldPiecesGroup = this._pawns?.[isBlack ? "b" : "w"];
-		const newPiecesGroup = new PiecesGroupModel(
-			new BoxGeometry(0.2, 0.2, 1),
-			undefined,
-			this.chessBoardComponent.cellsRangeCount
+	private _initPawns<Color extends ColorVariant>(color: Color) {
+		const isBlack = color === ColorVariant.black;
+		const group = new PiecesGroupModel(
+			PieceType.pawn,
+			color,
+			this.chessBoardComponent.cellsRangeCount,
+			this.resourceComponent.getGeometryByPieceType(PieceType.pawn)
 		);
+		group.position.copy(this.chessBoardComponent.board.position);
 
-		oldPiecesGroup?.removeFromParent();
-		oldPiecesGroup?.dispose();
+		group.pieces.forEach((piece, i) => {
+			piece.setCoords(this.chessBoardComponent.board, {
+				col: isBlack ? i : this.chessBoardComponent.cellsRangeCount - 1 - i,
+				row: isBlack ? 1 : this.chessBoardComponent.cellsRangeCount - 2
+			});
 
-		newPiecesGroup.instanceMatrix.setUsage(DynamicDrawUsage);
-		newPiecesGroup.position.copy(this.chessBoardComponent.board.position);
+			group.setColorAt(i, isBlack ? COLOR_BLACK : COLOR_WHITE);
+		});
 
-		newPiecesGroup.pieces = Array.from(Array(newPiecesGroup.count)).map(
-			(_, i) => {
-				const piece = new PieceModel(newPiecesGroup, i, "pawn", isBlack);
-				piece.setCoords(this.chessBoardComponent.board, {
-					col: isBlack ? i : this.chessBoardComponent.cellsRangeCount - 1 - i,
-					row: isBlack ? 1 : this.chessBoardComponent.cellsRangeCount - 2
-				});
+		return group;
+	}
 
-				newPiecesGroup.setColorAt(
-					i,
-					isBlack ? this.blackAccent : this.whiteAccent
-				);
+	private _initRocks<Color extends ColorVariant>(color: Color) {
+		const isBlack = color === ColorVariant.black;
+		const group = new PiecesGroupModel(
+			PieceType.rock,
+			color,
+			2,
+			this.resourceComponent.getGeometryByPieceType(PieceType.rock)
+		);
+		group.position.copy(this.chessBoardComponent.board.position);
 
-				return piece;
+		group.pieces.forEach((piece, i) => {
+			piece.setCoords(this.chessBoardComponent.board, {
+				col: isBlack
+					? i === 0
+						? 0
+						: this.chessBoardComponent.cellsRangeCount - 1
+					: i === 0
+						? this.chessBoardComponent.cellsRangeCount - 1
+						: 0,
+				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+			});
+
+			group.setColorAt(i, isBlack ? COLOR_BLACK : COLOR_WHITE);
+		});
+
+		return group;
+	}
+
+	private _initBishops<Color extends ColorVariant>(color: Color) {
+		const isBlack = color === ColorVariant.black;
+		const group = new PiecesGroupModel(
+			PieceType.bishop,
+			color,
+			2,
+			this.resourceComponent.getGeometryByPieceType(PieceType.bishop)
+		);
+		group.position.copy(this.chessBoardComponent.board.position);
+
+		group.pieces.forEach((piece, i) => {
+			piece.setCoords(this.chessBoardComponent.board, {
+				col: isBlack
+					? i === 0
+						? 1
+						: this.chessBoardComponent.cellsRangeCount - 2
+					: i === 0
+						? this.chessBoardComponent.cellsRangeCount - 2
+						: 1,
+				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+			});
+
+			group.setColorAt(i, isBlack ? COLOR_BLACK : COLOR_WHITE);
+		});
+
+		return group;
+	}
+
+	private _initKnights<Color extends ColorVariant>(color: Color) {
+		const isBlack = color === ColorVariant.black;
+		const group = new PiecesGroupModel(
+			PieceType.knight,
+			color,
+			2,
+			this.resourceComponent.getGeometryByPieceType(PieceType.knight)
+		);
+		group.position.copy(this.chessBoardComponent.board.position);
+
+		group.pieces.forEach((piece, i) => {
+			piece.setCoords(this.chessBoardComponent.board, {
+				col: isBlack
+					? i === 0
+						? 2
+						: this.chessBoardComponent.cellsRangeCount - 3
+					: i === 0
+						? this.chessBoardComponent.cellsRangeCount - 3
+						: 2,
+				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+			});
+
+			group.setColorAt(i, isBlack ? COLOR_BLACK : COLOR_WHITE);
+		});
+
+		return group;
+	}
+
+	private _initQueens<Color extends ColorVariant>(color: Color) {
+		const isBlack = color === ColorVariant.black;
+		const group = new PiecesGroupModel(
+			PieceType.queen,
+			color,
+			1,
+			this.resourceComponent.getGeometryByPieceType(PieceType.queen)
+		);
+		group.position.copy(this.chessBoardComponent.board.position);
+
+		group.pieces.forEach((piece, i) => {
+			piece.setCoords(this.chessBoardComponent.board, {
+				col: isBlack ? 3 : this.chessBoardComponent.cellsRangeCount - 4,
+				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+			});
+
+			group.setColorAt(i, isBlack ? COLOR_BLACK : COLOR_WHITE);
+		});
+
+		return group;
+	}
+
+	private _initKings<Color extends ColorVariant>(color: Color) {
+		const isBlack = color === ColorVariant.black;
+		const group = new PiecesGroupModel(
+			PieceType.king,
+			color,
+			1,
+			this.resourceComponent.getGeometryByPieceType(PieceType.king)
+		);
+		group.position.copy(this.chessBoardComponent.board.position);
+
+		group.pieces.forEach((piece, i) => {
+			piece.setCoords(this.chessBoardComponent.board, {
+				col: isBlack ? 4 : this.chessBoardComponent.cellsRangeCount - 5,
+				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+			});
+
+			group.setColorAt(i, isBlack ? COLOR_BLACK : COLOR_WHITE);
+		});
+
+		return group;
+	}
+
+	public initPieces() {
+		this.groups = {
+			black: {
+				pawns: this._initPawns(ColorVariant.black),
+				rocks: this._initRocks(ColorVariant.black),
+				bishops: this._initBishops(ColorVariant.black),
+				knights: this._initKnights(ColorVariant.black),
+				queens: this._initQueens(ColorVariant.black),
+				kings: this._initKings(ColorVariant.black)
+			},
+			white: {
+				pawns: this._initPawns(ColorVariant.white),
+				rocks: this._initRocks(ColorVariant.white),
+				bishops: this._initBishops(ColorVariant.white),
+				knights: this._initKnights(ColorVariant.white),
+				queens: this._initQueens(ColorVariant.white),
+				kings: this._initKings(ColorVariant.white)
 			}
-		);
-
-		if (isBlack) this._pawns.b = newPiecesGroup;
-		else this._pawns.w = newPiecesGroup;
-
-		this._pawns[isBlack ? "b" : "w"] = newPiecesGroup;
-	}
-
-	public initRocks(isBlack?: boolean) {
-		const oldPiecesGroup = this._rocks?.[isBlack ? "b" : "w"];
-		const newPiecesGroup = new PiecesGroupModel(
-			new BoxGeometry(0.5, 0.5, 1),
-			undefined,
-			2
-		);
-
-		oldPiecesGroup?.removeFromParent();
-		oldPiecesGroup?.dispose();
-
-		newPiecesGroup.instanceMatrix.setUsage(DynamicDrawUsage);
-		newPiecesGroup.position.copy(this.chessBoardComponent.board.position);
-
-		newPiecesGroup.pieces = Array.from(Array(newPiecesGroup.count)).map(
-			(_, i) => {
-				const piece = new PieceModel(newPiecesGroup, i, "tower", isBlack);
-				piece.setCoords(this.chessBoardComponent.board, {
-					col: isBlack
-						? i === 0
-							? 0
-							: this.chessBoardComponent.cellsRangeCount - 1
-						: i === 0
-							? this.chessBoardComponent.cellsRangeCount - 1
-							: 0,
-					row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
-				});
-
-				newPiecesGroup.setColorAt(
-					i,
-					isBlack
-						? this.blackAccent
-								.clone()
-								.setHex(this.blackAccent.getHex() * 0.0305)
-						: this.whiteAccent.clone().setHex(this.whiteAccent.getHex() * 1.01)
-				);
-
-				return piece;
-			}
-		);
-
-		if (isBlack) this._rocks.b = newPiecesGroup;
-		else this._rocks.w = newPiecesGroup;
-
-		this._rocks[isBlack ? "b" : "w"] = newPiecesGroup;
-	}
-
-	public initBishops(isBlack?: boolean) {
-		const oldPiecesGroup = this._bishops?.[isBlack ? "b" : "w"];
-		const newPiecesGroup = new PiecesGroupModel(
-			new BoxGeometry(0.3, 0.3, 1),
-			undefined,
-			2
-		);
-
-		oldPiecesGroup?.removeFromParent();
-		oldPiecesGroup?.dispose();
-
-		newPiecesGroup.instanceMatrix.setUsage(DynamicDrawUsage);
-		newPiecesGroup.position.copy(this.chessBoardComponent.board.position);
-
-		newPiecesGroup.pieces = Array.from(Array(newPiecesGroup.count)).map(
-			(_, i) => {
-				const piece = new PieceModel(newPiecesGroup, i, "bishop", isBlack);
-				piece.setCoords(this.chessBoardComponent.board, {
-					col: isBlack
-						? i === 0
-							? 1
-							: this.chessBoardComponent.cellsRangeCount - 2
-						: i === 0
-							? this.chessBoardComponent.cellsRangeCount - 2
-							: 1,
-					row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
-				});
-
-				newPiecesGroup.setColorAt(
-					i,
-					isBlack
-						? this.blackAccent
-								.clone()
-								.setHex(this.blackAccent.getHex() * 0.0331)
-						: this.whiteAccent
-								.clone()
-								.setHex(this.whiteAccent.getHex() * 1.01012)
-				);
-
-				return piece;
-			}
-		);
-
-		if (isBlack) this._bishops.b = newPiecesGroup;
-		else this._bishops.w = newPiecesGroup;
-
-		this._bishops[isBlack ? "b" : "w"] = newPiecesGroup;
-	}
-
-	public initKnights(isBlack?: boolean) {
-		const oldPiecesGroup = this._knights?.[isBlack ? "b" : "w"];
-		const newPiecesGroup = new PiecesGroupModel(
-			new BoxGeometry(0.35, 0.35, 1),
-			undefined,
-			2
-		);
-
-		oldPiecesGroup?.removeFromParent();
-		oldPiecesGroup?.dispose();
-
-		newPiecesGroup.instanceMatrix.setUsage(DynamicDrawUsage);
-		newPiecesGroup.position.copy(this.chessBoardComponent.board.position);
-
-		newPiecesGroup.pieces = Array.from(Array(newPiecesGroup.count)).map(
-			(_, i) => {
-				const piece = new PieceModel(newPiecesGroup, i, "knight", isBlack);
-				piece.setCoords(this.chessBoardComponent.board, {
-					col: isBlack
-						? i === 0
-							? 2
-							: this.chessBoardComponent.cellsRangeCount - 3
-						: i === 0
-							? this.chessBoardComponent.cellsRangeCount - 3
-							: 2,
-					row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
-				});
-
-				newPiecesGroup.setColorAt(
-					i,
-					isBlack
-						? this.blackAccent.clone().setHex(this.blackAccent.getHex() * 0.03)
-						: this.whiteAccent
-								.clone()
-								.setHex(this.whiteAccent.getHex() * 1.01012)
-				);
-
-				return piece;
-			}
-		);
-
-		if (isBlack) this._knights.b = newPiecesGroup;
-		else this._knights.w = newPiecesGroup;
-
-		this._knights[isBlack ? "b" : "w"] = newPiecesGroup;
-	}
-
-	public initQueens(isBlack?: boolean) {
-		const oldPiecesGroup = this._queens?.[isBlack ? "b" : "w"];
-		const newPiecesGroup = new PiecesGroupModel(
-			new BoxGeometry(0.25, 0.25, 1.2),
-			undefined,
-			1
-		);
-
-		oldPiecesGroup?.removeFromParent();
-		oldPiecesGroup?.dispose();
-
-		newPiecesGroup.instanceMatrix.setUsage(DynamicDrawUsage);
-		newPiecesGroup.position.copy(this.chessBoardComponent.board.position);
-
-		newPiecesGroup.pieces = Array.from(Array(newPiecesGroup.count)).map(
-			(_, i) => {
-				const piece = new PieceModel(newPiecesGroup, i, "queen", isBlack);
-				piece.setCoords(this.chessBoardComponent.board, {
-					col: isBlack ? 3 : this.chessBoardComponent.cellsRangeCount - 4,
-					row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
-				});
-
-				newPiecesGroup.setColorAt(
-					i,
-					isBlack
-						? this.blackAccent.clone().setHex(this.blackAccent.getHex() * 0.1)
-						: this.whiteAccent.clone().setHex(this.whiteAccent.getHex() * 0.9)
-				);
-
-				return piece;
-			}
-		);
-
-		if (isBlack) this._queens.b = newPiecesGroup;
-		else this._queens.w = newPiecesGroup;
-
-		this._queens[isBlack ? "b" : "w"] = newPiecesGroup;
-	}
-
-	public initKings(isBlack?: boolean) {
-		const oldPiecesGroup = this._kings?.[isBlack ? "b" : "w"];
-		const newPiecesGroup = new PiecesGroupModel(
-			new BoxGeometry(0.2, 0.2, 1.5),
-			undefined,
-			1
-		);
-
-		oldPiecesGroup?.removeFromParent();
-		oldPiecesGroup?.dispose();
-
-		newPiecesGroup.instanceMatrix.setUsage(DynamicDrawUsage);
-		newPiecesGroup.position.copy(this.chessBoardComponent.board.position);
-
-		newPiecesGroup.pieces = Array.from(Array(newPiecesGroup.count)).map(
-			(_, i) => {
-				const piece = new PieceModel(newPiecesGroup, i, "queen", isBlack);
-				piece.setCoords(this.chessBoardComponent.board, {
-					col: isBlack ? 4 : this.chessBoardComponent.cellsRangeCount - 5,
-					row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
-				});
-
-				newPiecesGroup.setColorAt(
-					i,
-					isBlack
-						? this.blackAccent.clone().setHex(this.blackAccent.getHex() * 0.11)
-						: this.whiteAccent.clone().setHex(this.whiteAccent.getHex() * 0.99)
-				);
-
-				return piece;
-			}
-		);
-
-		if (isBlack) this._kings.b = newPiecesGroup;
-		else this._kings.w = newPiecesGroup;
-
-		this._kings[isBlack ? "b" : "w"] = newPiecesGroup;
-	}
-
-	public get pawns() {
-		return this._pawns;
-	}
-
-	public get rocks() {
-		return this._rocks;
-	}
-
-	public get bishops() {
-		return this._bishops;
-	}
-
-	public get knights() {
-		return this._knights;
-	}
-
-	public get queens() {
-		return this._queens;
-	}
-
-	public get kings() {
-		return this._kings;
+		};
 	}
 }
