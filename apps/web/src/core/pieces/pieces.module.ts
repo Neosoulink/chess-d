@@ -20,16 +20,22 @@ export class PiecesModule implements Module {
 	) {
 		this.coreController.gui$$.subscribe((data) => {
 			if (data?.type === "pawnPositionCol")
-				this.component.pawns.b?.pieces[0]?.setCoords({
-					...this.component.pawns.b?.pieces[0].coords,
-					col: data?.value ?? 0
-				});
+				this.component.pawns.b?.pieces[0]?.setCoords(
+					this.chessBoardComponent.board,
+					{
+						...this.component.pawns.b?.pieces[0].coords,
+						col: data?.value ?? 0
+					}
+				);
 
 			if (data?.type === "pawnPositionRow")
-				this.component.pawns.b?.pieces[0]?.setCoords({
-					...this.component.pawns.b?.pieces[0].coords,
-					row: data?.value ?? 0
-				});
+				this.component.pawns.b?.pieces[0]?.setCoords(
+					this.chessBoardComponent.board,
+					{
+						...this.component.pawns.b?.pieces[0].coords,
+						row: data?.value ?? 0
+					}
+				);
 		});
 	}
 
