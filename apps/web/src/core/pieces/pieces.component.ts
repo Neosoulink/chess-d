@@ -26,7 +26,7 @@ export class PiecesComponent {
 		const newPiecesGroup = new PiecesGroupModel(
 			new BoxGeometry(0.2, 0.2, 1),
 			undefined,
-			this.chessBoardComponent.size
+			this.chessBoardComponent.cellsRangeCount
 		);
 
 		oldPiecesGroup?.removeFromParent();
@@ -42,11 +42,12 @@ export class PiecesComponent {
 					newPiecesGroup,
 					i,
 					"pawn",
-					isBlack,
+
 					{
-						col: isBlack ? i : this.chessBoardComponent.size - 1 - i,
-						row: isBlack ? 1 : this.chessBoardComponent.size - 2
-					}
+						col: isBlack ? i : this.chessBoardComponent.cellsRangeCount - 1 - i,
+						row: isBlack ? 1 : this.chessBoardComponent.cellsRangeCount - 2
+					},
+					isBlack
 				);
 
 				newPiecesGroup.setColorAt(
@@ -85,17 +86,17 @@ export class PiecesComponent {
 					newPiecesGroup,
 					i,
 					"tower",
-					isBlack,
 					{
 						col: isBlack
 							? i === 0
 								? 0
-								: this.chessBoardComponent.size - 1
+								: this.chessBoardComponent.cellsRangeCount - 1
 							: i === 0
-								? this.chessBoardComponent.size - 1
+								? this.chessBoardComponent.cellsRangeCount - 1
 								: 0,
-						row: isBlack ? 0 : this.chessBoardComponent.size - 1
-					}
+						row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+					},
+					isBlack
 				);
 
 				newPiecesGroup.setColorAt(
@@ -138,17 +139,17 @@ export class PiecesComponent {
 					newPiecesGroup,
 					i,
 					"bishop",
-					isBlack,
 					{
 						col: isBlack
 							? i === 0
 								? 1
-								: this.chessBoardComponent.size - 2
+								: this.chessBoardComponent.cellsRangeCount - 2
 							: i === 0
-								? this.chessBoardComponent.size - 2
+								? this.chessBoardComponent.cellsRangeCount - 2
 								: 1,
-						row: isBlack ? 0 : this.chessBoardComponent.size - 1
-					}
+						row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+					},
+					isBlack
 				);
 
 				newPiecesGroup.setColorAt(
@@ -193,17 +194,18 @@ export class PiecesComponent {
 					newPiecesGroup,
 					i,
 					"knight",
-					isBlack,
+
 					{
 						col: isBlack
 							? i === 0
 								? 2
-								: this.chessBoardComponent.size - 3
+								: this.chessBoardComponent.cellsRangeCount - 3
 							: i === 0
-								? this.chessBoardComponent.size - 3
+								? this.chessBoardComponent.cellsRangeCount - 3
 								: 2,
-						row: isBlack ? 0 : this.chessBoardComponent.size - 1
-					}
+						row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+					},
+					isBlack
 				);
 
 				newPiecesGroup.setColorAt(
@@ -246,11 +248,12 @@ export class PiecesComponent {
 					newPiecesGroup,
 					i,
 					"queen",
-					isBlack,
+
 					{
-						col: isBlack ? 3 : this.chessBoardComponent.size - 4,
-						row: isBlack ? 0 : this.chessBoardComponent.size - 1
-					}
+						col: isBlack ? 3 : this.chessBoardComponent.cellsRangeCount - 4,
+						row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+					},
+					isBlack
 				);
 
 				newPiecesGroup.setColorAt(
@@ -291,11 +294,11 @@ export class PiecesComponent {
 					newPiecesGroup,
 					i,
 					"queen",
-					isBlack,
 					{
-						col: isBlack ? 4 : this.chessBoardComponent.size - 5,
-						row: isBlack ? 0 : this.chessBoardComponent.size - 1
-					}
+						col: isBlack ? 4 : this.chessBoardComponent.cellsRangeCount - 5,
+						row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+					},
+					isBlack
 				);
 
 				newPiecesGroup.setColorAt(

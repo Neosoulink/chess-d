@@ -6,30 +6,30 @@ import { PiecesGroupModel } from "./pieces-group.model";
 
 export class PieceModel extends Matrix4 {
 	constructor(
-		public readonly boardGroup: InstancedMesh,
-		public readonly parentGroup: PiecesGroupModel,
+		public readonly board: InstancedMesh,
+		public readonly parent: PiecesGroupModel,
 		public readonly index: number,
 		public readonly type: string,
-		public readonly isBlack?: boolean,
-		public readonly position: BoardCoords = { col: 0, row: 0 }
+		public readonly coords: BoardCoords = { col: 0, row: 0 },
+		public readonly isBlack = false
 	) {
 		super();
-		this.setPositionOnBoard(this.position);
+		this.setCoords(this.coords);
 	}
 
-	public setPositionOnBoard(position: BoardCoords) {
-		this.position.col = position.col;
-		this.position.row = position.row;
+	public setCoords(coords: BoardCoords) {
+		this.coords.col = coords.col;
+		this.coords.row = coords.row;
 
-		this.boardGroup.getMatrixAt(
-			position.col + position.row * this.boardGroup.count ** (1 / 2),
+		this.board.getMatrixAt(
+			coords.col + coords.row * this.board.count ** 0.5,
 			MATRIX
 		);
 		this.copy(MATRIX);
 
-		this.parentGroup.setMatrixAt(this.index, this);
-		this.parentGroup.matrixWorldNeedsUpdate = true;
-		this.parentGroup.instanceMatrix.needsUpdate = true;
-		this.parentGroup.computeBoundingBox();
+		this.parent.setMatrixAt(this.index, this);
+		this.parent.matrixWorldNeedsUpdate = true;
+		this.parent.instanceMatrix.needsUpdate = true;
+		this.parent.computeBoundingBox();
 	}
 }

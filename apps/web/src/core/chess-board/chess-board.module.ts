@@ -4,7 +4,7 @@ import { AppModule, Module } from "@quick-threejs/reactive";
 
 import { ChessBoardComponent } from "./chess-board.component";
 import { ChessBoardController } from "./chess-board.controller";
-import { MATRIX, QUATERNION, SCALE, VECTOR } from "../../common";
+import { BoardCoords, MATRIX, QUATERNION, SCALE, VECTOR } from "../../common";
 
 @singleton()
 export class ChessBoardModule implements Module {
@@ -19,17 +19,19 @@ export class ChessBoardModule implements Module {
 	public init() {
 		let isBlack = false;
 		this.component.board.position.set(
-			this.component.midSize,
+			this.component.halfSize,
 			0,
-			-this.component.midSize
+			-this.component.halfSize
 		);
 		this.component.board.instanceMatrix.setUsage(DynamicDrawUsage);
 
 		for (let i = 0; i < this.component.board.count; i++) {
-			const row = Math.floor(i / this.component.size) + 1;
-			const col = Math.floor(i % this.component.size) + 1;
+			const coords: BoardCoords = {
+				col: Math.floor(i % this.component.cellsRangeCount) + 1,
+				row: Math.floor(i / this.component.cellsRangeCount) + 1
+			};
 
-			if (!this.component.cells[row - 1]) {
+			if (!this.component.cells[coords.row - 1]) {
 				isBlack = !isBlack;
 				this.component.cells.push([]);
 			}
@@ -37,9 +39,9 @@ export class ChessBoardModule implements Module {
 			this.component.board.getMatrixAt(i, MATRIX);
 
 			VECTOR.set(
-				-(col * this.component.cellSize),
+				-(coords.col * this.component.cellSize),
 				0,
-				row * this.component.cellSize
+				coords.row * this.component.cellSize
 			);
 			MATRIX.compose(VECTOR, QUATERNION, SCALE);
 
@@ -48,9 +50,9 @@ export class ChessBoardModule implements Module {
 				i,
 				isBlack ? this.component.blackAccent : this.component.whiteAccent
 			);
-			this.component.cells[row - 1]?.push({
-				col,
-				row,
+			this.component.cells[coords.row - 1]?.push({
+				col: coords.col,
+				row: coords.row,
 				isBlack
 			});
 			isBlack = !isBlack;
