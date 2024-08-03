@@ -1,21 +1,16 @@
 import { ColorVariant, PieceType } from "../enums";
 import { PiecesGroupModel } from "../models";
 
+export interface PiecesGroup<color extends ColorVariant> {
+	pawns: PiecesGroupModel<PieceType.pawn, color>;
+	rocks: PiecesGroupModel<PieceType.rock, color>;
+	bishops: PiecesGroupModel<PieceType.bishop, color>;
+	knights: PiecesGroupModel<PieceType.knight, color>;
+	queens: PiecesGroupModel<PieceType.queen, color>;
+	kings: PiecesGroupModel<PieceType.king, color>;
+}
+
 export interface PiecesGroups {
-	black: {
-		pawns: PiecesGroupModel<PieceType.pawn, ColorVariant.black>;
-		rocks: PiecesGroupModel<PieceType.rock, ColorVariant.black>;
-		bishops: PiecesGroupModel<PieceType.bishop, ColorVariant.black>;
-		knights: PiecesGroupModel<PieceType.knight, ColorVariant.black>;
-		queens: PiecesGroupModel<PieceType.queen, ColorVariant.black>;
-		kings: PiecesGroupModel<PieceType.king, ColorVariant.black>;
-	};
-	white: {
-		pawns: PiecesGroupModel<PieceType.pawn, ColorVariant.white>;
-		rocks: PiecesGroupModel<PieceType.rock, ColorVariant.white>;
-		bishops: PiecesGroupModel<PieceType.bishop, ColorVariant.white>;
-		knights: PiecesGroupModel<PieceType.knight, ColorVariant.white>;
-		queens: PiecesGroupModel<PieceType.queen, ColorVariant.white>;
-		kings: PiecesGroupModel<PieceType.king, ColorVariant.white>;
-	};
+	[ColorVariant.black]: PiecesGroup<ColorVariant.black>;
+	[ColorVariant.white]: PiecesGroup<ColorVariant.white>;
 }

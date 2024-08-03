@@ -174,7 +174,7 @@ export class PiecesComponent {
 
 	public initPieces() {
 		this.groups = {
-			black: {
+			[ColorVariant.black]: {
 				pawns: this._initPawns(ColorVariant.black),
 				rocks: this._initRocks(ColorVariant.black),
 				bishops: this._initBishops(ColorVariant.black),
@@ -182,7 +182,7 @@ export class PiecesComponent {
 				queens: this._initQueens(ColorVariant.black),
 				kings: this._initKings(ColorVariant.black)
 			},
-			white: {
+			[ColorVariant.white]: {
 				pawns: this._initPawns(ColorVariant.white),
 				rocks: this._initRocks(ColorVariant.white),
 				bishops: this._initBishops(ColorVariant.white),
