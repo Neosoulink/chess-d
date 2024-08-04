@@ -1,10 +1,10 @@
 import { inject, singleton } from "tsyringe";
-import { DynamicDrawUsage } from "three";
+import { DynamicDrawUsage, Euler } from "three";
 import { AppModule, Module } from "@quick-threejs/reactive";
 
+import { BoardCoords, MATRIX, QUATERNION, SCALE, VECTOR } from "../../common";
 import { ChessBoardComponent } from "./chess-board.component";
 import { ChessBoardController } from "./chess-board.controller";
-import { BoardCoords, MATRIX, QUATERNION, SCALE, VECTOR } from "../../common";
 
 @singleton()
 export class ChessBoardModule implements Module {
@@ -17,7 +17,11 @@ export class ChessBoardModule implements Module {
 	) {}
 
 	public init() {
+		const _QUATERNION = QUATERNION.clone().setFromEuler(
+			new Euler(Math.PI / -2, 0, 0, "XYZ")
+		);
 		let isBlack = false;
+
 		this.component.board.position.set(
 			this.component.halfSize,
 			0,
@@ -43,7 +47,7 @@ export class ChessBoardModule implements Module {
 				0,
 				coords.row * this.component.cellSize
 			);
-			MATRIX.compose(VECTOR, QUATERNION, SCALE);
+			MATRIX.compose(VECTOR, _QUATERNION, SCALE);
 
 			this.component.board.setMatrixAt(i, MATRIX);
 			this.component.board.setColorAt(

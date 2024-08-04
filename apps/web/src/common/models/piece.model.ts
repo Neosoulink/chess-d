@@ -27,10 +27,9 @@ export class PieceModel<
 
 		board.getMatrixAt(coords.col + coords.row * board.count ** 0.5, MATRIX);
 
-		this.copy(MATRIX);
+		this.copyPosition(MATRIX);
+
 		this.parent.setMatrixAt(this.index, this);
-		this.parent.matrixWorldNeedsUpdate = true;
-		this.parent.instanceMatrix.needsUpdate = true;
-		this.parent.computeBoundingBox();
+		this.parent.update();
 	}
 }

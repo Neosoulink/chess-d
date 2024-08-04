@@ -163,6 +163,9 @@ importers:
       '@quick-threejs/utils':
         specifier: ^0.1.7
         version: 0.1.7
+      chess.js:
+        specifier: 1.0.0-beta.8
+        version: 1.0.0-beta.8
       rxjs:
         specifier: ^7.8.1
         version: 7.8.1
@@ -1891,6 +1894,9 @@ packages:
 
   chardet@0.7.0:
     resolution: {integrity: sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==}
+
+  chess.js@1.0.0-beta.8:
+    resolution: {integrity: sha512-UngzUMXmexcQaQA/UEJuJj5vatEy34awYMD5YMOp/FW3HM7lqspp7ymYs5JAmquDq0WROtURRfSffoa/vrCCyw==}
 
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
@@ -7088,6 +7094,8 @@ snapshots:
   char-regex@1.0.2: {}
 
   chardet@0.7.0: {}
+
+  chess.js@1.0.0-beta.8: {}
 
   chokidar@3.6.0:
     dependencies:
