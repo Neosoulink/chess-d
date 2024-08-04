@@ -1,50 +1,76 @@
 import { BufferGeometry, DynamicDrawUsage, InstancedMesh } from "three";
+import { Subject, Subscription } from "rxjs";
 
 import { ColorVariant, PieceType } from "../enums";
 import { PieceModel } from "./piece.model";
-import {
-	COLOR_BLACK,
-	COLOR_WHITE,
-	QUATERNION,
-	SCALE,
-	VECTOR
-} from "../constants";
+import { COLOR_BLACK, COLOR_WHITE } from "../constants";
+import { BoardCoords, PieceId } from "../interfaces";
 
 export class PiecesGroupModel<
 	type extends PieceType,
 	color extends ColorVariant
 > extends InstancedMesh {
-	public pieces: PieceModel<type, color>[] = [];
+	public readonly pieces: Record<PieceId, PieceModel<type, color>> = {};
+	public readonly pieceUpdateSubscriptions: Record<PieceId, Subscription> = {};
+	public readonly update$$ = new Subject<PiecesGroupModel<type, color>>();
+	public readonly pieceMoved$$ = new Subject<PieceModel<type, color>>();
 
 	constructor(
 		public readonly piecesType: type,
 		public readonly piecesColor: color,
-		count: number,
-		geometry: BufferGeometry
+		count: PieceId,
+		geometry: BufferGeometry,
+		pieces?: Record<PieceId, PieceModel<type, color>>
 	) {
 		super(geometry, undefined, count);
-
 		this.instanceMatrix.setUsage(DynamicDrawUsage);
 
-		this.pieces = Array.from(Array(this.count)).map((_, i) => {
-			const piece = new PieceModel(this, i, this.piecesType, this.piecesColor);
-			piece.compose(VECTOR, QUATERNION, SCALE);
+		(pieces ? Object.keys(pieces) : Array.from(Array(this.count))).forEach(
+			(pieceKey: number, i) => {
+				const oldPiece = pieces?.[pieceKey];
+				const piece =
+					oldPiece ?? new PieceModel(i, this.piecesType, this.piecesColor);
+				piece.index = i;
 
-			this.setMatrixAt(piece.index, piece);
-			this.setColorAt(
-				piece.index,
-				piece.color === ColorVariant.black ? COLOR_BLACK : COLOR_WHITE
-			);
+				this.setMatrixAt(i, piece);
+				this.setColorAt(
+					i,
+					piece.color === ColorVariant.black ? COLOR_BLACK : COLOR_WHITE
+				);
 
-			return piece;
-		});
+				this.pieceUpdateSubscriptions[i] = piece.update$$.subscribe(
+					this._onPieceMoved.bind(this)
+				);
+
+				this.pieces[piece.id] = piece;
+			}
+		);
 
 		this.update();
 	}
 
-	update() {
+	private _onPieceMoved(piece: PieceModel<type, color>) {
+		const _safePice = this.pieces[piece.id];
+
+		if (!_safePice) return;
+
+		this.setMatrixAt(_safePice.index, piece);
+		this.pieceMoved$$.next(piece);
+		this.update();
+	}
+
+	public setPieceCoords(
+		id: PieceId,
+		board: InstancedMesh,
+		coords: BoardCoords
+	) {
+		this.pieces[id]?.setCoords(board, coords);
+	}
+
+	public update() {
 		this.matrixWorldNeedsUpdate = true;
 		this.instanceMatrix.needsUpdate = true;
 		this.computeBoundingBox();
+		this.update$$.next(this);
 	}
 }

@@ -1,24 +1,34 @@
 import { InstancedMesh, Matrix4 } from "three";
 
-import type { BoardCoords } from "../interfaces";
+import type { BoardCoords, PieceId } from "../interfaces";
 import { ColorVariant, PieceType } from "../enums";
 import { MATRIX } from "../constants";
-import { PiecesGroupModel } from "./pieces-group.model";
+import { Subject } from "rxjs";
 
 export class PieceModel<
-	T extends PieceType,
-	color extends ColorVariant
+	T extends PieceType = PieceType,
+	color extends ColorVariant = ColorVariant
 > extends Matrix4 {
+	private _index: number = 0;
+
+	public readonly update$$ = new Subject<typeof this>();
 	public readonly coords: BoardCoords = { col: 0, row: 0 };
 
 	constructor(
-		public readonly parent: PiecesGroupModel<T, color>,
-		public readonly index: number,
+		public readonly id: PieceId,
 		public readonly type: T,
 		public readonly color: color,
 		public readonly promotedFromType?: PieceType
 	) {
 		super();
+	}
+
+	public get index() {
+		return this._index;
+	}
+
+	public set index(value: number) {
+		this._index = Number(value);
 	}
 
 	public setCoords(board: InstancedMesh, coords: BoardCoords) {
@@ -28,8 +38,6 @@ export class PieceModel<
 		board.getMatrixAt(coords.col + coords.row * board.count ** 0.5, MATRIX);
 
 		this.copyPosition(MATRIX);
-
-		this.parent.setMatrixAt(this.index, this);
-		this.parent.update();
+		this.update$$.next(this);
 	}
 }

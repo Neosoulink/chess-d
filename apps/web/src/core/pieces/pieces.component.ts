@@ -29,13 +29,15 @@ export class PiecesComponent {
 		);
 		group.position.copy(this.chessBoardComponent.board.position);
 
-		group.pieces.forEach((piece) => {
+		Object.keys(group.pieces).forEach((pieceKey, index) => {
+			const piece = group.pieces[parseInt(pieceKey)];
+			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
 			piece.setCoords(this.chessBoardComponent.board, {
 				col: isBlack
-					? piece.index
-					: this.chessBoardComponent.cellsRangeCount - 1 - piece.index,
+					? index
+					: this.chessBoardComponent.cellsRangeCount - 1 - index,
 				row: isBlack ? 1 : this.chessBoardComponent.cellsRangeCount - 2
 			});
 		});
@@ -52,14 +54,16 @@ export class PiecesComponent {
 		);
 		group.position.copy(this.chessBoardComponent.board.position);
 
-		group.pieces.forEach((piece) => {
+		Object.keys(group.pieces).forEach((pieceKey, index) => {
+			const piece = group.pieces[parseInt(pieceKey)];
+			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 			piece.setCoords(this.chessBoardComponent.board, {
 				col: isBlack
-					? piece.index === 0
+					? index === 0
 						? 0
 						: this.chessBoardComponent.cellsRangeCount - 1
-					: piece.index === 0
+					: index === 0
 						? this.chessBoardComponent.cellsRangeCount - 1
 						: 0,
 				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
@@ -78,15 +82,17 @@ export class PiecesComponent {
 		);
 		group.position.copy(this.chessBoardComponent.board.position);
 
-		group.pieces.forEach((piece) => {
+		Object.keys(group.pieces).forEach((pieceKey, index) => {
+			const piece = group.pieces[parseInt(pieceKey)];
+			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
 			piece.setCoords(this.chessBoardComponent.board, {
 				col: isBlack
-					? piece.index === 0
+					? index === 0
 						? 1
 						: this.chessBoardComponent.cellsRangeCount - 2
-					: piece.index === 0
+					: index === 0
 						? this.chessBoardComponent.cellsRangeCount - 2
 						: 1,
 				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
@@ -105,15 +111,17 @@ export class PiecesComponent {
 		);
 		group.position.copy(this.chessBoardComponent.board.position);
 
-		group.pieces.forEach((piece) => {
+		Object.keys(group.pieces).forEach((pieceKey, index) => {
+			const piece = group.pieces[parseInt(pieceKey)];
+			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
 			piece.setCoords(this.chessBoardComponent.board, {
 				col: isBlack
-					? piece.index === 0
+					? index === 0
 						? 2
 						: this.chessBoardComponent.cellsRangeCount - 3
-					: piece.index === 0
+					: index === 0
 						? this.chessBoardComponent.cellsRangeCount - 3
 						: 2,
 				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
@@ -132,7 +140,9 @@ export class PiecesComponent {
 		);
 		group.position.copy(this.chessBoardComponent.board.position);
 
-		group.pieces.forEach((piece) => {
+		Object.keys(group.pieces).forEach((pieceKey) => {
+			const piece = group.pieces[parseInt(pieceKey)];
+			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
 			piece.setCoords(this.chessBoardComponent.board, {
@@ -153,7 +163,9 @@ export class PiecesComponent {
 		);
 		group.position.copy(this.chessBoardComponent.board.position);
 
-		group.pieces.forEach((piece) => {
+		Object.keys(group.pieces).forEach((pieceKey) => {
+			const piece = group.pieces[parseInt(pieceKey)];
+			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
 			piece.setCoords(this.chessBoardComponent.board, {

@@ -21,21 +21,28 @@ export class PiecesModule implements Module {
 	) {
 		this.coreController.gui$$.subscribe((data) => {
 			if (data?.type === "pawnPositionCol")
-				this.controller.movePiece(ColorVariant.black, "pawns", 0, {
+				this.controller.movePiece(ColorVariant.black, "pawns", 1, {
 					row: 0,
-					...this.component.groups?.[ColorVariant.black]?.pawns.pieces[0]
+					...this.component.groups?.[ColorVariant.black]?.pawns.pieces[1]
 						?.coords,
 					col: data?.value ?? 0
 				});
 
 			if (data?.type === "pawnPositionRow")
-				this.controller.movePiece(ColorVariant.black, "pawns", 0, {
+				this.controller.movePiece(ColorVariant.black, "pawns", 1, {
 					col: 0,
-					...this.component.groups?.[ColorVariant.black]?.pawns.pieces[0]
+					...this.component.groups?.[ColorVariant.black]?.pawns.pieces[1]
 						?.coords,
 					row: data?.value ?? 0
 				});
 		});
+
+		setTimeout(() => {
+			console.log(
+				"Piece Dropped ===>",
+				this.controller.dropPiece(ColorVariant.black, "pawns", 0)
+			);
+		}, 3000);
 	}
 
 	init() {
