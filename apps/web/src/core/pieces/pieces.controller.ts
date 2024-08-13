@@ -6,8 +6,8 @@ import {
 	ColorVariant,
 	PieceId,
 	PieceModel,
-	PiecesGroupModel,
-	PieceType
+	PiecesGroup,
+	PiecesGroupModel
 } from "../../common";
 import { ChessBoardComponent } from "../chess-board/chess-board.component";
 import { PiecesComponent } from "./pieces.component";
@@ -25,7 +25,7 @@ export class PiecesController {
 
 	public movePiece(
 		color: ColorVariant,
-		type: `${keyof typeof PieceType}s`,
+		type: keyof PiecesGroup<ColorVariant>,
 		id: PieceId,
 		coords: BoardCoords
 	) {
@@ -41,7 +41,7 @@ export class PiecesController {
 
 	public dropPiece(
 		color: ColorVariant,
-		type: `${keyof typeof PieceType}s`,
+		type: keyof PiecesGroup<ColorVariant>,
 		id: PieceId
 	) {
 		const groups = this.component.groups;
