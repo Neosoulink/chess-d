@@ -2,7 +2,9 @@
 "api": patch
 ---
 
-Init base server resources
+# Logs
+
+## Init base server resources
 
 - Initialize `graphql` code first.
 - Initialize `webSocket` support.
