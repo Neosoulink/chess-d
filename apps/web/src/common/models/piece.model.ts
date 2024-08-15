@@ -1,13 +1,13 @@
 import { InstancedMesh, Matrix4 } from "three";
+import { Subject } from "rxjs";
 
 import type { BoardCoords, PieceId } from "../interfaces";
 import { ColorVariant, PieceType } from "../enums";
-import { MATRIX } from "../constants";
-import { Subject } from "rxjs";
+import { MATRIX, QUATERNION, SCALE, VECTOR } from "../constants";
 
 export class PieceModel<
 	T extends PieceType = PieceType,
-	color extends ColorVariant = ColorVariant
+	C extends ColorVariant = ColorVariant
 > extends Matrix4 {
 	private _index: number = 0;
 
@@ -17,7 +17,7 @@ export class PieceModel<
 	constructor(
 		public readonly id: PieceId,
 		public readonly type: T,
-		public readonly color: color,
+		public readonly color: C,
 		public readonly promotedFromType?: PieceType
 	) {
 		super();
@@ -31,13 +31,15 @@ export class PieceModel<
 		this._index = Number(value);
 	}
 
-	public setCoords(board: InstancedMesh, coords: BoardCoords) {
+	public setCoords(board: InstancedMesh, coords: BoardCoords, yOffset = 0) {
 		this.coords.col = coords.col;
 		this.coords.row = coords.row;
 
 		board.getMatrixAt(coords.col + coords.row * board.count ** 0.5, MATRIX);
+		MATRIX.decompose(VECTOR, QUATERNION, SCALE);
+		VECTOR.setY(VECTOR.y + yOffset);
 
-		this.copyPosition(MATRIX);
+		this.setPosition(VECTOR);
 		this.update$$.next(this);
 	}
 }

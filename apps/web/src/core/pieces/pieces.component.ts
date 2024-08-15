@@ -34,7 +34,7 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			piece.setCoords(this.chessBoardComponent.board, {
+			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
 				col: isBlack
 					? index
 					: this.chessBoardComponent.cellsRangeCount - 1 - index,
@@ -58,7 +58,7 @@ export class PiecesComponent {
 			const piece = group.pieces[parseInt(pieceKey)];
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
-			piece.setCoords(this.chessBoardComponent.board, {
+			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
 				col: isBlack
 					? index === 0
 						? 0
@@ -87,7 +87,7 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			piece.setCoords(this.chessBoardComponent.board, {
+			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
 				col: isBlack
 					? index === 0
 						? 1
@@ -116,7 +116,7 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			piece.setCoords(this.chessBoardComponent.board, {
+			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
 				col: isBlack
 					? index === 0
 						? 2
@@ -145,7 +145,7 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			piece.setCoords(this.chessBoardComponent.board, {
+			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
 				col: isBlack ? 3 : this.chessBoardComponent.cellsRangeCount - 4,
 				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
 			});
@@ -168,7 +168,7 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			piece.setCoords(this.chessBoardComponent.board, {
+			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
 				col: isBlack ? 4 : this.chessBoardComponent.cellsRangeCount - 5,
 				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
 			});

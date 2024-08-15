@@ -64,7 +64,17 @@ export class PiecesGroupModel<
 		board: InstancedMesh,
 		coords: BoardCoords
 	) {
-		this.pieces[id]?.setCoords(board, coords);
+		if (this?.geometry.attributes.position) {
+			this.geometry.computeBoundingBox();
+
+			const boundingBox = this.geometry.boundingBox;
+			if (boundingBox) {
+				// const width = boundingBox.max.x - boundingBox.min.x;
+				const height = boundingBox.max.y - boundingBox.min.y;
+
+				this.pieces[id]?.setCoords(board, coords, height / 2);
+			}
+		}
 	}
 
 	public update() {
