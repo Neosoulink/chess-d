@@ -54,10 +54,8 @@ export class Physics {
 	 * @param object {@link Object3DWithGeometry} based.
 	 * @param mass Physics object mass.
 	 * @param restitution Physics Object restitution.
-	 *
-	 * @access private
 	 */
-	_addObject(object: Object3DWithGeometry, mass = 0, restitution = 0) {
+	private _addObject(object: Object3DWithGeometry, mass = 0, restitution = 0) {
 		const { colliderDesc } = this.getShape(object);
 		if (!colliderDesc) return;
 
@@ -65,7 +63,7 @@ export class Physics {
 		colliderDesc.setRestitution(restitution);
 
 		const physicsProperties =
-			object instanceof InstancedMesh
+			object instanceof InstancedMesh && !object.userData.useBoundingBox
 				? this.createInstancedPhysicsProperties(object, colliderDesc, mass)
 				: this.createPhysicsProperties(
 						colliderDesc,
@@ -83,7 +81,7 @@ export class Physics {
 	}
 
 	/**
-	 * Add {@link Object3DWithGeometry} children to the physics world using `userData`.
+	 * @description Add an {@link Object3DWithGeometry} children to the physics world using `userData`.
 	 *
 	 * @param object {@link Object3DWithGeometry} based.
 	 *
@@ -98,7 +96,7 @@ export class Physics {
 	 *  rapierPhysicsHelper?.addToWorld(floor, 0);
 	 * ```
 	 */
-	addSceneToWorld(object: Object3DWithGeometry) {
+	public addSceneToWorld(object: Object3DWithGeometry) {
 		object.traverse((child) => {
 			if (!(child instanceof Object3D) || !child.userData.physics) return;
 
@@ -115,7 +113,7 @@ export class Physics {
 	 * @param mass Physics mass.
 	 * @param restitution Physics restitution.
 	 */
-	addToWorld(object: Object3DWithGeometry, mass = 0, restitution = 0) {
+	public addToWorld(object: Object3DWithGeometry, mass = 0, restitution = 0) {
 		if (object instanceof Object3D)
 			return this._addObject(object, Number(mass), Number(restitution));
 		return undefined;
@@ -126,7 +124,7 @@ export class Physics {
 	 *
 	 * @param object `Object3D` based.
 	 */
-	getShape(object: Object3DWithGeometry) {
+	public getShape(object: Object3DWithGeometry) {
 		const positions = object?.geometry?.attributes?.position?.array;
 		let width = 0;
 		let height = 0;
@@ -140,13 +138,14 @@ export class Physics {
 		if (
 			object instanceof Mesh &&
 			(object.geometry instanceof SphereGeometry ||
-				object.geometry instanceof IcosahedronGeometry)
+				object.geometry instanceof IcosahedronGeometry) &&
+			!object.userData.useBoundingBox
 		) {
 			const parameters = object.geometry.parameters;
 
 			radius = parameters.radius ?? 1;
 			colliderDesc = this.rapier.ColliderDesc.ball(radius);
-		} else if (positions) {
+		} else if (positions && !object.userData.useBoundingBox) {
 			let minX = 0,
 				minY = 0,
 				minZ = 0,
@@ -218,7 +217,7 @@ export class Physics {
 	 * @param colliderDesc {@link Rapier.ColliderDesc}
 	 * @param mass
 	 */
-	createInstancedPhysicsProperties(
+	public createInstancedPhysicsProperties(
 		mesh: InstancedMesh,
 		colliderDesc: Rapier.ColliderDesc,
 		mass?: number
@@ -244,7 +243,7 @@ export class Physics {
 	 * @param rotation {@link Rapier.Rotation}
 	 * @param mass
 	 */
-	createPhysicsProperties(
+	public createPhysicsProperties(
 		colliderDesc: Rapier.ColliderDesc,
 		position: Rapier.Vector3,
 		rotation?: Rapier.Rotation,
@@ -259,20 +258,30 @@ export class Physics {
 
 		const rigidBody = this.world.createRigidBody(rigidBodyDesc);
 		const collider = this.world.createCollider(colliderDesc, rigidBody);
+		const result: PhysicsProperties = {
+			rigidBodyDesc,
+			rigidBody,
+			colliderDesc,
+			collider
+		};
 
-		return { rigidBodyDesc, rigidBody, colliderDesc, collider };
+		return result;
 	}
 
 	/**
 	 * @param object
 	 * @param index
 	 */
-	getPhysicsPropertiesFromObject(object: Object3DWithGeometry, index = 0) {
+	public getPhysicsPropertiesFromObject(
+		object: Object3DWithGeometry,
+		index = 0
+	) {
 		const _physicsProperties = this.dynamicObjectMap.get(object);
 		let body: PhysicsProperties | undefined;
 
 		if (!_physicsProperties) return undefined;
 		if (
+			!object.userData.useBoundingBox &&
 			object instanceof InstancedMesh &&
 			typeof _physicsProperties === "object"
 		)
@@ -288,7 +297,7 @@ export class Physics {
 	 * @param position
 	 * @param index
 	 */
-	setObjectPosition(
+	public setObjectPosition(
 		object: Object3DWithGeometry,
 		position: Rapier.Vector3,
 		index = 0
@@ -315,7 +324,7 @@ export class Physics {
 	 * @param velocity
 	 * @param index
 	 */
-	setObjectVelocity(
+	public setObjectVelocity(
 		object: Object3DWithGeometry,
 		velocity: Rapier.Vector3,
 		index = 0
@@ -336,18 +345,16 @@ export class Physics {
 	 *
 	 * @param {number | undefined} timestep The timestep length, in seconds.
 	 */
-	step(timestep = undefined) {
+	public step(timestep?: number) {
 		if (typeof timestep === "number") this.world.timestep = timestep;
 		this.world.step();
 
 		for (let i = 0, l = this.dynamicObjects.length; i < l; i++) {
 			const object = this.dynamicObjects[i];
 
-			if (object instanceof InstancedMesh) {
+			if (!object?.userData.useBoundingBox && object instanceof InstancedMesh) {
 				const instanceMatrix = object.instanceMatrix.array;
-				const bodies: PhysicsProperties[] = this.dynamicObjectMap.get(
-					object
-				) as PhysicsProperties[];
+				const bodies = this.dynamicObjectMap.get(object) as PhysicsProperties[];
 
 				for (let j = 0; j < bodies.length; j++) {
 					const physicsProperties = bodies[j];
@@ -391,7 +398,7 @@ export class Physics {
 	 *
 	 * @param object {@link Object3DWithGeometry} based.
 	 */
-	removeFromWorld(object: Object3DWithGeometry) {
+	public removeFromWorld(object: Object3DWithGeometry) {
 		for (let i = 0; i < this.dynamicObjects.length; i++) {
 			const dynamicObject = this.dynamicObjects[i];
 
@@ -399,7 +406,10 @@ export class Physics {
 				const dynamicObjectProps = this.dynamicObjectMap.get(dynamicObject);
 
 				if (dynamicObject.id === object.id && dynamicObjectProps) {
-					if (object instanceof InstancedMesh)
+					if (
+						!object?.userData.useBoundingBox &&
+						object instanceof InstancedMesh
+					)
 						(dynamicObjectProps as PhysicsProperties[]).map((props) => {
 							this.world.removeRigidBody(props.rigidBody);
 							this.world.removeCollider(props.collider, true);
@@ -425,7 +435,7 @@ export class Physics {
 	/**
 	 * @description remove all the stored physical objects.
 	 */
-	dispose() {
+	public dispose() {
 		this.dynamicObjects = [];
 		this.dynamicObjectMap = new WeakMap();
 	}
