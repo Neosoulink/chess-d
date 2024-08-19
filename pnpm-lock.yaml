@@ -157,6 +157,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@chess-d/rapier-physics':
+        specifier: workspace:*
+        version: link:../../packages/rapier-physics
       '@quick-threejs/reactive':
         specifier: ^0.1.12
         version: 0.1.12(lil-gui@0.19.2)(stats.js@0.17.0)
@@ -216,6 +219,25 @@ importers:
       '@quick-threejs/config':
         specifier: ^0.1.8
         version: 0.1.8
+
+  packages/rapier-physics:
+    dependencies:
+      '@dimforge/rapier3d-compat':
+        specifier: ^0.14.0
+        version: 0.14.0
+      three:
+        specifier: ^0.166.1
+        version: 0.166.1
+    devDependencies:
+      '@chess-d/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@types/three':
+        specifier: ^0.166.0
+        version: 0.166.0
+      typescript:
+        specifier: ^5.5.3
+        version: 5.5.4
 
 packages:
 
@@ -643,6 +665,9 @@ packages:
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
+
+  '@dimforge/rapier3d-compat@0.14.0':
+    resolution: {integrity: sha512-/uHrUzS+CRQ+NQrrJCEDUkhwHlNsAAexbNXgbN9sHY+GwR+SFFAFrxRr8Llf5/AJZzqiLANdQIfJ63Cw4gJVqw==}
 
   '@esbuild/aix-ppc64@0.21.5':
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -5634,6 +5659,8 @@ snapshots:
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
+
+  '@dimforge/rapier3d-compat@0.14.0': {}
 
   '@esbuild/aix-ppc64@0.21.5':
     optional: true

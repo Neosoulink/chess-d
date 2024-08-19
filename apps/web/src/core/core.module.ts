@@ -32,10 +32,14 @@ export class CoreModule implements Module {
 				controller.gui$$.next(e.data);
 		};
 
+		this.appModule.timer.step$().subscribe(() => {
+			this.component.physics?.step();
+		});
 		this.init();
 	}
 
-	public init() {
+	public async init() {
+		await this.component.init();
 		this.resourceModule.init();
 		this.worldModule.init();
 		this.gameModule.init();
@@ -49,5 +53,6 @@ export class CoreModule implements Module {
 		this.gameModule.dispose();
 		this.chessBoardModule.dispose();
 		this.piecesModule.dispose();
+		this.appModule.dispose();
 	}
 }

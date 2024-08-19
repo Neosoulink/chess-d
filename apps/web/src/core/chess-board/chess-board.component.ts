@@ -1,9 +1,11 @@
 import "reflect-metadata";
 
-import { singleton } from "tsyringe";
+import { inject, singleton } from "tsyringe";
 import { Color, InstancedMesh, PlaneGeometry } from "three";
+import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
 import { BoardCell } from "../../common";
+import { CoreComponent } from "../core.component";
 
 @singleton()
 export class ChessBoardComponent {
@@ -29,5 +31,20 @@ export class ChessBoardComponent {
 		.clone()
 		.setHex(this.whiteAccent.getHex() * Math.random());
 
-	constructor() {}
+	public physicsBody?: PhysicsProperties;
+
+	constructor(
+		@inject(CoreComponent) private readonly coreComponent: CoreComponent
+	) {}
+
+	public init() {
+		this.board.userData = {
+			...this.board.userData,
+			useBoundingBox: true
+		};
+
+		this.physicsBody = this.coreComponent.physics?.addToWorld(
+			this.board
+		) as PhysicsProperties;
+	}
 }
