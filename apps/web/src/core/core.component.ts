@@ -5,7 +5,7 @@ import { RapierPhysics } from "@chess-d/rapier-physics";
 
 @singleton()
 export class CoreComponent {
-	public physics?: Awaited<ReturnType<typeof RapierPhysics>>;
+	public physics!: Awaited<ReturnType<typeof RapierPhysics>>;
 
 	constructor() {}
 

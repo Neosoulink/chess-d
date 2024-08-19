@@ -6,16 +6,20 @@ import {
 	ColorVariant,
 	PieceId,
 	PieceModel,
-	PiecesGroup,
-	PiecesGroupModel
+	PiecesGroups,
+	PieceType
 } from "../../common";
 import { ChessBoardComponent } from "../chess-board/chess-board.component";
 import { PiecesComponent } from "./pieces.component";
 
 @singleton()
 export class PiecesController {
-	public readonly pieceMoved$$ = new Subject<PieceModel>();
-	public readonly pieceDropped$$ = new Subject<PieceModel>();
+	public readonly pieceMoved$$ = new Subject<
+		PieceModel<PieceType, ColorVariant>
+	>();
+	public readonly pieceDropped$$ = new Subject<
+		PieceModel<PieceType, ColorVariant>
+	>();
 
 	constructor(
 		@inject(PiecesComponent) private readonly component: PiecesComponent,
@@ -23,9 +27,9 @@ export class PiecesController {
 		private readonly chessBoardComponent: ChessBoardComponent
 	) {}
 
-	public movePiece(
-		color: ColorVariant,
-		type: keyof PiecesGroup<ColorVariant>,
+	public movePiece<Type extends PieceType, Color extends ColorVariant>(
+		type: Type,
+		color: Color,
 		id: PieceId,
 		coords: BoardCoords
 	) {
@@ -35,18 +39,21 @@ export class PiecesController {
 			coords
 		);
 
-		// @ts-ignore
-		this.pieceMoved$$.next(piece);
+		this.pieceMoved$$.next(
+			piece as unknown as PieceModel<PieceType, ColorVariant>
+		);
 	}
 
-	public dropPiece(
-		color: ColorVariant,
-		type: keyof PiecesGroup<ColorVariant>,
+	public dropPiece<Type extends PieceType, Color extends ColorVariant>(
+		type: Type,
+		color: Color,
 		id: PieceId
 	) {
 		const groups = this.component.groups;
-		const piecesGroup = groups?.[color]?.[type];
-		const pieces = piecesGroup?.pieces;
+		const piecesGroup = groups?.[color][type];
+		const pieces = piecesGroup?.pieces as unknown as
+			| undefined
+			| Record<number, PieceModel<Type, Color>>;
 		const pieceToDrop = pieces?.[id];
 
 		if (!pieces || !piecesGroup || !pieceToDrop) return;
@@ -54,17 +61,16 @@ export class PiecesController {
 		delete pieces[id];
 
 		const piecesGroupParent = piecesGroup.parent;
-		const newPiecesGroup = new PiecesGroupModel(
-			piecesGroup.piecesType,
-			piecesGroup.piecesColor,
+		const newPiecesGroup = this.component.createGroup(
+			type,
+			color,
 			Object.keys(pieces).length,
 			piecesGroup.geometry,
-			// @ts-ignore - ...
 			pieces
 		);
 
-		// @ts-ignore - Not assignable to type `never`
-		groups[color][type] = newPiecesGroup;
+		groups[color][type] =
+			newPiecesGroup as unknown as PiecesGroups[Color][Type];
 
 		newPiecesGroup.position.copy(piecesGroup.position);
 		newPiecesGroup.rotation.copy(piecesGroup.rotation);
@@ -75,8 +81,9 @@ export class PiecesController {
 		piecesGroup.removeFromParent();
 		piecesGroup.dispose();
 
-		// @ts-ignore
-		this.pieceDropped$$.next(pieceToDrop);
+		this.pieceDropped$$.next(
+			pieceToDrop as unknown as PieceModel<PieceType, ColorVariant>
+		);
 
 		return pieceToDrop;
 	}

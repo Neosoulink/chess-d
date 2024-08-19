@@ -8,6 +8,8 @@ import {
 } from "../../common";
 import { ChessBoardComponent } from "../chess-board/chess-board.component";
 import { ResourceComponent } from "../resource/resource.component";
+import { CoreComponent } from "../core.component";
+import { BufferGeometry } from "three";
 
 @singleton()
 export class PiecesComponent {
@@ -17,11 +19,12 @@ export class PiecesComponent {
 		@inject(ChessBoardComponent)
 		private readonly chessBoardComponent: ChessBoardComponent,
 		@inject(ResourceComponent)
-		private readonly resourceComponent: ResourceComponent
+		private readonly resourceComponent: ResourceComponent,
+		@inject(CoreComponent) private readonly coreComponent: CoreComponent
 	) {}
 
 	private _initPawns<Color extends ColorVariant>(color: Color) {
-		const group = new PiecesGroupModel(
+		const group = this.createGroup(
 			PieceType.pawn,
 			color,
 			this.chessBoardComponent.cellsRangeCount,
@@ -46,7 +49,7 @@ export class PiecesComponent {
 	}
 
 	private _initRocks<Color extends ColorVariant>(color: Color) {
-		const group = new PiecesGroupModel(
+		const group = this.createGroup(
 			PieceType.rock,
 			color,
 			2,
@@ -74,7 +77,7 @@ export class PiecesComponent {
 	}
 
 	private _initBishops<Color extends ColorVariant>(color: Color) {
-		const group = new PiecesGroupModel(
+		const group = this.createGroup(
 			PieceType.bishop,
 			color,
 			2,
@@ -103,7 +106,7 @@ export class PiecesComponent {
 	}
 
 	private _initKnights<Color extends ColorVariant>(color: Color) {
-		const group = new PiecesGroupModel(
+		const group = this.createGroup(
 			PieceType.knight,
 			color,
 			2,
@@ -132,7 +135,7 @@ export class PiecesComponent {
 	}
 
 	private _initQueens<Color extends ColorVariant>(color: Color) {
-		const group = new PiecesGroupModel(
+		const group = this.createGroup(
 			PieceType.queen,
 			color,
 			1,
@@ -155,7 +158,7 @@ export class PiecesComponent {
 	}
 
 	private _initKings<Color extends ColorVariant>(color: Color) {
-		const group = new PiecesGroupModel(
+		const group = this.createGroup(
 			PieceType.king,
 			color,
 			1,
@@ -177,23 +180,40 @@ export class PiecesComponent {
 		return group;
 	}
 
+	public createGroup<Type extends PieceType, Color extends ColorVariant>(
+		type: Type,
+		color: Color,
+		count: number,
+		geometry: BufferGeometry,
+		pieces?: PiecesGroupModel<Type, Color>["pieces"]
+	) {
+		return new PiecesGroupModel(
+			this.coreComponent.physics,
+			type,
+			color,
+			count,
+			geometry,
+			pieces
+		);
+	}
+
 	public initPieces() {
 		this.groups = {
 			[ColorVariant.black]: {
-				pawns: this._initPawns(ColorVariant.black),
-				rocks: this._initRocks(ColorVariant.black),
-				bishops: this._initBishops(ColorVariant.black),
-				knights: this._initKnights(ColorVariant.black),
-				queens: this._initQueens(ColorVariant.black),
-				kings: this._initKings(ColorVariant.black)
+				[PieceType.pawn]: this._initPawns(ColorVariant.black),
+				[PieceType.rock]: this._initRocks(ColorVariant.black),
+				[PieceType.bishop]: this._initBishops(ColorVariant.black),
+				[PieceType.knight]: this._initKnights(ColorVariant.black),
+				[PieceType.queen]: this._initQueens(ColorVariant.black),
+				[PieceType.king]: this._initKings(ColorVariant.black)
 			},
 			[ColorVariant.white]: {
-				pawns: this._initPawns(ColorVariant.white),
-				rocks: this._initRocks(ColorVariant.white),
-				bishops: this._initBishops(ColorVariant.white),
-				knights: this._initKnights(ColorVariant.white),
-				queens: this._initQueens(ColorVariant.white),
-				kings: this._initKings(ColorVariant.white)
+				[PieceType.pawn]: this._initPawns(ColorVariant.white),
+				[PieceType.rock]: this._initRocks(ColorVariant.white),
+				[PieceType.bishop]: this._initBishops(ColorVariant.white),
+				[PieceType.knight]: this._initKnights(ColorVariant.white),
+				[PieceType.queen]: this._initQueens(ColorVariant.white),
+				[PieceType.king]: this._initKings(ColorVariant.white)
 			}
 		};
 	}
