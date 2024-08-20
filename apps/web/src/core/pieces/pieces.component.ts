@@ -1,4 +1,6 @@
 import { inject, singleton } from "tsyringe";
+import { BufferGeometry } from "three";
+import { Physics } from "@chess-d/rapier-physics";
 
 import {
 	PiecesGroupModel,
@@ -8,8 +10,6 @@ import {
 } from "../../common";
 import { ChessBoardComponent } from "../chess-board/chess-board.component";
 import { ResourceComponent } from "../resource/resource.component";
-import { CoreComponent } from "../core.component";
-import { BufferGeometry } from "three";
 
 @singleton()
 export class PiecesComponent {
@@ -20,7 +20,7 @@ export class PiecesComponent {
 		private readonly chessBoardComponent: ChessBoardComponent,
 		@inject(ResourceComponent)
 		private readonly resourceComponent: ResourceComponent,
-		@inject(CoreComponent) private readonly coreComponent: CoreComponent
+		@inject(Physics) private readonly _physics: Physics
 	) {}
 
 	private _initPawns<Color extends ColorVariant>(color: Color) {
@@ -188,7 +188,7 @@ export class PiecesComponent {
 		pieces?: PiecesGroupModel<Type, Color>["pieces"]
 	) {
 		return new PiecesGroupModel(
-			this.coreComponent.physics,
+			this._physics,
 			type,
 			color,
 			count,

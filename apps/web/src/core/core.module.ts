@@ -8,6 +8,8 @@ import { GameModule } from "./game/game.module";
 import { WorldModule } from "./world/world.module";
 import { ChessBoardModule } from "./chess-board/chess-board.module";
 import { PiecesModule } from "./pieces/pieces.module";
+import { DebugModule } from "./debug/debug.module";
+import { Physics } from "@chess-d/rapier-physics";
 
 @singleton()
 export class CoreModule implements Module {
@@ -22,29 +24,32 @@ export class CoreModule implements Module {
 		@inject(ChessBoardModule)
 		private readonly chessBoardModule: ChessBoardModule,
 		@inject(PiecesModule)
-		private readonly piecesModule: PiecesModule
+		private readonly piecesModule: PiecesModule,
+		@inject(DebugModule) private readonly debugModule: DebugModule,
+		@inject(Physics) private readonly physics: Physics
 	) {
 		this.appModule.camera.instance()?.position.set(0, 5, -5);
 		this.appModule.camera.miniCamera()?.position.set(2, 5, -6);
+
+		this.init();
+
+		this.appModule.timer.step$().subscribe(() => {
+			this.physics.step();
+		});
 
 		self.onmessage = (e: MessageEvent) => {
 			if ((e.data?.type as string)?.startsWith("pawn"))
 				controller.gui$$.next(e.data);
 		};
-
-		this.appModule.timer.step$().subscribe(() => {
-			this.component.physics?.step();
-		});
-		this.init();
 	}
 
-	public async init() {
-		await this.component.init();
+	public init() {
 		this.resourceModule.init();
 		this.worldModule.init();
 		this.gameModule.init();
 		this.chessBoardModule.init();
 		this.piecesModule.init();
+		this.debugModule.init();
 	}
 
 	public dispose() {
@@ -54,5 +59,6 @@ export class CoreModule implements Module {
 		this.chessBoardModule.dispose();
 		this.piecesModule.dispose();
 		this.appModule.dispose();
+		this.debugModule.dispose();
 	}
 }

@@ -27,7 +27,7 @@ export class ChessBoardModule implements Module {
 			-this.component.halfSize
 		);
 
-		this.component.physicsBody?.rigidBody.setTranslation(
+		this.component.physics?.rigidBody.setTranslation(
 			{ x: this.component.halfSize, y: 0, z: -this.component.halfSize },
 			true
 		);

@@ -1,10 +1,12 @@
 import { BufferGeometry, DynamicDrawUsage, InstancedMesh } from "three";
 import { Subject, Subscription } from "rxjs";
+import { Physics } from "@chess-d/rapier-physics";
 
 import { ColorVariant, PieceType } from "../enums";
 import { PieceModel } from "./piece.model";
 import { COLOR_BLACK, COLOR_WHITE } from "../constants";
 import { BoardCoords, PieceId } from "../interfaces";
+import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
 export class PiecesGroupModel<
 	type extends PieceType,
@@ -16,6 +18,7 @@ export class PiecesGroupModel<
 	public readonly pieceMoved$$ = new Subject<PieceModel<type, color>>();
 
 	constructor(
+		private readonly physics: Physics,
 		public readonly piecesType: type,
 		public readonly piecesColor: color,
 		count: PieceId,
@@ -23,13 +26,29 @@ export class PiecesGroupModel<
 		pieces?: Record<PieceId, PieceModel<type, color>>
 	) {
 		super(geometry, undefined, count);
+
+		const physicsProperties = this.physics.addToWorld(
+			this,
+			1
+		) as PhysicsProperties[];
+
 		this.instanceMatrix.setUsage(DynamicDrawUsage);
 
 		(pieces ? Object.keys(pieces) : Array.from(Array(this.count))).forEach(
 			(pieceKey: number, i) => {
 				const oldPiece = pieces?.[pieceKey];
+				const piecePhysicsProperties = physicsProperties[
+					i
+				] as PhysicsProperties;
+
 				const piece =
-					oldPiece ?? new PieceModel(i, this.piecesType, this.piecesColor);
+					oldPiece ??
+					new PieceModel(
+						i,
+						this.piecesType,
+						this.piecesColor,
+						piecePhysicsProperties
+					);
 				piece.index = i;
 
 				this.setMatrixAt(i, piece);
@@ -72,9 +91,11 @@ export class PiecesGroupModel<
 				// const width = boundingBox.max.x - boundingBox.min.x;
 				const height = boundingBox.max.y - boundingBox.min.y;
 
-				this.pieces[id]?.setCoords(board, coords, height / 2);
+				this.pieces[id]?.setCoords(board, coords, height / 2 + 2);
 			}
 		}
+
+		return this.pieces[id];
 	}
 
 	public update() {

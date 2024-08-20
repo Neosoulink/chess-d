@@ -7,7 +7,7 @@ import "./assets/styles/main.css";
 
 register({
 	location: new URL("./main.worker.ts", import.meta.url) as unknown as string,
-	enableDebug: true,
+	enableDebug: !!import.meta.env?.DEV,
 	axesSizes: 5,
 	gridSizes: 10,
 	withMiniCamera: true,

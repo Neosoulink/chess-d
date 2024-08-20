@@ -4,6 +4,7 @@ import { Subject } from "rxjs";
 import type { BoardCoords, PieceId } from "../interfaces";
 import { ColorVariant, PieceType } from "../enums";
 import { MATRIX, QUATERNION, SCALE, VECTOR } from "../constants";
+import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
 export class PieceModel<
 	T extends PieceType = PieceType,
@@ -18,6 +19,7 @@ export class PieceModel<
 		public readonly id: PieceId,
 		public readonly type: T,
 		public readonly color: C,
+		public readonly physics: PhysicsProperties,
 		public readonly promotedFromType?: PieceType
 	) {
 		super();
@@ -39,7 +41,7 @@ export class PieceModel<
 		MATRIX.decompose(VECTOR, QUATERNION, SCALE);
 		VECTOR.setY(VECTOR.y + yOffset);
 
-		this.setPosition(VECTOR);
+		this.physics.rigidBody.setTranslation(VECTOR, true);
 		this.update$$.next(this);
 	}
 }
