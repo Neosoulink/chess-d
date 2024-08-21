@@ -30,7 +30,6 @@ export class PiecesComponent {
 			this.chessBoardComponent.cellsRangeCount,
 			this.resourceComponent.getGeometryByPieceType(PieceType.pawn)
 		);
-		group.position.copy(this.chessBoardComponent.board.position);
 
 		Object.keys(group.pieces).forEach((pieceKey, index) => {
 			const piece = group.pieces[parseInt(pieceKey)];
@@ -55,7 +54,6 @@ export class PiecesComponent {
 			2,
 			this.resourceComponent.getGeometryByPieceType(PieceType.rock)
 		);
-		group.position.copy(this.chessBoardComponent.board.position);
 
 		Object.keys(group.pieces).forEach((pieceKey, index) => {
 			const piece = group.pieces[parseInt(pieceKey)];
@@ -83,7 +81,6 @@ export class PiecesComponent {
 			2,
 			this.resourceComponent.getGeometryByPieceType(PieceType.bishop)
 		);
-		group.position.copy(this.chessBoardComponent.board.position);
 
 		Object.keys(group.pieces).forEach((pieceKey, index) => {
 			const piece = group.pieces[parseInt(pieceKey)];
@@ -112,7 +109,6 @@ export class PiecesComponent {
 			2,
 			this.resourceComponent.getGeometryByPieceType(PieceType.knight)
 		);
-		group.position.copy(this.chessBoardComponent.board.position);
 
 		Object.keys(group.pieces).forEach((pieceKey, index) => {
 			const piece = group.pieces[parseInt(pieceKey)];
@@ -141,7 +137,6 @@ export class PiecesComponent {
 			1,
 			this.resourceComponent.getGeometryByPieceType(PieceType.queen)
 		);
-		group.position.copy(this.chessBoardComponent.board.position);
 
 		Object.keys(group.pieces).forEach((pieceKey) => {
 			const piece = group.pieces[parseInt(pieceKey)];
@@ -164,7 +159,6 @@ export class PiecesComponent {
 			1,
 			this.resourceComponent.getGeometryByPieceType(PieceType.king)
 		);
-		group.position.copy(this.chessBoardComponent.board.position);
 
 		Object.keys(group.pieces).forEach((pieceKey) => {
 			const piece = group.pieces[parseInt(pieceKey)];
@@ -187,14 +181,10 @@ export class PiecesComponent {
 		geometry: BufferGeometry,
 		pieces?: PiecesGroupModel<Type, Color>["pieces"]
 	) {
-		return new PiecesGroupModel(
-			this._physics,
-			type,
-			color,
-			count,
-			geometry,
-			pieces
-		);
+		const group = new PiecesGroupModel(type, color, count, geometry, pieces);
+		group.initPhysics(this._physics);
+
+		return group;
 	}
 
 	public initPieces() {

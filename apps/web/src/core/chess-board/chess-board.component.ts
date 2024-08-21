@@ -1,12 +1,24 @@
 import "reflect-metadata";
 
 import { inject, singleton } from "tsyringe";
-import { Color, InstancedMesh, PlaneGeometry } from "three";
+import {
+	DynamicDrawUsage,
+	Euler,
+	Color,
+	InstancedMesh,
+	PlaneGeometry
+} from "three";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 import { Physics } from "@chess-d/rapier-physics";
 
-import { BoardCell } from "../../common";
-
+import {
+	BoardCoords,
+	BoardCell,
+	MATRIX,
+	QUATERNION,
+	SCALE,
+	VECTOR
+} from "../../common";
 @singleton()
 export class ChessBoardComponent {
 	public readonly cellSize = 1;
@@ -35,7 +47,43 @@ export class ChessBoardComponent {
 
 	constructor(@inject(Physics) private readonly _physics: Physics) {}
 
-	public init() {
+	public initCells() {
+		const _QUATERNION = QUATERNION.clone().setFromEuler(
+			new Euler(Math.PI / -2, 0, Math.PI / -2)
+		);
+		let isBlack = false;
+
+		this.board.position.set(this.halfSize, 0, -this.halfSize);
+		this.board.instanceMatrix.setUsage(DynamicDrawUsage);
+
+		for (let i = 0; i < this.board.count; i++) {
+			const coords: BoardCoords = {
+				col: Math.floor(i % this.cellsRangeCount) + 1,
+				row: Math.floor(i / this.cellsRangeCount) + 1
+			};
+
+			if (!this.cells[coords.row - 1]) {
+				isBlack = !isBlack;
+				this.cells.push([]);
+			}
+
+			this.board.getMatrixAt(i, MATRIX);
+
+			VECTOR.set(-(coords.col * this.cellSize), 0, coords.row * this.cellSize);
+			MATRIX.compose(VECTOR, _QUATERNION, SCALE);
+
+			this.board.setMatrixAt(i, MATRIX);
+			this.board.setColorAt(i, isBlack ? this.blackAccent : this.whiteAccent);
+			this.cells[coords.row - 1]?.push({
+				col: coords.col,
+				row: coords.row,
+				isBlack
+			});
+			isBlack = !isBlack;
+		}
+	}
+
+	public initPhysics() {
 		this.board.name = ChessBoardComponent.name;
 
 		this.board.userData = {
@@ -44,5 +92,7 @@ export class ChessBoardComponent {
 		};
 
 		this.physics = this._physics?.addToWorld(this.board) as PhysicsProperties;
+
+		this.physics.rigidBody.setTranslation({ x: 0, y: 0, z: 0 }, true);
 	}
 }

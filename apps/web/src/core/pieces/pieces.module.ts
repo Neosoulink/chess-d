@@ -50,7 +50,7 @@ export class PiecesModule implements Module {
 	init() {
 		this.component.initPieces();
 
-		if (this.component.groups) {
+		if (this.component.groups)
 			[...Object.keys(this.component.groups[ColorVariant.black])].forEach(
 				(key) => {
 					const blackGroup =
@@ -66,7 +66,6 @@ export class PiecesModule implements Module {
 					if (whiteGroup) this.appModule.world.scene().add(whiteGroup);
 				}
 			);
-		}
 	}
 
 	dispose() {}

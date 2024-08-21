@@ -18,7 +18,6 @@ export class PiecesGroupModel<
 	public readonly pieceMoved$$ = new Subject<PieceModel<type, color>>();
 
 	constructor(
-		private readonly physics: Physics,
 		public readonly piecesType: type,
 		public readonly piecesColor: color,
 		count: PieceId,
@@ -27,28 +26,14 @@ export class PiecesGroupModel<
 	) {
 		super(geometry, undefined, count);
 
-		const physicsProperties = this.physics.addToWorld(
-			this,
-			1
-		) as PhysicsProperties[];
-
 		this.instanceMatrix.setUsage(DynamicDrawUsage);
 
 		(pieces ? Object.keys(pieces) : Array.from(Array(this.count))).forEach(
 			(pieceKey: number, i) => {
 				const oldPiece = pieces?.[pieceKey];
-				const piecePhysicsProperties = physicsProperties[
-					i
-				] as PhysicsProperties;
 
 				const piece =
-					oldPiece ??
-					new PieceModel(
-						i,
-						this.piecesType,
-						this.piecesColor,
-						piecePhysicsProperties
-					);
+					oldPiece ?? new PieceModel(i, this.piecesType, this.piecesColor);
 				piece.index = i;
 
 				this.setMatrixAt(i, piece);
@@ -78,6 +63,18 @@ export class PiecesGroupModel<
 		this.update();
 	}
 
+	public initPhysics(physics: Physics) {
+		const physicsProperties = physics.addToWorld(
+			this,
+			1
+		) as PhysicsProperties[];
+
+		physicsProperties.forEach((_, i) => {
+			const piecePhysicsProperties = physicsProperties[i] as PhysicsProperties;
+			if (this.pieces[i]) this.pieces[i].physics = piecePhysicsProperties;
+		});
+	}
+
 	public setPieceCoords(
 		id: PieceId,
 		board: InstancedMesh,
@@ -85,13 +82,17 @@ export class PiecesGroupModel<
 	) {
 		if (this?.geometry.attributes.position) {
 			this.geometry.computeBoundingBox();
-
 			const boundingBox = this.geometry.boundingBox;
+
 			if (boundingBox) {
 				// const width = boundingBox.max.x - boundingBox.min.x;
 				const height = boundingBox.max.y - boundingBox.min.y;
 
-				this.pieces[id]?.setCoords(board, coords, height / 2 + 2);
+				this.pieces[id]?.setCoords(board, coords, {
+					x: 0,
+					y: height / 2 + 2,
+					z: 0
+				});
 			}
 		}
 
