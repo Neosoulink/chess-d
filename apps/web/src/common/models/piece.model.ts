@@ -10,28 +10,19 @@ export class PieceModel<
 	T extends PieceType = PieceType,
 	C extends ColorVariant = ColorVariant
 > extends Matrix4 {
-	private _index: number = 0;
-
 	public readonly update$$ = new Subject<typeof this>();
 	public readonly coords: BoardCoords = { col: 0, row: 0 };
 
-	public physics!: PhysicsProperties;
+	public physics?: PhysicsProperties;
 
 	constructor(
 		public readonly id: PieceId,
 		public readonly type: T,
 		public readonly color: C,
-		public readonly promotedFromType?: PieceType
+		public readonly promotedFromType?: PieceType,
+		public index = 0
 	) {
 		super();
-	}
-
-	public get index() {
-		return this._index;
-	}
-
-	public set index(value: number) {
-		this._index = Number(value);
 	}
 
 	public setCoords(
@@ -43,12 +34,18 @@ export class PieceModel<
 		this.coords.row = coords.row;
 
 		board.getMatrixAt(coords.col + coords.row * board.count ** 0.5, MATRIX);
+
 		MATRIX.decompose(VECTOR, QUATERNION, SCALE);
 		VECTOR.add(offset);
+		QUATERNION.set(0, 0, 0, 1);
 
-		this.physics.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
-		this.physics.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
-		this.physics.rigidBody.setTranslation(VECTOR.add(board.position), true);
+		this.compose(VECTOR, QUATERNION, SCALE);
+
+		this.physics?.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+		this.physics?.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+		this.physics?.rigidBody.setTranslation(VECTOR.add(board.position), true);
+		this.physics?.rigidBody.setRotation(QUATERNION, true);
+
 		this.update$$.next(this);
 	}
 }

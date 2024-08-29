@@ -31,8 +31,8 @@ export class PiecesComponent {
 			this.resourceComponent.getGeometryByPieceType(PieceType.pawn)
 		);
 
-		Object.keys(group.pieces).forEach((pieceKey, index) => {
-			const piece = group.pieces[parseInt(pieceKey)];
+		Object.keys(group.pieces).forEach((id, index) => {
+			const piece = group.pieces[parseInt(id)];
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
@@ -55,8 +55,8 @@ export class PiecesComponent {
 			this.resourceComponent.getGeometryByPieceType(PieceType.rock)
 		);
 
-		Object.keys(group.pieces).forEach((pieceKey, index) => {
-			const piece = group.pieces[parseInt(pieceKey)];
+		Object.keys(group.pieces).forEach((id, index) => {
+			const piece = group.pieces[parseInt(id)];
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
@@ -82,8 +82,8 @@ export class PiecesComponent {
 			this.resourceComponent.getGeometryByPieceType(PieceType.bishop)
 		);
 
-		Object.keys(group.pieces).forEach((pieceKey, index) => {
-			const piece = group.pieces[parseInt(pieceKey)];
+		Object.keys(group.pieces).forEach((id, index) => {
+			const piece = group.pieces[parseInt(id)];
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
@@ -110,8 +110,8 @@ export class PiecesComponent {
 			this.resourceComponent.getGeometryByPieceType(PieceType.knight)
 		);
 
-		Object.keys(group.pieces).forEach((pieceKey, index) => {
-			const piece = group.pieces[parseInt(pieceKey)];
+		Object.keys(group.pieces).forEach((id, index) => {
+			const piece = group.pieces[parseInt(id)];
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
@@ -138,8 +138,8 @@ export class PiecesComponent {
 			this.resourceComponent.getGeometryByPieceType(PieceType.queen)
 		);
 
-		Object.keys(group.pieces).forEach((pieceKey) => {
-			const piece = group.pieces[parseInt(pieceKey)];
+		Object.keys(group.pieces).forEach((id) => {
+			const piece = group.pieces[parseInt(id)];
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
@@ -160,8 +160,8 @@ export class PiecesComponent {
 			this.resourceComponent.getGeometryByPieceType(PieceType.king)
 		);
 
-		Object.keys(group.pieces).forEach((pieceKey) => {
-			const piece = group.pieces[parseInt(pieceKey)];
+		Object.keys(group.pieces).forEach((id) => {
+			const piece = group.pieces[parseInt(id)];
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 

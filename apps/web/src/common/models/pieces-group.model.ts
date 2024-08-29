@@ -1,12 +1,12 @@
 import { BufferGeometry, DynamicDrawUsage, InstancedMesh } from "three";
 import { Subject, Subscription } from "rxjs";
 import { Physics } from "@chess-d/rapier-physics";
+import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
 import { ColorVariant, PieceType } from "../enums";
 import { PieceModel } from "./piece.model";
 import { COLOR_BLACK, COLOR_WHITE } from "../constants";
 import { BoardCoords, PieceId } from "../interfaces";
-import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
 export class PiecesGroupModel<
 	type extends PieceType,
@@ -24,62 +24,90 @@ export class PiecesGroupModel<
 		geometry: BufferGeometry,
 		pieces?: Record<PieceId, PieceModel<type, color>>
 	) {
-		super(geometry, undefined, count);
+		const piecesMatrix = pieces
+			? Object.keys(pieces)
+			: Array.from(Array(count));
 
+		super(geometry, undefined, piecesMatrix.length);
 		this.instanceMatrix.setUsage(DynamicDrawUsage);
 
-		(pieces ? Object.keys(pieces) : Array.from(Array(this.count))).forEach(
-			(pieceKey: number, i) => {
-				const oldPiece = pieces?.[pieceKey];
+		piecesMatrix.forEach((pieceKey: number, i) => {
+			const oldPiece = pieces?.[pieceKey];
+			const piece =
+				oldPiece ?? new PieceModel(i, this.piecesType, this.piecesColor);
+			piece.index = i;
 
-				const piece =
-					oldPiece ?? new PieceModel(i, this.piecesType, this.piecesColor);
-				piece.index = i;
+			this.setMatrixAt(i, piece);
+			this.setColorAt(
+				i,
+				piece.color === ColorVariant.black ? COLOR_BLACK : COLOR_WHITE
+			);
 
-				this.setMatrixAt(i, piece);
-				this.setColorAt(
-					i,
-					piece.color === ColorVariant.black ? COLOR_BLACK : COLOR_WHITE
-				);
+			this.pieces[piece.id] = piece;
+			this._subscribePiece(piece);
+		});
 
-				this.pieceUpdateSubscriptions[i] = piece.update$$.subscribe(
-					this._onPieceMoved.bind(this)
-				);
+		this.pieceMoved$$.subscribe(this.update.bind(this));
+	}
 
-				this.pieces[piece.id] = piece;
-			}
+	private _subscribePiece(piece: PieceModel<type, color>): void {
+		this.pieceUpdateSubscriptions[piece.id] = piece.update$$.subscribe(
+			this._onPieceMoved.bind(this)
 		);
+	}
+
+	private _unsubscribePieces(): void {
+		Object.keys(this.pieceUpdateSubscriptions).forEach((id) => {
+			this.pieceUpdateSubscriptions[id].unsubscribe();
+			delete this.pieceUpdateSubscriptions[id];
+		});
+	}
+
+	private _deletePiece(id: PieceId): void {
+		delete this.pieces[id];
 
 		this.update();
 	}
 
 	private _onPieceMoved(piece: PieceModel<type, color>) {
+		if (this.pieces[piece.id] !== piece) return;
+
 		const _safePice = this.pieces[piece.id];
 
 		if (!_safePice) return;
 
 		this.setMatrixAt(_safePice.index, piece);
 		this.pieceMoved$$.next(piece);
-		this.update();
 	}
 
-	public initPhysics(physics: Physics) {
+	public initPhysics(physics: Physics): void {
 		const physicsProperties = physics.addToWorld(
 			this,
 			1
 		) as PhysicsProperties[];
 
 		physicsProperties.forEach((_, i) => {
-			const piecePhysicsProperties = physicsProperties[i] as PhysicsProperties;
-			if (this.pieces[i]) this.pieces[i].physics = piecePhysicsProperties;
+			if (this.pieces[i] && physicsProperties[i])
+				this.pieces[i].physics = physicsProperties[i];
 		});
+	}
+
+	public copy(
+		pieceGroup: PiecesGroupModel<type, color>,
+		recursive?: boolean
+	): this {
+		Object.keys(this.pieces).forEach((id) => {
+			pieceGroup.pieces[id] = this.pieces[id];
+		});
+
+		return super.copy(pieceGroup, recursive);
 	}
 
 	public setPieceCoords(
 		id: PieceId,
 		board: InstancedMesh,
 		coords: BoardCoords
-	) {
+	): this["pieces"][PieceId] | undefined {
 		if (this?.geometry.attributes.position) {
 			this.geometry.computeBoundingBox();
 			const boundingBox = this.geometry.boundingBox;
@@ -90,7 +118,7 @@ export class PiecesGroupModel<
 
 				this.pieces[id]?.setCoords(board, coords, {
 					x: 0,
-					y: height / 2 + 2,
+					y: height / 2 + 0.5,
 					z: 0
 				});
 			}
@@ -99,10 +127,50 @@ export class PiecesGroupModel<
 		return this.pieces[id];
 	}
 
-	public update() {
+	public dropPiece(
+		id: PieceId,
+		physics?: Physics
+	): this["pieces"][PieceId] | undefined {
+		const pieceToDrop = this.pieces[id];
+
+		if (!this.pieces[id]) return undefined;
+		this._unsubscribePieces();
+		this._deletePiece(id);
+
+		const newGroup = new PiecesGroupModel(
+			this.piecesType,
+			this.piecesColor,
+			0,
+			this.geometry,
+			this.pieces
+		);
+		const physicsProps = physics?.dynamicObjectsMap.get(
+			this
+		) as PhysicsProperties[];
+		const physicsPropsToDrop = physics?.getPhysicsPropertiesFromObject(
+			this,
+			id
+		);
+
+		physicsProps?.splice(id, 1);
+		physics?.removePropsFromWorld(physicsPropsToDrop);
+
+		this.dispose();
+		this.copy(newGroup);
+
+		return pieceToDrop;
+	}
+
+	public update(): void {
 		this.matrixWorldNeedsUpdate = true;
 		this.instanceMatrix.needsUpdate = true;
+
 		this.computeBoundingBox();
+
+		Object.keys(this.pieces).forEach((id) => {
+			this.getMatrixAt(parseInt(id), this.pieces[id]);
+		});
+
 		this.update$$.next(this);
 	}
 }

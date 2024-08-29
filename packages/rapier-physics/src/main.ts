@@ -12,6 +12,7 @@ import {
 	Vector3
 } from "three";
 import { Object3DWithGeometry, PhysicsProperties } from "./types";
+import { isArray } from "util";
 
 let RAPIER: typeof Rapier | null | undefined = null;
 
@@ -36,7 +37,7 @@ export class Physics {
 	/** @description List of {@link Object3DWithGeometry} with applied physics. */
 	public dynamicObjects: Object3DWithGeometry[] = [];
 	/** @description {@link WeakMap} of dynamic objects {@link Rapier.RigidBody} */
-	public dynamicObjectMap = new WeakMap<
+	public dynamicObjectsMap = new WeakMap<
 		Object3DWithGeometry,
 		PhysicsProperties | PhysicsProperties[]
 	>();
@@ -74,7 +75,7 @@ export class Physics {
 
 		if (mass > 0) {
 			this.dynamicObjects.push(object);
-			this.dynamicObjectMap.set(object, physicsProperties);
+			this.dynamicObjectsMap.set(object, physicsProperties);
 		}
 
 		return physicsProperties;
@@ -276,7 +277,7 @@ export class Physics {
 		object: Object3DWithGeometry,
 		index = 0
 	) {
-		const _physicsProperties = this.dynamicObjectMap.get(object);
+		const _physicsProperties = this.dynamicObjectsMap.get(object);
 		let body: PhysicsProperties | undefined;
 
 		if (!_physicsProperties) return undefined;
@@ -354,7 +355,9 @@ export class Physics {
 
 			if (!object?.userData.useBoundingBox && object instanceof InstancedMesh) {
 				const instanceMatrix = object.instanceMatrix.array;
-				const bodies = this.dynamicObjectMap.get(object) as PhysicsProperties[];
+				const bodies = this.dynamicObjectsMap.get(
+					object
+				) as PhysicsProperties[];
 
 				for (let j = 0; j < bodies.length; j++) {
 					const physicsProperties = bodies[j];
@@ -383,7 +386,7 @@ export class Physics {
 				object.instanceMatrix.needsUpdate = true;
 				object.computeBoundingSphere();
 			} else if (object) {
-				const physicsProperties = this.dynamicObjectMap.get(
+				const physicsProperties = this.dynamicObjectsMap.get(
 					object
 				) as PhysicsProperties;
 
@@ -394,37 +397,39 @@ export class Physics {
 	}
 
 	/**
-	 * @description Remove the specified object to the physics `world`.
+	 * @description Remove the specified `PhysicsProps` from the physics `world`.
 	 *
-	 * @param object {@link Object3DWithGeometry} based.
+	 * @param props {@link PhysicsProperties} or `PhysicsProperties[]`.
+	 */
+	public removePropsFromWorld(props?: PhysicsProperties | PhysicsProperties[]) {
+		if (
+			typeof props === "object" &&
+			typeof (props as PhysicsProperties[]).length === "number"
+		)
+			(props as PhysicsProperties[]).map((_props) =>
+				this.removePropsFromWorld(_props)
+			);
+		else if ((props as PhysicsProperties).rigidBody) {
+			this.world.removeRigidBody((props as PhysicsProperties).rigidBody);
+			this.world.removeCollider((props as PhysicsProperties).collider, true);
+		}
+	}
+
+	/**
+	 * @description Remove the specified object from the physics `world`.
+	 *
+	 * @param object {@link Object3DWithGeometry}.
 	 */
 	public removeFromWorld(object: Object3DWithGeometry) {
 		for (let i = 0; i < this.dynamicObjects.length; i++) {
 			const dynamicObject = this.dynamicObjects[i];
 
 			if (dynamicObject) {
-				const dynamicObjectProps = this.dynamicObjectMap.get(dynamicObject);
+				const physicsProps = this.dynamicObjectsMap.get(dynamicObject);
 
-				if (dynamicObject.id === object.id && dynamicObjectProps) {
-					if (
-						!object?.userData.useBoundingBox &&
-						object instanceof InstancedMesh
-					)
-						(dynamicObjectProps as PhysicsProperties[]).map((props) => {
-							this.world.removeRigidBody(props.rigidBody);
-							this.world.removeCollider(props.collider, true);
-						});
-					else {
-						this.world.removeRigidBody(
-							(dynamicObjectProps as PhysicsProperties).rigidBody
-						);
-						this.world.removeCollider(
-							(dynamicObjectProps as PhysicsProperties).collider,
-							true
-						);
-					}
-
-					this.dynamicObjectMap.delete(dynamicObject);
+				if (dynamicObject.id === object.id && physicsProps) {
+					this.removePropsFromWorld(physicsProps);
+					this.dynamicObjectsMap.delete(dynamicObject);
 					this.dynamicObjects.splice(i, 1);
 					return;
 				}
@@ -432,12 +437,10 @@ export class Physics {
 		}
 	}
 
-	/**
-	 * @description remove all the stored physical objects.
-	 */
+	/** @description remove all the stored physical objects. */
 	public dispose() {
 		this.dynamicObjects = [];
-		this.dynamicObjectMap = new WeakMap();
+		this.dynamicObjectsMap = new WeakMap();
 	}
 }
 

@@ -6,11 +6,11 @@ import {
 	ColorVariant,
 	PieceId,
 	PieceModel,
-	PiecesGroups,
 	PieceType
 } from "../../common";
 import { ChessBoardComponent } from "../chess-board/chess-board.component";
 import { PiecesComponent } from "./pieces.component";
+import { Physics } from "@chess-d/rapier-physics";
 
 @singleton()
 export class PiecesController {
@@ -24,7 +24,9 @@ export class PiecesController {
 	constructor(
 		@inject(PiecesComponent) private readonly component: PiecesComponent,
 		@inject(ChessBoardComponent)
-		private readonly chessBoardComponent: ChessBoardComponent
+		private readonly chessBoardComponent: ChessBoardComponent,
+		@inject(Physics)
+		private readonly physics: Physics
 	) {}
 
 	public movePiece<Type extends PieceType, Color extends ColorVariant>(
@@ -54,32 +56,10 @@ export class PiecesController {
 		const pieces = piecesGroup?.pieces as unknown as
 			| undefined
 			| Record<number, PieceModel<Type, Color>>;
-		const pieceToDrop = pieces?.[id];
 
-		if (!pieces || !piecesGroup || !pieceToDrop) return;
+		if (!pieces || !piecesGroup || !pieces?.[id]) return;
 
-		delete pieces[id];
-
-		const piecesGroupParent = piecesGroup.parent;
-		const newPiecesGroup = this.component.createGroup(
-			type,
-			color,
-			Object.keys(pieces).length,
-			piecesGroup.geometry,
-			pieces
-		);
-
-		groups[color][type] =
-			newPiecesGroup as unknown as PiecesGroups[Color][Type];
-
-		newPiecesGroup.position.copy(piecesGroup.position);
-		newPiecesGroup.rotation.copy(piecesGroup.rotation);
-		newPiecesGroup.scale.copy(piecesGroup.scale);
-
-		piecesGroupParent?.add(newPiecesGroup);
-
-		piecesGroup.removeFromParent();
-		piecesGroup.dispose();
+		const pieceToDrop = piecesGroup.dropPiece(id, this.physics);
 
 		this.pieceDropped$$.next(
 			pieceToDrop as unknown as PieceModel<PieceType, ColorVariant>
