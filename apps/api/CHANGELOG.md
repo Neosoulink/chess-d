@@ -1,5 +1,18 @@
 # api
 
+## 0.1.1
+
+### Patch Changes
+
+- 5cd1334: # Logs
+
+  ## Init base server resources
+
+  - Initialize `graphql` code first.
+  - Initialize `webSocket` support.
+    - Use `WS` library
+  - @chess-d/api@0.1.0
+
 ## 0.1.0
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # @chess-d/configs
 
+## 0.1.2
+
+### Patch Changes
+
+- 4bc387a: # Logs
+
+  ## chore(configs): disable unused local **typescript** rules
+
 ## 0.1.1
 
 ### Patch Changes
