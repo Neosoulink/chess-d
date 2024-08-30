@@ -39,7 +39,7 @@
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
-		"@types/node": "^20.3.1",
+		"@types/node": "^22.5.1",
 		"ts-jest": "^29.1.0",
 		"ts-node": "^10.9.2"
 	}
