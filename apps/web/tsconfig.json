@@ -1,6 +1,9 @@
 {
 	"extends": "@chess-d/configs/typescript/base.json",
 	"compilerOptions": {
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+
 		"outDir": "./dist",
 		"noEmit": true
 	},

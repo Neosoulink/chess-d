@@ -3,6 +3,8 @@
 	"display": "Default",
 	"extends": "@quick-threejs/config/typescript.json",
 	"compilerOptions": {
-		"moduleResolution": "bundler"
+		"moduleResolution": "bundler",
+		"noUnusedParameters": false,
+		"noUnusedLocals": false
 	}
 }

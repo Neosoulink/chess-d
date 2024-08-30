@@ -4,7 +4,7 @@
 	"version": "0.1.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite --clearScreen false",
+		"dev": "vite --clearScreen false --host",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
 		"lint": "eslint \"src/**/*.ts\"",
@@ -13,11 +13,17 @@
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
 		"@types/three": "^0.166.0",
-		"stats.js": "^0.17.0"
+		"reflect-metadata": "^0.2.0",
+		"tsyringe": "^4.8.0"
 	},
 	"dependencies": {
-		"@quick-threejs/reactive": "^0.1.9",
+		"@chess-d/rapier-physics": "workspace:*",
+		"@quick-threejs/reactive": "^0.1.12",
+		"@quick-threejs/utils": "^0.1.7",
+		"chess.js": "1.0.0-beta.8",
+		"rxjs": "^7.8.1",
+		"threads": "^1.7.0",
 		"three": "^0.166.1",
-		"tsyringe": "^4.8.0"
+		"typescript-ioc": "^3.2.2"
 	}
 }

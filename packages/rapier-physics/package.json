@@ -1,0 +1,25 @@
+{
+	"name": "@chess-d/rapier-physics",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"main": "./dist/main.js",
+	"scripts": {
+		"dev": "tsc --watch",
+		"build": "tsc"
+	},
+	"devDependencies": {
+		"@chess-d/configs": "workspace:*",
+		"@types/three": "^0.166.0",
+		"typescript": "^5.5.3"
+	},
+	"keywords": [
+		"three.js",
+		"rapier",
+		"physics"
+	],
+	"dependencies": {
+		"@dimforge/rapier3d-compat": "^0.14.0",
+		"three": "^0.166.1"
+	}
+}
