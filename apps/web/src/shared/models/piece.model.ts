@@ -2,7 +2,7 @@ import { InstancedMesh, Matrix4, Vector3, Vector3Like } from "three";
 import { Subject } from "rxjs";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
-import type { BoardCoords, PieceId } from "../interfaces";
+import { BoardCoords, PieceId } from "../interfaces";
 import { ColorVariant, PieceType } from "../enums";
 import { MATRIX, QUATERNION, SCALE, VECTOR } from "../constants";
 
@@ -26,14 +26,14 @@ export class PieceModel<
 	}
 
 	public setCoords(
-		board: InstancedMesh,
+		mesh: InstancedMesh,
 		coords: BoardCoords,
 		offset: Vector3Like = new Vector3()
 	) {
 		this.coords.col = coords.col;
 		this.coords.row = coords.row;
 
-		board.getMatrixAt(coords.col + coords.row * board.count ** 0.5, MATRIX);
+		mesh.getMatrixAt(coords.col + coords.row * mesh.count ** 0.5, MATRIX);
 
 		MATRIX.decompose(VECTOR, QUATERNION, SCALE);
 		VECTOR.add(offset);
@@ -43,7 +43,7 @@ export class PieceModel<
 
 		this.physics?.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
 		this.physics?.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
-		this.physics?.rigidBody.setTranslation(VECTOR.add(board.position), true);
+		this.physics?.rigidBody.setTranslation(VECTOR.add(mesh.position), true);
 		this.physics?.rigidBody.setRotation(QUATERNION, true);
 
 		this.update$$.next(this);

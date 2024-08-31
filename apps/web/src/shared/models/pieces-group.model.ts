@@ -3,10 +3,10 @@ import { Subject, Subscription } from "rxjs";
 import { Physics } from "@chess-d/rapier-physics";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
-import { ColorVariant, PieceType } from "../enums";
-import { PieceModel } from "./piece.model";
-import { COLOR_BLACK, COLOR_WHITE } from "../constants";
 import { BoardCoords, PieceId } from "../interfaces";
+import { ColorVariant, PieceType } from "../enums";
+import { COLOR_BLACK, COLOR_WHITE } from "../constants";
+import { PieceModel } from "./piece.model";
 
 export class PiecesGroupModel<
 	type extends PieceType,
@@ -105,7 +105,7 @@ export class PiecesGroupModel<
 
 	public setPieceCoords(
 		id: PieceId,
-		board: InstancedMesh,
+		boardMesh: InstancedMesh,
 		coords: BoardCoords
 	): this["pieces"][PieceId] | undefined {
 		if (this?.geometry.attributes.position) {
@@ -116,7 +116,7 @@ export class PiecesGroupModel<
 				// const width = boundingBox.max.x - boundingBox.min.x;
 				const height = boundingBox.max.y - boundingBox.min.y;
 
-				this.pieces[id]?.setCoords(board, coords, {
+				this.pieces[id]?.setCoords(boardMesh, coords, {
 					x: 0,
 					y: height / 2 + 0.5,
 					z: 0

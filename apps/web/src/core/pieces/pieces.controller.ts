@@ -7,8 +7,8 @@ import {
 	PieceId,
 	PieceModel,
 	PieceType
-} from "../../common";
-import { ChessBoardComponent } from "../chess-board/chess-board.component";
+} from "../../shared";
+import { BoardComponent } from "../chess-board/board.component";
 import { PiecesComponent } from "./pieces.component";
 import { Physics } from "@chess-d/rapier-physics";
 
@@ -23,8 +23,8 @@ export class PiecesController {
 
 	constructor(
 		@inject(PiecesComponent) private readonly component: PiecesComponent,
-		@inject(ChessBoardComponent)
-		private readonly chessBoardComponent: ChessBoardComponent,
+		@inject(BoardComponent)
+		private readonly BoardComponent: BoardComponent,
 		@inject(Physics)
 		private readonly physics: Physics
 	) {}
@@ -37,7 +37,7 @@ export class PiecesController {
 	) {
 		const piece = this.component.groups?.[color]?.[type]?.setPieceCoords(
 			id,
-			this.chessBoardComponent.board,
+			this.BoardComponent.mesh,
 			coords
 		);
 

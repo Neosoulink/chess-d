@@ -3,6 +3,6 @@ import "reflect-metadata";
 import { singleton } from "tsyringe";
 
 @singleton()
-export class GameController {
+export class EngineController {
 	constructor() {}
 }

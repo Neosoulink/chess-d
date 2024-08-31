@@ -17,26 +17,26 @@ import {
 	MATRIX,
 	QUATERNION,
 	SCALE,
-	VECTOR
-} from "../../common";
+	VECTOR,
+	BOARD_CELL_SIZE,
+	BOARD_MATRIX_RANGE_SIZE,
+	BOARD_MATRIX_SIZE,
+	BOARD_RANGE_CELLS_HALF_SIZE
+} from "../../shared";
+
 @singleton()
-export class ChessBoardComponent {
-	public readonly cellSize = 1;
-	public readonly cellsRangeCount = 8;
-	public readonly totalCellsCount = this.cellsRangeCount ** 2;
-	public readonly halfSize =
-		this.cellsRangeCount * this.cellSize * 0.5 + this.cellSize * 0.5;
+export class BoardComponent {
 	public readonly cells: BoardCell[][] = [];
 	public readonly cellGeometry = new PlaneGeometry(
-		this.cellSize,
-		this.cellSize,
+		BOARD_CELL_SIZE,
+		BOARD_CELL_SIZE,
 		6,
 		6
 	);
-	public readonly board = new InstancedMesh(
+	public readonly mesh = new InstancedMesh(
 		this.cellGeometry,
 		undefined,
-		this.totalCellsCount
+		BOARD_MATRIX_SIZE
 	);
 	public readonly whiteAccent = new Color(0xffffff);
 	public readonly blackAccent = this.whiteAccent
@@ -53,13 +53,17 @@ export class ChessBoardComponent {
 		);
 		let isBlack = false;
 
-		this.board.position.set(this.halfSize, 0, -this.halfSize);
-		this.board.instanceMatrix.setUsage(DynamicDrawUsage);
+		this.mesh.position.set(
+			BOARD_RANGE_CELLS_HALF_SIZE,
+			0,
+			-BOARD_RANGE_CELLS_HALF_SIZE
+		);
+		this.mesh.instanceMatrix.setUsage(DynamicDrawUsage);
 
-		for (let i = 0; i < this.board.count; i++) {
+		for (let i = 0; i < this.mesh.count; i++) {
 			const coords: BoardCoords = {
-				col: Math.floor(i % this.cellsRangeCount) + 1,
-				row: Math.floor(i / this.cellsRangeCount) + 1
+				col: Math.floor(i % BOARD_MATRIX_RANGE_SIZE) + 1,
+				row: Math.floor(i / BOARD_MATRIX_RANGE_SIZE) + 1
 			};
 
 			if (!this.cells[coords.row - 1]) {
@@ -67,13 +71,17 @@ export class ChessBoardComponent {
 				this.cells.push([]);
 			}
 
-			this.board.getMatrixAt(i, MATRIX);
+			this.mesh.getMatrixAt(i, MATRIX);
 
-			VECTOR.set(-(coords.col * this.cellSize), 0, coords.row * this.cellSize);
+			VECTOR.set(
+				-(coords.col * BOARD_CELL_SIZE),
+				0,
+				coords.row * BOARD_CELL_SIZE
+			);
 			MATRIX.compose(VECTOR, _QUATERNION, SCALE);
 
-			this.board.setMatrixAt(i, MATRIX);
-			this.board.setColorAt(i, isBlack ? this.blackAccent : this.whiteAccent);
+			this.mesh.setMatrixAt(i, MATRIX);
+			this.mesh.setColorAt(i, isBlack ? this.blackAccent : this.whiteAccent);
 			this.cells[coords.row - 1]?.push({
 				col: coords.col,
 				row: coords.row,
@@ -84,14 +92,14 @@ export class ChessBoardComponent {
 	}
 
 	public initPhysics() {
-		this.board.name = ChessBoardComponent.name;
+		this.mesh.name = BoardComponent.name;
 
-		this.board.userData = {
-			...this.board.userData,
+		this.mesh.userData = {
+			...this.mesh.userData,
 			useBoundingBox: true
 		};
 
-		this.physics = this._physics?.addToWorld(this.board) as PhysicsProperties;
+		this.physics = this._physics?.addToWorld(this.mesh) as PhysicsProperties;
 
 		this.physics.rigidBody.setTranslation({ x: 0, y: 0, z: 0 }, true);
 	}

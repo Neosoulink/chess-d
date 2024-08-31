@@ -4,9 +4,9 @@ import { AppModule, Module } from "@quick-threejs/reactive";
 import { CoreController } from "./core.controller";
 import { CoreComponent } from "./core.component";
 import { ResourceModule } from "./resource/resource.module";
-import { GameModule } from "./game/game.module";
+import { EngineModule } from "./engine/engine.module";
 import { WorldModule } from "./world/world.module";
-import { ChessBoardModule } from "./chess-board/chess-board.module";
+import { BoardModule } from "./chess-board/board.module";
 import { PiecesModule } from "./pieces/pieces.module";
 import { DebugModule } from "./debug/debug.module";
 import { Physics } from "@chess-d/rapier-physics";
@@ -20,9 +20,9 @@ export class CoreModule implements Module {
 		@inject(ResourceModule)
 		private readonly resourceModule: ResourceModule,
 		@inject(WorldModule) private readonly worldModule: WorldModule,
-		@inject(GameModule) private readonly gameModule: GameModule,
-		@inject(ChessBoardModule)
-		private readonly chessBoardModule: ChessBoardModule,
+		@inject(EngineModule) private readonly EngineModule: EngineModule,
+		@inject(BoardModule)
+		private readonly BoardModule: BoardModule,
 		@inject(PiecesModule)
 		private readonly piecesModule: PiecesModule,
 		@inject(DebugModule) private readonly debugModule: DebugModule,
@@ -46,8 +46,8 @@ export class CoreModule implements Module {
 	public init() {
 		this.resourceModule.init();
 		this.worldModule.init();
-		this.gameModule.init();
-		this.chessBoardModule.init();
+		this.EngineModule.init();
+		this.BoardModule.init();
 		this.piecesModule.init();
 		this.debugModule.init();
 	}
@@ -55,8 +55,8 @@ export class CoreModule implements Module {
 	public dispose() {
 		this.resourceModule.dispose();
 		this.worldModule.dispose();
-		this.gameModule.dispose();
-		this.chessBoardModule.dispose();
+		this.EngineModule.dispose();
+		this.BoardModule.dispose();
 		this.piecesModule.dispose();
 		this.appModule.dispose();
 		this.debugModule.dispose();

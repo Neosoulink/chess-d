@@ -6,9 +6,10 @@ import {
 	PiecesGroupModel,
 	PiecesGroups,
 	PieceType,
-	ColorVariant
-} from "../../common";
-import { ChessBoardComponent } from "../chess-board/chess-board.component";
+	ColorVariant,
+	BOARD_MATRIX_RANGE_SIZE
+} from "../../shared";
+import { BoardComponent } from "../chess-board/board.component";
 import { ResourceComponent } from "../resource/resource.component";
 
 @singleton()
@@ -16,8 +17,8 @@ export class PiecesComponent {
 	public groups?: PiecesGroups;
 
 	constructor(
-		@inject(ChessBoardComponent)
-		private readonly chessBoardComponent: ChessBoardComponent,
+		@inject(BoardComponent)
+		private readonly BoardComponent: BoardComponent,
 		@inject(ResourceComponent)
 		private readonly resourceComponent: ResourceComponent,
 		@inject(Physics) private readonly _physics: Physics
@@ -27,7 +28,7 @@ export class PiecesComponent {
 		const group = this.createGroup(
 			PieceType.pawn,
 			color,
-			this.chessBoardComponent.cellsRangeCount,
+			BOARD_MATRIX_RANGE_SIZE,
 			this.resourceComponent.getGeometryByPieceType(PieceType.pawn)
 		);
 
@@ -36,11 +37,9 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
-				col: isBlack
-					? index
-					: this.chessBoardComponent.cellsRangeCount - 1 - index,
-				row: isBlack ? 1 : this.chessBoardComponent.cellsRangeCount - 2
+			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
+				col: isBlack ? index : BOARD_MATRIX_RANGE_SIZE - 1 - index,
+				row: isBlack ? 1 : BOARD_MATRIX_RANGE_SIZE - 2
 			});
 		});
 
@@ -59,15 +58,15 @@ export class PiecesComponent {
 			const piece = group.pieces[parseInt(id)];
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
-			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
+			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
 				col: isBlack
 					? index === 0
 						? 0
-						: this.chessBoardComponent.cellsRangeCount - 1
+						: BOARD_MATRIX_RANGE_SIZE - 1
 					: index === 0
-						? this.chessBoardComponent.cellsRangeCount - 1
+						? BOARD_MATRIX_RANGE_SIZE - 1
 						: 0,
-				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+				row: isBlack ? 0 : BOARD_MATRIX_RANGE_SIZE - 1
 			});
 		});
 
@@ -87,15 +86,15 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
+			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
 				col: isBlack
 					? index === 0
 						? 1
-						: this.chessBoardComponent.cellsRangeCount - 2
+						: BOARD_MATRIX_RANGE_SIZE - 2
 					: index === 0
-						? this.chessBoardComponent.cellsRangeCount - 2
+						? BOARD_MATRIX_RANGE_SIZE - 2
 						: 1,
-				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+				row: isBlack ? 0 : BOARD_MATRIX_RANGE_SIZE - 1
 			});
 		});
 
@@ -115,15 +114,15 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
+			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
 				col: isBlack
 					? index === 0
 						? 2
-						: this.chessBoardComponent.cellsRangeCount - 3
+						: BOARD_MATRIX_RANGE_SIZE - 3
 					: index === 0
-						? this.chessBoardComponent.cellsRangeCount - 3
+						? BOARD_MATRIX_RANGE_SIZE - 3
 						: 2,
-				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+				row: isBlack ? 0 : BOARD_MATRIX_RANGE_SIZE - 1
 			});
 		});
 
@@ -143,9 +142,9 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
-				col: isBlack ? 3 : this.chessBoardComponent.cellsRangeCount - 4,
-				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
+				col: isBlack ? 3 : BOARD_MATRIX_RANGE_SIZE - 4,
+				row: isBlack ? 0 : BOARD_MATRIX_RANGE_SIZE - 1
 			});
 		});
 
@@ -165,9 +164,9 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoords(piece.id, this.chessBoardComponent.board, {
-				col: isBlack ? 4 : this.chessBoardComponent.cellsRangeCount - 5,
-				row: isBlack ? 0 : this.chessBoardComponent.cellsRangeCount - 1
+			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
+				col: isBlack ? 4 : BOARD_MATRIX_RANGE_SIZE - 5,
+				row: isBlack ? 0 : BOARD_MATRIX_RANGE_SIZE - 1
 			});
 		});
 

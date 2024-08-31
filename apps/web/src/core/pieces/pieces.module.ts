@@ -4,9 +4,9 @@ import { AppModule, Module } from "@quick-threejs/reactive";
 import { PiecesComponent } from "./pieces.component";
 import { CoreComponent } from "../core.component";
 import { CoreController } from "../core.controller";
-import { ChessBoardComponent } from "../chess-board/chess-board.component";
+import { BoardComponent } from "../chess-board/board.component";
 import { PiecesController } from "./pieces.controller";
-import { ColorVariant, PieceType } from "../../common";
+import { ColorVariant, PieceType } from "../../shared";
 
 @singleton()
 export class PiecesModule implements Module {
@@ -14,8 +14,8 @@ export class PiecesModule implements Module {
 		@inject(AppModule) private readonly appModule: AppModule,
 		@inject(PiecesComponent) private readonly component: PiecesComponent,
 		@inject(CoreComponent) private readonly coreComponent: CoreComponent,
-		@inject(ChessBoardComponent)
-		private readonly chessBoardComponent: ChessBoardComponent,
+		@inject(BoardComponent)
+		private readonly BoardComponent: BoardComponent,
 		@inject(CoreController)
 		private readonly coreController: CoreController,
 		@inject(PiecesController)

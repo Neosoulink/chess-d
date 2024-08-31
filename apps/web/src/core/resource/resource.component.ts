@@ -3,7 +3,7 @@ import "reflect-metadata";
 import { singleton } from "tsyringe";
 import { BoxGeometry, BufferGeometry } from "three";
 
-import { PieceType } from "../../common";
+import { PieceType } from "../../shared";
 
 @singleton()
 export class ResourceComponent {
