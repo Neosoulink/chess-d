@@ -4,7 +4,7 @@ import { AppModule, Module } from "@quick-threejs/reactive";
 import { PiecesComponent } from "./pieces.component";
 import { CoreComponent } from "../core.component";
 import { CoreController } from "../core.controller";
-import { BoardComponent } from "../chess-board/board.component";
+import { BoardComponent } from "../board/board.component";
 import { PiecesController } from "./pieces.controller";
 import { ColorVariant, PieceType } from "../../shared";
 

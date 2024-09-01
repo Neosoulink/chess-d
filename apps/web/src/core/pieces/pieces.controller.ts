@@ -8,7 +8,7 @@ import {
 	PieceModel,
 	PieceType
 } from "../../shared";
-import { BoardComponent } from "../chess-board/board.component";
+import { BoardComponent } from "../board/board.component";
 import { PiecesComponent } from "./pieces.component";
 import { Physics } from "@chess-d/rapier-physics";
 

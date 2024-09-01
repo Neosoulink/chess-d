@@ -6,7 +6,7 @@ import { CoreComponent } from "./core.component";
 import { ResourceModule } from "./resource/resource.module";
 import { EngineModule } from "./engine/engine.module";
 import { WorldModule } from "./world/world.module";
-import { BoardModule } from "./chess-board/board.module";
+import { BoardModule } from "./board/board.module";
 import { PiecesModule } from "./pieces/pieces.module";
 import { DebugModule } from "./debug/debug.module";
 import { Physics } from "@chess-d/rapier-physics";

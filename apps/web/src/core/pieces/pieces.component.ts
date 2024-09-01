@@ -9,7 +9,7 @@ import {
 	ColorVariant,
 	BOARD_MATRIX_RANGE_SIZE
 } from "../../shared";
-import { BoardComponent } from "../chess-board/board.component";
+import { BoardComponent } from "../board/board.component";
 import { ResourceComponent } from "../resource/resource.component";
 
 @singleton()
