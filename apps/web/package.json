@@ -5,9 +5,9 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite --clearScreen false --host",
-		"build": "tsc && vite build",
+		"build": "lint && vite build",
 		"preview": "vite preview",
-		"lint": "eslint \"src/**/*.ts\"",
+		"lint": "tsc && eslint \"src/**/*.ts\"",
 		"test": "jest --passWithNoTests"
 	},
 	"devDependencies": {
