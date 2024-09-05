@@ -43,7 +43,7 @@ export class PieceModel<
 
 		this.physics?.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
 		this.physics?.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
-		this.physics?.rigidBody.setTranslation(VECTOR.add(mesh.position), true);
+		this.physics?.rigidBody.setTranslation(VECTOR, true);
 		this.physics?.rigidBody.setRotation(QUATERNION, true);
 
 		this.update$$.next(this);

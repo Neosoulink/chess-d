@@ -6,6 +6,7 @@ import {
 	ColorVariant,
 	PieceId,
 	PieceModel,
+	PiecesGroupModel,
 	PieceType
 } from "../../shared";
 import { BoardComponent } from "../board/board.component";
@@ -50,21 +51,23 @@ export class PiecesController {
 		type: Type,
 		color: Color,
 		id: PieceId
-	) {
+	): PieceModel<Type, Color> | undefined {
 		const groups = this.component.groups;
-		const piecesGroup = groups?.[color][type];
-		const pieces = piecesGroup?.pieces as unknown as
-			| undefined
-			| Record<number, PieceModel<Type, Color>>;
+		const piecesGroup = groups?.[color][type] as unknown as
+			| PiecesGroupModel<Type, Color>
+			| undefined;
+		const pieces = piecesGroup?.pieces;
 
-		if (!pieces || !piecesGroup || !pieces?.[id]) return;
+		if (!pieces || !pieces[id]) return;
 
-		const pieceToDrop = piecesGroup.dropPiece(id, this.physics);
+		const newGroup = piecesGroup.dropPiece(id, this.physics);
+		if (!newGroup) return;
 
+		this.component.setGroupType(type, color, newGroup);
 		this.pieceDropped$$.next(
-			pieceToDrop as unknown as PieceModel<PieceType, ColorVariant>
+			pieces[id] as unknown as PieceModel<PieceType, ColorVariant>
 		);
 
-		return pieceToDrop;
+		return pieces[id];
 	}
 }

@@ -9,20 +9,20 @@ import { COLOR_BLACK, COLOR_WHITE } from "../constants";
 import { PieceModel } from "./piece.model";
 
 export class PiecesGroupModel<
-	type extends PieceType,
-	color extends ColorVariant
+	Type extends PieceType,
+	Color extends ColorVariant
 > extends InstancedMesh {
-	public readonly pieces: Record<PieceId, PieceModel<type, color>> = {};
+	public readonly pieces: Record<PieceId, PieceModel<Type, Color>> = {};
 	public readonly pieceUpdateSubscriptions: Record<PieceId, Subscription> = {};
-	public readonly update$$ = new Subject<PiecesGroupModel<type, color>>();
-	public readonly pieceMoved$$ = new Subject<PieceModel<type, color>>();
+	public readonly update$$ = new Subject<PiecesGroupModel<Type, Color>>();
+	public readonly pieceMoved$$ = new Subject<PieceModel<Type, Color>>();
 
 	constructor(
-		public readonly piecesType: type,
-		public readonly piecesColor: color,
+		public readonly piecesType: Type,
+		public readonly piecesColor: Color,
 		count: PieceId,
 		geometry: BufferGeometry,
-		pieces?: Record<PieceId, PieceModel<type, color>>
+		pieces?: Record<PieceId, PieceModel<Type, Color>>
 	) {
 		const piecesMatrix = pieces
 			? Object.keys(pieces)
@@ -47,10 +47,11 @@ export class PiecesGroupModel<
 			this._subscribePiece(piece);
 		});
 
+		this.addEventListener("dispose", this._unsubscribePieces.bind(this));
 		this.pieceMoved$$.subscribe(this.update.bind(this));
 	}
 
-	private _subscribePiece(piece: PieceModel<type, color>): void {
+	private _subscribePiece(piece: PieceModel<Type, Color>): void {
 		this.pieceUpdateSubscriptions[piece.id] = piece.update$$.subscribe(
 			this._onPieceMoved.bind(this)
 		);
@@ -64,12 +65,15 @@ export class PiecesGroupModel<
 	}
 
 	private _deletePiece(id: PieceId): void {
+		this.pieceUpdateSubscriptions[id]?.unsubscribe();
+
+		delete this.pieceUpdateSubscriptions[id];
 		delete this.pieces[id];
 
 		this.update();
 	}
 
-	private _onPieceMoved(piece: PieceModel<type, color>) {
+	private _onPieceMoved(piece: PieceModel<Type, Color>) {
 		if (this.pieces[piece.id] !== piece) return;
 
 		const _safePice = this.pieces[piece.id];
@@ -93,7 +97,7 @@ export class PiecesGroupModel<
 	}
 
 	public copy(
-		pieceGroup: PiecesGroupModel<type, color>,
+		pieceGroup: PiecesGroupModel<Type, Color>,
 		recursive?: boolean
 	): this {
 		Object.keys(this.pieces).forEach((id) => {
@@ -117,9 +121,9 @@ export class PiecesGroupModel<
 				const height = boundingBox.max.y - boundingBox.min.y;
 
 				this.pieces[id]?.setCoords(boardMesh, coords, {
-					x: 0,
-					y: height / 2 + 0.5,
-					z: 0
+					x: boardMesh.position.x,
+					y: boardMesh.position.y + (height / 2 + 0.5),
+					z: boardMesh.position.z
 				});
 			}
 		}
@@ -130,13 +134,11 @@ export class PiecesGroupModel<
 	public dropPiece(
 		id: PieceId,
 		physics?: Physics
-	): this["pieces"][PieceId] | undefined {
-		const pieceToDrop = this.pieces[id];
-
+	): PiecesGroupModel<Type, Color> | undefined {
 		if (!this.pieces[id]) return undefined;
-		this._unsubscribePieces();
 		this._deletePiece(id);
 
+		const parent = this.parent;
 		const newGroup = new PiecesGroupModel(
 			this.piecesType,
 			this.piecesColor,
@@ -144,21 +146,35 @@ export class PiecesGroupModel<
 			this.geometry,
 			this.pieces
 		);
-		const physicsProps = physics?.dynamicObjectsMap.get(
-			this
-		) as PhysicsProperties[];
-		const physicsPropsToDrop = physics?.getPhysicsPropertiesFromObject(
-			this,
-			id
-		);
+		const physicsProps = this.userData
+			?.physicsProperties as PhysicsProperties[];
+		const physicsPropsToDrop = physicsProps[id];
 
-		physicsProps?.splice(id, 1);
-		physics?.removePropsFromWorld(physicsPropsToDrop);
+		newGroup.userData = this.userData;
 
+		if (
+			typeof this.userData?.dynamicObjectIndex === "number" &&
+			physics &&
+			physicsProps
+		) {
+			physicsProps.splice(id, 1);
+			physics.removePropsFromWorld(physicsPropsToDrop);
+			physics.dynamicObjects[this.userData.dynamicObjectIndex] = newGroup;
+			physics.dynamicObjectsMap.delete(this);
+			physics.dynamicObjectsMap.set(newGroup, physicsProps);
+
+			newGroup.userData = {
+				...newGroup.userData,
+				dynamicObjectIndex: this.userData.dynamicObjectIndex
+			};
+		}
+
+		this.removeFromParent();
 		this.dispose();
-		this.copy(newGroup);
 
-		return pieceToDrop;
+		parent?.add(newGroup);
+
+		return newGroup;
 	}
 
 	public update(): void {
@@ -172,5 +188,10 @@ export class PiecesGroupModel<
 		});
 
 		this.update$$.next(this);
+	}
+
+	public dispose(): this {
+		this.removeEventListener("dispose", this.dispose.bind(this));
+		return super.dispose();
 	}
 }

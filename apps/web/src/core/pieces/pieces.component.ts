@@ -186,6 +186,19 @@ export class PiecesComponent {
 		return group;
 	}
 
+	public setGroupType<Type extends PieceType, Color extends ColorVariant>(
+		type: Type,
+		color: Color,
+		newGroup: PiecesGroupModel<Type, Color>
+	): PiecesGroupModel<Type, Color> | undefined {
+		if (!(this.groups?.[color][type] instanceof PiecesGroupModel)) return;
+
+		// @ts-ignore <unsupported never type>
+		this.groups[color][type] = newGroup;
+
+		return this.groups[color][type] as unknown as typeof newGroup;
+	}
+
 	public initPieces() {
 		this.groups = {
 			[ColorVariant.black]: {

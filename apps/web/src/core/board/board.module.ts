@@ -17,8 +17,15 @@ export class BoardModule implements Module {
 	public init() {
 		this.component.initCells();
 		this.component.initPhysics();
+		this.component.markAllowedCells([
+			{ col: 1, row: 1 },
+			{ col: 2, row: 2 },
+			{ col: 4, row: 7 }
+		]);
 
-		this.appModule.world.scene().add(this.component.mesh);
+		this.appModule.world
+			.scene()
+			.add(this.component.mesh, this.component.markersGroup);
 	}
 
 	public dispose() {}

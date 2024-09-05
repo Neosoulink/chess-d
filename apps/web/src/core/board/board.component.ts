@@ -14,6 +14,7 @@ import { Physics } from "@chess-d/rapier-physics";
 import {
 	BoardCoords,
 	BoardCell,
+	CellsMakerGroupModel,
 	MATRIX,
 	QUATERNION,
 	SCALE,
@@ -27,14 +28,8 @@ import {
 @singleton()
 export class BoardComponent {
 	public readonly cells: BoardCell[][] = [];
-	public readonly cellGeometry = new PlaneGeometry(
-		BOARD_CELL_SIZE,
-		BOARD_CELL_SIZE,
-		6,
-		6
-	);
 	public readonly mesh = new InstancedMesh(
-		this.cellGeometry,
+		new PlaneGeometry(BOARD_CELL_SIZE, BOARD_CELL_SIZE, 6, 6),
 		undefined,
 		BOARD_MATRIX_SIZE
 	);
@@ -43,6 +38,7 @@ export class BoardComponent {
 		.clone()
 		.setHex(this.whiteAccent.getHex() * Math.random());
 
+	public markersGroup = new CellsMakerGroupModel(this.mesh);
 	public physics!: PhysicsProperties;
 
 	constructor(@inject(Physics) private readonly _physics: Physics) {}
@@ -102,5 +98,10 @@ export class BoardComponent {
 		this.physics = this._physics?.addToWorld(this.mesh) as PhysicsProperties;
 
 		this.physics.rigidBody.setTranslation({ x: 0, y: 0, z: 0 }, true);
+	}
+
+	public markAllowedCells(coords: BoardCoords[]) {
+		const newGroup = this.markersGroup.set(coords);
+		this.markersGroup = newGroup;
 	}
 }
