@@ -75,6 +75,11 @@ export class Physics {
 
 		if (mass > 0) {
 			this.dynamicObjects.push(object);
+			object.userData = {
+				...object.userData,
+				dynamicObjectIndex: this.dynamicObjects.length - 1,
+				physicsProperties
+			};
 			this.dynamicObjectsMap.set(object, physicsProperties);
 		}
 
@@ -344,7 +349,7 @@ export class Physics {
 	/**
 	 * @description Update the physics world.
 	 *
-	 * @param {number | undefined} timestep The timestep length, in seconds.
+	 * @param timestep The timestep length, in seconds.
 	 */
 	public step(timestep?: number) {
 		if (typeof timestep === "number") this.world.timestep = timestep;
@@ -355,9 +360,11 @@ export class Physics {
 
 			if (!object?.userData.useBoundingBox && object instanceof InstancedMesh) {
 				const instanceMatrix = object.instanceMatrix.array;
-				const bodies = this.dynamicObjectsMap.get(
-					object
-				) as PhysicsProperties[];
+				const bodies = this.dynamicObjectsMap.get(object) as
+					| PhysicsProperties[]
+					| undefined;
+
+				if (!bodies) return;
 
 				for (let j = 0; j < bodies.length; j++) {
 					const physicsProperties = bodies[j];
