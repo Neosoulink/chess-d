@@ -100,7 +100,7 @@ export class BoardComponent {
 		this.physics.rigidBody.setTranslation({ x: 0, y: 0, z: 0 }, true);
 	}
 
-	public markAllowedCells(coords: BoardCoords[]) {
+	public setMarkers(coords: BoardCoords[]) {
 		const newGroup = this.markersGroup.set(coords);
 		this.markersGroup = newGroup;
 	}

@@ -17,7 +17,7 @@ export class BoardModule implements Module {
 	public init() {
 		this.component.initCells();
 		this.component.initPhysics();
-		this.component.markAllowedCells([
+		this.component.setMarkers([
 			{ col: 1, row: 1 },
 			{ col: 2, row: 2 },
 			{ col: 4, row: 7 }
