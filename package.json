@@ -27,7 +27,7 @@
 		"@vercel/style-guide": "^6.0.0",
 		"eslint": "^9.9.1",
 		"eslint-config-prettier": "^9.1.0",
-		"eslint-config-turbo": "^2.0.4",
+		"eslint-config-turbo": "^2.1.1",
 		"globals": "^15.8.0",
 		"husky": "^9.1.5",
 		"jest": "^29.5.0",
@@ -37,7 +37,7 @@
 		"ts-jest": "^29.1.0",
 		"ts-loader": "^9.4.3",
 		"ts-node": "^10.9.2",
-		"turbo": "^2.0.9",
+		"turbo": "^2.1.1",
 		"typescript": "^5.3.3",
 		"vite": "^5.4.2"
 	},
