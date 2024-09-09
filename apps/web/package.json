@@ -18,7 +18,7 @@
 	},
 	"dependencies": {
 		"@chess-d/rapier-physics": "workspace:*",
-		"@quick-threejs/reactive": "^0.1.12",
+		"@quick-threejs/reactive": "^0.1.14",
 		"@quick-threejs/utils": "^0.1.7",
 		"chess.js": "1.0.0-beta.8",
 		"rxjs": "^7.8.1",

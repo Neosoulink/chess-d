@@ -161,8 +161,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/rapier-physics
       '@quick-threejs/reactive':
-        specifier: ^0.1.12
-        version: 0.1.12(lil-gui@0.19.2)(stats.js@0.17.0)
+        specifier: ^0.1.14
+        version: 0.1.14(stats.js@0.17.0)
       '@quick-threejs/utils':
         specifier: ^0.1.7
         version: 0.1.7
@@ -1205,14 +1205,16 @@ packages:
   '@quick-threejs/config@0.1.8':
     resolution: {integrity: sha512-dSInIxLPDfr6z+TfJ8OQ6nGkwcUrjMZ9EXs0SvydJaHqOFmwQfgXZY1im4zf9CPDxhWXADyWhHmZhpiou6FqMA==}
 
-  '@quick-threejs/reactive@0.1.12':
-    resolution: {integrity: sha512-bw/j5f1UoQAR3IgCDBBEYqC2i+Lt1IlJd1Gum9MCfrM/l3hrdvRLjns+/sfsSMcmEcHwiTC6vTQDjQ869Y6pQg==}
+  '@quick-threejs/reactive@0.1.14':
+    resolution: {integrity: sha512-YY7U+fBlmLv1CeriDCbxgY8CMO5r9vLD34S2HhxzaZG+y1B9XB8XnBV+It1m3hNyCyvLbzAUat/mz4FckMrHEA==}
     peerDependencies:
-      lil-gui: ^0.19.1
       stats.js: ^0.17.0
 
   '@quick-threejs/utils@0.1.7':
     resolution: {integrity: sha512-5vo3Kh5RVPux8xUPgKJhaZx4QiGz52Dwwz+2yamt3N6ZbLb4NdqmCqQO611/httH/1SDRfzq7c+4J8g9t2Qrqw==}
+
+  '@quick-threejs/utils@0.1.9':
+    resolution: {integrity: sha512-fPaqNTeFPUYDRL+CfbDvDw3RuQQiDhoj5pUcNI6FMVTi676QreQI+QP95yjRXjQicytj/mOW7IFW8/MdbM4/BA==}
 
   '@rollup/rollup-android-arm-eabi@4.21.1':
     resolution: {integrity: sha512-2thheikVEuU7ZxFXubPDOtspKn1x0yqaYQwvALVtEcvFhMifPADBrgRPyHV0TF3b+9BgvgjgagVyvA/UqPZHmg==}
@@ -3487,9 +3489,6 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
-  lil-gui@0.19.2:
-    resolution: {integrity: sha512-nU8j4ND702ouGfQZoaTN4dfXxacvGOAVK0DtmZBVcUYUAeYQXLQAjAN50igMHiba3T5jZyKEjXZU+Ntm1Qs6ZQ==}
-
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
 
@@ -4510,6 +4509,9 @@ packages:
 
   three@0.166.1:
     resolution: {integrity: sha512-LtuafkKHHzm61AQA1be2MAYIw1IjmhOUxhBa0prrLpEMWbV7ijvxCRHjSgHPGp2493wLBzwKV46tA9nivLEgKg==}
+
+  three@0.167.1:
+    resolution: {integrity: sha512-gYTLJA/UQip6J/tJvl91YYqlZF47+D/kxiWrbTon35ZHlXEN0VOo+Qke2walF1/x92v55H6enomymg4Dak52kw==}
 
   through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
@@ -6272,14 +6274,13 @@ snapshots:
 
   '@quick-threejs/config@0.1.8': {}
 
-  '@quick-threejs/reactive@0.1.12(lil-gui@0.19.2)(stats.js@0.17.0)':
+  '@quick-threejs/reactive@0.1.14(stats.js@0.17.0)':
     dependencies:
-      '@quick-threejs/utils': 0.1.7
-      lil-gui: 0.19.2
+      '@quick-threejs/utils': 0.1.9
+      rxjs: 7.8.1
       stats.js: 0.17.0
       threads: 1.7.0
-      three: 0.166.1
-      tsyringe: 4.8.0
+      three: 0.167.1
     transitivePeerDependencies:
       - supports-color
 
@@ -6288,6 +6289,14 @@ snapshots:
       rxjs: 7.8.1
       threads: 1.7.0
       three: 0.166.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@quick-threejs/utils@0.1.9':
+    dependencies:
+      rxjs: 7.8.1
+      threads: 1.7.0
+      three: 0.167.1
     transitivePeerDependencies:
       - supports-color
 
@@ -9101,8 +9110,6 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  lil-gui@0.19.2: {}
-
   lines-and-columns@1.2.4: {}
 
   load-yaml-file@0.2.0:
@@ -10116,6 +10123,8 @@ snapshots:
       - supports-color
 
   three@0.166.1: {}
+
+  three@0.167.1: {}
 
   through@2.3.8: {}
 
