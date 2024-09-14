@@ -12,7 +12,6 @@ import {
 	Vector3
 } from "three";
 import { Object3DWithGeometry, PhysicsProperties } from "./types";
-import { isArray } from "util";
 
 let RAPIER: typeof Rapier | null | undefined = null;
 
