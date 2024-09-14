@@ -1,4 +1,9 @@
-import { BufferGeometry, DynamicDrawUsage, InstancedMesh } from "three";
+import {
+	BufferGeometry,
+	DynamicDrawUsage,
+	InstancedMesh,
+	Vector3
+} from "three";
 import { Subject, Subscription } from "rxjs";
 import { Physics } from "@chess-d/rapier-physics";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
@@ -9,8 +14,8 @@ import { COLOR_BLACK, COLOR_WHITE } from "../constants";
 import { PieceModel } from "./piece.model";
 
 export class PiecesGroupModel<
-	Type extends PieceType,
-	Color extends ColorVariant
+	Type extends PieceType = PieceType,
+	Color extends ColorVariant = ColorVariant
 > extends InstancedMesh {
 	public readonly pieces: Record<PieceId, PieceModel<Type, Color>> = {};
 	public readonly pieceUpdateSubscriptions: Record<PieceId, Subscription> = {};
@@ -84,6 +89,18 @@ export class PiecesGroupModel<
 		this.pieceMoved$$.next(piece);
 	}
 
+	public getPieceById(id: PieceId): PieceModel<Type, Color> | undefined {
+		return this.pieces[id];
+	}
+
+	public getPieceByIndex(index: number): PieceModel<Type, Color> | undefined {
+		const id = Object.keys(this.pieces)[index];
+
+		if (!id) return undefined;
+
+		return this.getPieceById(parseInt(id));
+	}
+
 	public initPhysics(physics: Physics): void {
 		const physicsProperties = physics.addToWorld(
 			this,
@@ -107,6 +124,13 @@ export class PiecesGroupModel<
 		return super.copy(pieceGroup, recursive);
 	}
 
+	public setPiecePosition(
+		id: PieceId,
+		position: Vector3
+	): PieceModel<Type, Color> | undefined {
+		return this.pieces[id]?.setPosition(position);
+	}
+
 	public setPieceCoords(
 		id: PieceId,
 		boardMesh: InstancedMesh,
@@ -116,16 +140,16 @@ export class PiecesGroupModel<
 			this.geometry.computeBoundingBox();
 			const boundingBox = this.geometry.boundingBox;
 
-			if (boundingBox) {
-				// const width = boundingBox.max.x - boundingBox.min.x;
-				const height = boundingBox.max.y - boundingBox.min.y;
+			if (!boundingBox) return;
 
-				this.pieces[id]?.setCoords(boardMesh, coords, {
-					x: boardMesh.position.x,
-					y: boardMesh.position.y + (height / 2 + 0.5),
-					z: boardMesh.position.z
-				});
-			}
+			// const width = boundingBox.max.x - boundingBox.min.x;
+			const height = boundingBox.max.y - boundingBox.min.y;
+
+			this.pieces[id]?.setCoords(boardMesh, coords, {
+				x: boardMesh.position.x,
+				y: boardMesh.position.y + (height / 2 + 0.5),
+				z: boardMesh.position.z
+			});
 		}
 
 		return this.pieces[id];

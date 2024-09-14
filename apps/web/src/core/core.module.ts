@@ -1,5 +1,7 @@
 import { inject, singleton } from "tsyringe";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { AppModule, Module } from "@quick-threejs/reactive";
+import { Physics } from "@chess-d/rapier-physics";
 
 import { CoreController } from "./core.controller";
 import { CoreComponent } from "./core.component";
@@ -9,7 +11,6 @@ import { WorldModule } from "./world/world.module";
 import { BoardModule } from "./board/board.module";
 import { PiecesModule } from "./pieces/pieces.module";
 import { DebugModule } from "./debug/debug.module";
-import { Physics } from "@chess-d/rapier-physics";
 
 @singleton()
 export class CoreModule implements Module {
@@ -34,11 +35,30 @@ export class CoreModule implements Module {
 		this.init();
 
 		this.appModule.timer.step$().subscribe(() => {
+			const camera = this.appModule.camera.instance();
 			this.physics.step();
+
+			if (camera)
+				this.component.raycaster.setFromCamera(this.component.cursor, camera);
 		});
 
+		this.appModule.mousemove$?.().subscribe((e: any) => {
+			const event = e as MouseEvent & {
+				width: number;
+				height: number;
+			};
+			this.component.cursor.set(
+				(event.clientX / event.width) * 2 - 1,
+				-(event.clientY / event.height) * 2 + 1
+			);
+		});
+
+		(this.appModule.debug.cameraControls() as OrbitControls).enableRotate =
+			false;
+		(this.appModule.debug.cameraControls() as OrbitControls).enableZoom = false;
+
 		self.onmessage = (e: MessageEvent) => {
-			if ((e.data?.type as string)?.startsWith("pawn"))
+			if ((e.data?.type as string)?.startsWith("gui_"))
 				controller.gui$$.next(e.data);
 		};
 	}

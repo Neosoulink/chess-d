@@ -12,6 +12,7 @@ export class PieceModel<
 > extends Matrix4 {
 	public readonly update$$ = new Subject<typeof this>();
 	public readonly coords: BoardCoords = { col: 0, row: 0 };
+	public readonly position = new Vector3();
 
 	public physics?: PhysicsProperties;
 
@@ -23,6 +24,32 @@ export class PieceModel<
 		public index = 0
 	) {
 		super();
+	}
+
+	public setPosition(x: number | Vector3Like, y?: number, z?: number): this {
+		if (typeof x === "number" && typeof y === "number" && typeof z === "number")
+			VECTOR.set(x, y!, z!);
+		else if (
+			typeof (x as Vector3Like).x === "number" &&
+			typeof (x as Vector3Like).y === "number" &&
+			typeof (x as Vector3Like).x === "number"
+		)
+			VECTOR.copy(x as Vector3Like);
+
+		QUATERNION.set(0, 0, 0, 1);
+
+		this.compose(VECTOR, QUATERNION, SCALE);
+		super.setPosition(VECTOR);
+
+		this.physics?.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+		this.physics?.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+		this.physics?.rigidBody.setTranslation(VECTOR, true);
+		this.physics?.rigidBody.setRotation(QUATERNION, true);
+
+		this.position.copy(VECTOR);
+		this.update$$.next(this);
+
+		return this;
 	}
 
 	public setCoords(
@@ -37,15 +64,7 @@ export class PieceModel<
 
 		MATRIX.decompose(VECTOR, QUATERNION, SCALE);
 		VECTOR.add(offset);
-		QUATERNION.set(0, 0, 0, 1);
 
-		this.compose(VECTOR, QUATERNION, SCALE);
-
-		this.physics?.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
-		this.physics?.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
-		this.physics?.rigidBody.setTranslation(VECTOR, true);
-		this.physics?.rigidBody.setRotation(QUATERNION, true);
-
-		this.update$$.next(this);
+		this.setPosition(VECTOR);
 	}
 }

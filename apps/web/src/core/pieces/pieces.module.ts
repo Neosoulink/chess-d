@@ -2,49 +2,24 @@ import { inject, singleton } from "tsyringe";
 import { AppModule, Module } from "@quick-threejs/reactive";
 
 import { PiecesComponent } from "./pieces.component";
-import { CoreComponent } from "../core.component";
-import { CoreController } from "../core.controller";
-import { BoardComponent } from "../board/board.component";
 import { PiecesController } from "./pieces.controller";
-import { ColorVariant, PieceType } from "../../shared";
+import { ColorVariant } from "../../shared";
 
 @singleton()
 export class PiecesModule implements Module {
 	constructor(
 		@inject(AppModule) private readonly appModule: AppModule,
 		@inject(PiecesComponent) private readonly component: PiecesComponent,
-		@inject(CoreComponent) private readonly coreComponent: CoreComponent,
-		@inject(BoardComponent)
-		private readonly BoardComponent: BoardComponent,
-		@inject(CoreController)
-		private readonly coreController: CoreController,
 		@inject(PiecesController)
 		private readonly controller: PiecesController
 	) {
-		this.coreController.gui$$.subscribe((data) => {
-			if (data?.type === "pawnPositionCol")
-				this.controller.movePiece(PieceType.pawn, ColorVariant.black, 1, {
-					row: 0,
-					...this.component.groups?.[ColorVariant.black]?.PAWN.pieces[1]
-						?.coords,
-					col: data?.value ?? 0
-				});
+		this.controller.pieceSelected$?.subscribe((props) => {
+			if (!props || !props.intersection) return;
 
-			if (data?.type === "pawnPositionRow")
-				this.controller.movePiece(PieceType.pawn, ColorVariant.black, 1, {
-					col: 0,
-					...this.component.groups?.[ColorVariant.black]?.PAWN.pieces[1]
-						?.coords,
-					row: data?.value ?? 0
-				});
+			const { intersection, piece } = props;
+
+			piece.setPosition({ ...intersection.point, y: 0.8 });
 		});
-
-		setTimeout(() => {
-			console.log(
-				"Piece Dropped ===>",
-				this.controller.dropPiece(PieceType.pawn, ColorVariant.black, 0)
-			);
-		}, 3000);
 	}
 
 	init() {
