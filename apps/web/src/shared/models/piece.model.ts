@@ -1,4 +1,4 @@
-import { InstancedMesh, Matrix4, Vector3, Vector3Like } from "three";
+import { InstancedMesh, Matrix4, Object3D, Vector3, Vector3Like } from "three";
 import { Subject } from "rxjs";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
@@ -13,6 +13,7 @@ export class PieceModel<
 	public readonly update$$ = new Subject<typeof this>();
 	public readonly coords: BoardCoords = { col: 0, row: 0 };
 	public readonly position = new Vector3();
+	public readonly userData: Object3D["userData"] = {};
 
 	public physics?: PhysicsProperties;
 

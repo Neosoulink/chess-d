@@ -1,5 +1,13 @@
 import { inject, singleton } from "tsyringe";
-import { filter, map, Observable, Subject, switchMap, takeUntil } from "rxjs";
+import {
+	filter,
+	map,
+	Observable,
+	Subject,
+	switchMap,
+	take,
+	takeUntil
+} from "rxjs";
 import { AppModule } from "@quick-threejs/reactive";
 import { Physics } from "@chess-d/rapier-physics";
 
@@ -9,7 +17,8 @@ import {
 	PieceId,
 	PieceModel,
 	PiecesGroupModel,
-	PieceType
+	PieceType,
+	PieceUpdatePayload
 } from "../../shared";
 import { BoardComponent } from "../board/board.component";
 import { PiecesComponent } from "./pieces.component";
@@ -18,51 +27,48 @@ import { Intersection, Vector3 } from "three";
 
 @singleton()
 export class PiecesController {
+	public readonly pieceSelected$?: Observable<PieceUpdatePayload>;
+	public readonly pieceMoved$?: PiecesController["pieceSelected$"];
+	public readonly pieceDeselected$?: PiecesController["pieceMoved$"];
 	public readonly pieceDropped$$ = new Subject<PieceModel>();
-	public readonly pieceSelected$?: Observable<
-		| {
-				intersection?: Intersection<PiecesGroupModel>;
-				piece: PieceModel;
-		  }
-		| undefined
-	>;
 
 	constructor(
 		@inject(PiecesComponent) private readonly component: PiecesComponent,
 		@inject(BoardComponent) private readonly boardComponent: BoardComponent,
 		@inject(CoreComponent) private readonly coreComponent: CoreComponent,
-		@inject(Physics) private readonly physics: Physics,
-		@inject(AppModule) private readonly appModule: AppModule
+		@inject(AppModule) private readonly appModule: AppModule,
+		@inject(Physics) private readonly physics: Physics
 	) {
 		this.pieceSelected$ = this.appModule.mousedown$?.().pipe(
 			map(() => {
-				if (!this.component.groups) return;
-
 				const intersections = this.coreComponent.getIntersections();
 				const intersection = intersections.find(
 					(inter) => inter.object instanceof PiecesGroupModel
 				) as Intersection<PiecesGroupModel> | undefined;
 				const piecesGroup = intersection?.object;
 
+				let piece: PieceModel | undefined;
+
 				if (
-					!intersection ||
-					typeof intersection.instanceId !== "number" ||
-					!(piecesGroup instanceof PiecesGroupModel)
+					typeof intersection?.instanceId !== "number" ||
+					!(piecesGroup instanceof PiecesGroupModel) ||
+					!(piece = piecesGroup.getPieceByIndex(intersection.instanceId))
 				)
-					return;
+					return void undefined as any;
 
-				const piece = piecesGroup?.getPieceByIndex(
-					intersection?.instanceId as number
-				);
+				piece.userData.initialPosition = piece.position.clone();
+				piece.userData.lastPosition = piece.userData.initialPosition;
 
-				if (!piece) return;
-
-				return piece;
+				return { piece, intersection };
 			}),
-			filter((piece) => !!piece),
-			switchMap((piece) =>
+			filter((payload) => !!payload?.piece)
+		);
+
+		this.pieceMoved$ = this.pieceSelected$?.pipe(
+			switchMap((payload) =>
 				this.appModule.timer.step$().pipe(
 					map(() => {
+						const { piece } = payload as NonNullable<typeof payload>;
 						const intersections =
 							this.coreComponent.getIntersections<
 								PiecesGroupModel<PieceType, ColorVariant>
@@ -72,7 +78,9 @@ export class PiecesController {
 							(inter) => inter.object.name === this.boardComponent.mesh.name
 						);
 
-						if (typeof intersection?.instanceId !== "number") return;
+						if (typeof intersection?.instanceId === "number") {
+							piece.userData.lastPosition = intersection.point;
+						}
 
 						return {
 							piece,
@@ -80,6 +88,15 @@ export class PiecesController {
 						};
 					}),
 					takeUntil(this.appModule.mouseup$?.() as Observable<Event>)
+				)
+			)
+		);
+
+		this.pieceDeselected$ = this.pieceMoved$?.pipe(
+			switchMap((latestPayload) =>
+				(this.appModule.mouseup$?.() as Observable<Event>).pipe(
+					map(() => latestPayload),
+					take(1)
 				)
 			)
 		);
