@@ -1,5 +1,3 @@
-import "reflect-metadata";
-
 import { Chess } from "chess.js";
 import { singleton } from "tsyringe";
 

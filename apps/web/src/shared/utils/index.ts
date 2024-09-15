@@ -1,1 +1,1 @@
-export * from "./chess.util";
+export * from "./engine.util";

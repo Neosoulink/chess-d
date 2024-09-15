@@ -1,4 +1,4 @@
-export const PGN_MOVE_TEXT_KEY_NUMBERS = {
+export const ENGINE_SQUARE_KEY_NUMBERS = {
 	a: 0,
 	b: 1,
 	c: 2,
@@ -9,7 +9,7 @@ export const PGN_MOVE_TEXT_KEY_NUMBERS = {
 	h: 7
 } as const;
 
-export const PGN_MOVE_TEXT_NUMBER_KEYS = {
+export const ENGINE_SQUARE_NUMBER_KEYS = {
 	0: "a",
 	1: "b",
 	2: "c",

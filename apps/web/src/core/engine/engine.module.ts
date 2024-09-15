@@ -2,7 +2,7 @@ import { inject, singleton } from "tsyringe";
 import { AppModule, Module } from "@quick-threejs/reactive";
 
 import { EngineComponent } from "./engine.component";
-import { EngineController } from "./enigne.controller";
+import { EngineController } from "./engine.controller";
 
 @singleton()
 export class EngineModule implements Module {

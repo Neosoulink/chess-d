@@ -4,6 +4,8 @@ import { AppModule, Module } from "@quick-threejs/reactive";
 
 import { BoardComponent } from "./board.component";
 import { BoardController } from "./board.controller";
+import { EngineController } from "../engine/engine.controller";
+import { PiecesController } from "../pieces/pieces.controller";
 
 @singleton()
 export class BoardModule implements Module {
@@ -11,17 +13,27 @@ export class BoardModule implements Module {
 		@inject(AppModule) private readonly appModule: AppModule,
 		@inject(BoardComponent)
 		private readonly component: BoardComponent,
-		private readonly controller: BoardController
-	) {}
+		@inject(BoardController)
+		private readonly controller: BoardController,
+		@inject(EngineController)
+		private readonly engineController: EngineController,
+		@inject(PiecesController)
+		private readonly piecesController: PiecesController
+	) {
+		this.engineController.pieceSelected$?.subscribe((payload) => {
+			const { possibleCoords } = payload;
+
+			this.component.setMarkers(possibleCoords);
+		});
+
+		this.piecesController.pieceDeselected$?.subscribe(() => {
+			this.component.setMarkers([]);
+		});
+	}
 
 	public init() {
 		this.component.initCells();
 		this.component.initPhysics();
-		this.component.setMarkers([
-			{ col: 1, row: 1 },
-			{ col: 2, row: 2 },
-			{ col: 4, row: 7 }
-		]);
 
 		this.appModule.world
 			.scene()
