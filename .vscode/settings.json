@@ -11,5 +11,6 @@
     "mrdoob",
     "timestep",
     "tsyringe"
-  ]
+  ],
+  "editor.formatOnSave": true
 }
