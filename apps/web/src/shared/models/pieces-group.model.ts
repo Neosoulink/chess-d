@@ -8,7 +8,7 @@ import { Subject, Subscription } from "rxjs";
 import { Physics } from "@chess-d/rapier-physics";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
-import { BoardCoords, PieceId } from "../interfaces";
+import { BoardCoord, PieceId } from "../interfaces";
 import { ColorVariant, PieceType } from "../enums";
 import { COLOR_BLACK, COLOR_WHITE } from "../constants";
 import { PieceModel } from "./piece.model";
@@ -131,10 +131,10 @@ export class PiecesGroupModel<
 		return this.pieces[id]?.setPosition(position);
 	}
 
-	public setPieceCoords(
+	public setPieceCoord(
 		id: PieceId,
 		boardMesh: InstancedMesh,
-		coords: BoardCoords
+		coord: BoardCoord
 	): this["pieces"][PieceId] | undefined {
 		if (this?.geometry.attributes.position) {
 			this.geometry.computeBoundingBox();
@@ -145,7 +145,7 @@ export class PiecesGroupModel<
 			// const width = boundingBox.max.x - boundingBox.min.x;
 			const height = boundingBox.max.y - boundingBox.min.y;
 
-			this.pieces[id]?.setCoords(boardMesh, coords, {
+			this.pieces[id]?.setCoord(boardMesh, coord, {
 				x: boardMesh.position.x,
 				y: boardMesh.position.y + (height / 2 + 0.5),
 				z: boardMesh.position.z

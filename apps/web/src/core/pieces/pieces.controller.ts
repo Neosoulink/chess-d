@@ -8,11 +8,12 @@ import {
 	take,
 	takeUntil
 } from "rxjs";
+import { InstancedMesh, Intersection, Vector3 } from "three";
 import { AppModule } from "@quick-threejs/reactive";
 import { Physics } from "@chess-d/rapier-physics";
 
 import {
-	BoardCoords,
+	BoardCoord,
 	ColorVariant,
 	PieceId,
 	PieceModel,
@@ -23,12 +24,13 @@ import {
 import { BoardComponent } from "../board/board.component";
 import { PiecesComponent } from "./pieces.component";
 import { CoreComponent } from "../core.component";
-import { Intersection, Vector3 } from "three";
 
 @singleton()
 export class PiecesController {
-	public readonly pieceSelected$?: Observable<PieceUpdatePayload>;
-	public readonly pieceMoved$?: PiecesController["pieceSelected$"];
+	public readonly pieceSelected$?: Observable<
+		PieceUpdatePayload<PiecesGroupModel<PieceType, ColorVariant>>
+	>;
+	public readonly pieceMoved$?: Observable<PieceUpdatePayload<InstancedMesh>>;
 	public readonly pieceDeselected$?: PiecesController["pieceMoved$"];
 	public readonly pieceDropped$$ = new Subject<PieceModel>();
 
@@ -59,7 +61,7 @@ export class PiecesController {
 				piece.userData.initialPosition = piece.position.clone();
 				piece.userData.lastPosition = piece.userData.initialPosition;
 
-				return { piece, intersection };
+				return { piecesGroup, piece, intersection };
 			}),
 			filter((payload) => !!payload?.piece)
 		);
@@ -68,21 +70,24 @@ export class PiecesController {
 			switchMap((payload) =>
 				this.appModule.timer.step$().pipe(
 					map(() => {
-						const { piece } = payload as NonNullable<typeof payload>;
+						const { piece, pieceGroup } = payload as NonNullable<
+							typeof payload
+						>;
 						const intersections =
 							this.coreComponent.getIntersections<
 								PiecesGroupModel<PieceType, ColorVariant>
 							>();
 
 						const intersection = intersections.find(
-							(inter) => inter.object.name === this.boardComponent.mesh.name
+							(inter) =>
+								inter.object.name === this.boardComponent.instancedSquare.name
 						);
 
-						if (typeof intersection?.instanceId === "number") {
+						if (typeof intersection?.instanceId === "number")
 							piece.userData.lastPosition = intersection.point;
-						}
 
 						return {
+							pieceGroup,
 							piece,
 							intersection
 						};
@@ -111,16 +116,16 @@ export class PiecesController {
 		this.component.groups?.[color]?.[type]?.setPiecePosition(id, position);
 	}
 
-	public setPieceCoords<Type extends PieceType, Color extends ColorVariant>(
+	public setPieceCoord<Type extends PieceType, Color extends ColorVariant>(
 		type: Type,
 		color: Color,
 		id: PieceId,
-		coords: BoardCoords
+		coord: BoardCoord
 	) {
-		this.component.groups?.[color]?.[type]?.setPieceCoords(
+		this.component.groups?.[color]?.[type]?.setPieceCoord(
 			id,
-			this.boardComponent.mesh,
-			coords
+			this.boardComponent.instancedSquare,
+			coord
 		);
 	}
 

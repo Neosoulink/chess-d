@@ -1,19 +1,13 @@
 import "reflect-metadata";
 
 import { inject, singleton } from "tsyringe";
-import {
-	DynamicDrawUsage,
-	Euler,
-	Color,
-	InstancedMesh,
-	PlaneGeometry
-} from "three";
+import { DynamicDrawUsage, Euler } from "three";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 import { Physics } from "@chess-d/rapier-physics";
 
 import {
-	BoardCoords,
-	BoardCell,
+	BoardCoord,
+	InstancedSquare,
 	CellsMakerGroupModel,
 	MATRIX,
 	QUATERNION,
@@ -21,24 +15,15 @@ import {
 	VECTOR,
 	BOARD_CELL_SIZE,
 	BOARD_MATRIX_RANGE_SIZE,
-	BOARD_MATRIX_SIZE,
-	BOARD_RANGE_CELLS_HALF_SIZE
+	BOARD_RANGE_CELLS_HALF_SIZE,
+	ColorVariant,
+	SquareModel
 } from "../../shared";
 
 @singleton()
 export class BoardComponent {
-	public readonly cells: BoardCell[][] = [];
-	public readonly mesh = new InstancedMesh(
-		new PlaneGeometry(BOARD_CELL_SIZE, BOARD_CELL_SIZE, 6, 6),
-		undefined,
-		BOARD_MATRIX_SIZE
-	);
-	public readonly whiteAccent = new Color(0xffffff);
-	public readonly blackAccent = this.whiteAccent
-		.clone()
-		.setHex(this.whiteAccent.getHex() * Math.random());
-
-	public markersGroup = new CellsMakerGroupModel(this.mesh);
+	public readonly instancedSquare = new InstancedSquare();
+	public markersGroup = new CellsMakerGroupModel(this.instancedSquare);
 	public physics!: PhysicsProperties;
 
 	constructor(@inject(Physics) private readonly _physics: Physics) {}
@@ -49,59 +34,66 @@ export class BoardComponent {
 		);
 		let isBlack = false;
 
-		this.mesh.position.set(
+		this.instancedSquare.position.set(
 			BOARD_RANGE_CELLS_HALF_SIZE,
 			0,
 			-BOARD_RANGE_CELLS_HALF_SIZE
 		);
-		this.mesh.instanceMatrix.setUsage(DynamicDrawUsage);
+		this.instancedSquare.instanceMatrix.setUsage(DynamicDrawUsage);
 
-		for (let i = 0; i < this.mesh.count; i++) {
-			const coords: BoardCoords = {
+		for (let i = 0; i < this.instancedSquare.count; i++) {
+			const coord: BoardCoord = {
 				col: Math.floor(i % BOARD_MATRIX_RANGE_SIZE) + 1,
 				row: Math.floor(i / BOARD_MATRIX_RANGE_SIZE) + 1
 			};
 
-			if (!this.cells[coords.row - 1]) {
+			if (!this.instancedSquare.squares[coord.row - 1]) {
 				isBlack = !isBlack;
-				this.cells.push([]);
+				this.instancedSquare.squares.push([]);
 			}
 
-			this.mesh.getMatrixAt(i, MATRIX);
+			this.instancedSquare.getMatrixAt(i, MATRIX);
 
 			VECTOR.set(
-				-(coords.col * BOARD_CELL_SIZE),
+				-(coord.col * BOARD_CELL_SIZE),
 				0,
-				coords.row * BOARD_CELL_SIZE
+				coord.row * BOARD_CELL_SIZE
 			);
 			MATRIX.compose(VECTOR, _QUATERNION, SCALE);
 
-			this.mesh.setMatrixAt(i, MATRIX);
-			this.mesh.setColorAt(i, isBlack ? this.blackAccent : this.whiteAccent);
-			this.cells[coords.row - 1]?.push({
-				col: coords.col,
-				row: coords.row,
-				isBlack
-			});
+			this.instancedSquare.setMatrixAt(i, MATRIX);
+			this.instancedSquare.squares[coord.row - 1]?.push(
+				new SquareModel({
+					row: coord.row - 1,
+					col: coord.col - 1
+				})
+			);
+			this.instancedSquare.setSquareColor(
+				i,
+				isBlack ? ColorVariant.black : ColorVariant.white
+			);
+
 			isBlack = !isBlack;
 		}
 	}
 
 	public initPhysics() {
-		this.mesh.name = BoardComponent.name;
+		this.instancedSquare.name = BoardComponent.name;
 
-		this.mesh.userData = {
-			...this.mesh.userData,
+		this.instancedSquare.userData = {
+			...this.instancedSquare.userData,
 			useBoundingBox: true
 		};
 
-		this.physics = this._physics?.addToWorld(this.mesh) as PhysicsProperties;
+		this.physics = this._physics?.addToWorld(
+			this.instancedSquare
+		) as PhysicsProperties;
 
 		this.physics.rigidBody.setTranslation({ x: 0, y: 0, z: 0 }, true);
 	}
 
-	public setMarkers(coords: BoardCoords[]) {
-		const newGroup = this.markersGroup.set(coords);
+	public setMarkers(coord: BoardCoord[]) {
+		const newGroup = this.markersGroup.set(coord);
 		this.markersGroup = newGroup;
 	}
 }

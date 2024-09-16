@@ -18,7 +18,7 @@ export class PiecesComponent {
 
 	constructor(
 		@inject(BoardComponent)
-		private readonly BoardComponent: BoardComponent,
+		private readonly boardComponent: BoardComponent,
 		@inject(ResourceComponent)
 		private readonly resourceComponent: ResourceComponent,
 		@inject(Physics) private readonly _physics: Physics
@@ -37,9 +37,9 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
-				col: isBlack ? index : BOARD_MATRIX_RANGE_SIZE - 1 - index,
-				row: isBlack ? 1 : BOARD_MATRIX_RANGE_SIZE - 2
+			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
+				col: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 - index : index,
+				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 2 : 1
 			});
 		});
 
@@ -58,15 +58,9 @@ export class PiecesComponent {
 			const piece = group.pieces[parseInt(id)];
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
-			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
-				col: isBlack
-					? index === 0
-						? 0
-						: BOARD_MATRIX_RANGE_SIZE - 1
-					: index === 0
-						? BOARD_MATRIX_RANGE_SIZE - 1
-						: 0,
-				row: isBlack ? 0 : BOARD_MATRIX_RANGE_SIZE - 1
+			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
+				col: index === 0 ? 0 : BOARD_MATRIX_RANGE_SIZE - 1,
+				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
 			});
 		});
 
@@ -86,15 +80,15 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
+			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
 				col: isBlack
 					? index === 0
-						? 1
-						: BOARD_MATRIX_RANGE_SIZE - 2
-					: index === 0
 						? BOARD_MATRIX_RANGE_SIZE - 2
-						: 1,
-				row: isBlack ? 0 : BOARD_MATRIX_RANGE_SIZE - 1
+						: 1
+					: index === 0
+						? 1
+						: BOARD_MATRIX_RANGE_SIZE - 2,
+				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
 			});
 		});
 
@@ -114,15 +108,15 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
+			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
 				col: isBlack
 					? index === 0
-						? 2
-						: BOARD_MATRIX_RANGE_SIZE - 3
-					: index === 0
 						? BOARD_MATRIX_RANGE_SIZE - 3
-						: 2,
-				row: isBlack ? 0 : BOARD_MATRIX_RANGE_SIZE - 1
+						: 2
+					: index === 0
+						? 2
+						: BOARD_MATRIX_RANGE_SIZE - 3,
+				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
 			});
 		});
 
@@ -142,9 +136,9 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
-				col: isBlack ? 3 : BOARD_MATRIX_RANGE_SIZE - 4,
-				row: isBlack ? 0 : BOARD_MATRIX_RANGE_SIZE - 1
+			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
+				col: isBlack ? BOARD_MATRIX_RANGE_SIZE - 4 : 3,
+				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
 			});
 		});
 
@@ -164,9 +158,9 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoords(piece.id, this.BoardComponent.mesh, {
-				col: isBlack ? 4 : BOARD_MATRIX_RANGE_SIZE - 5,
-				row: isBlack ? 0 : BOARD_MATRIX_RANGE_SIZE - 1
+			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
+				col: isBlack ? BOARD_MATRIX_RANGE_SIZE - 5 : 4,
+				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
 			});
 		});
 

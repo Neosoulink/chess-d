@@ -29,8 +29,8 @@ export class CoreModule implements Module {
 		@inject(DebugModule) private readonly debugModule: DebugModule,
 		@inject(Physics) private readonly physics: Physics
 	) {
-		this.appModule.camera.instance()?.position.set(0, 5, -5);
-		this.appModule.camera.miniCamera()?.position.set(2, 5, -6);
+		this.appModule.camera.instance()?.position.set(0, 5, 5);
+		this.appModule.camera.miniCamera()?.position.set(2, 5, 6);
 
 		this.init();
 

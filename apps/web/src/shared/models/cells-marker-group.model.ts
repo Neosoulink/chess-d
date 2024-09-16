@@ -7,7 +7,7 @@ import {
 	MeshBasicMaterial
 } from "three";
 
-import { BoardCoords } from "../interfaces";
+import { BoardCoord } from "../interfaces";
 import {
 	BOARD_CELL_SIZE,
 	MATRIX,
@@ -19,7 +19,7 @@ import {
 export class CellsMakerGroupModel extends InstancedMesh {
 	constructor(
 		private readonly parentGroup: InstancedMesh,
-		public cellsCoords: BoardCoords[] = [],
+		public cellsCoords: BoardCoord[] = [],
 		geometry: BufferGeometry = new CircleGeometry(BOARD_CELL_SIZE / 2, 20)
 	) {
 		super(
@@ -28,13 +28,15 @@ export class CellsMakerGroupModel extends InstancedMesh {
 			cellsCoords.length
 		);
 
+		this.name = CellsMakerGroupModel.name;
+
 		this.instanceMatrix.setUsage(DynamicDrawUsage);
 		this._placeMarkers(this, cellsCoords);
 	}
 
 	private _placeMarkers(
 		object: CellsMakerGroupModel,
-		cellsCoords: BoardCoords[]
+		cellsCoords: BoardCoord[]
 	): void {
 		if (typeof cellsCoords.length !== "number") return;
 
@@ -42,9 +44,9 @@ export class CellsMakerGroupModel extends InstancedMesh {
 			new Euler(Math.PI / -2, 0, Math.PI / -2)
 		);
 
-		cellsCoords.forEach((coords, i) => {
+		cellsCoords.forEach((coord, i) => {
 			object.parentGroup.getMatrixAt(
-				coords.col + coords.row * object.parentGroup.count ** 0.5,
+				coord.col + coord.row * object.parentGroup.count ** 0.5,
 				MATRIX
 			);
 
@@ -62,7 +64,7 @@ export class CellsMakerGroupModel extends InstancedMesh {
 		this.computeBoundingSphere();
 	}
 
-	public set(cellsCoords: BoardCoords[]): CellsMakerGroupModel {
+	public set(cellsCoords: BoardCoord[]): CellsMakerGroupModel {
 		const newGroup = new CellsMakerGroupModel(
 			this.parentGroup,
 			cellsCoords,

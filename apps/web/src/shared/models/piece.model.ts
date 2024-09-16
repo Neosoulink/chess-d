@@ -2,7 +2,7 @@ import { InstancedMesh, Matrix4, Object3D, Vector3, Vector3Like } from "three";
 import { Subject } from "rxjs";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
-import { BoardCoords, PieceId } from "../interfaces";
+import { BoardCoord, PieceId } from "../interfaces";
 import { ColorVariant, PieceType } from "../enums";
 import { MATRIX, QUATERNION, SCALE, VECTOR } from "../constants";
 
@@ -11,7 +11,7 @@ export class PieceModel<
 	C extends ColorVariant = ColorVariant
 > extends Matrix4 {
 	public readonly update$$ = new Subject<typeof this>();
-	public readonly coords: BoardCoords = { col: 0, row: 0 };
+	public readonly coord: BoardCoord = { col: 0, row: 0 };
 	public readonly position = new Vector3();
 	public readonly userData: Object3D["userData"] = {};
 
@@ -53,15 +53,15 @@ export class PieceModel<
 		return this;
 	}
 
-	public setCoords(
-		mesh: InstancedMesh,
-		coords: BoardCoords,
+	public setCoord(
+		board: InstancedMesh,
+		coord: BoardCoord,
 		offset: Vector3Like = new Vector3()
 	) {
-		this.coords.col = coords.col;
-		this.coords.row = coords.row;
+		this.coord.col = coord.col;
+		this.coord.row = coord.row;
 
-		mesh.getMatrixAt(coords.col + coords.row * mesh.count ** 0.5, MATRIX);
+		board.getMatrixAt(coord.col + coord.row * board.count ** 0.5, MATRIX);
 
 		MATRIX.decompose(VECTOR, QUATERNION, SCALE);
 		VECTOR.add(offset);

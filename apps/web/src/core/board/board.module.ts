@@ -37,7 +37,7 @@ export class BoardModule implements Module {
 
 		this.appModule.world
 			.scene()
-			.add(this.component.mesh, this.component.markersGroup);
+			.add(this.component.instancedSquare, this.component.markersGroup);
 	}
 
 	public dispose() {}
