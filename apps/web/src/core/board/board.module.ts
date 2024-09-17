@@ -19,25 +19,25 @@ export class BoardModule implements Module {
 		private readonly engineController: EngineController,
 		@inject(PiecesController)
 		private readonly piecesController: PiecesController
-	) {
-		this.engineController.pieceSelected$?.subscribe((payload) => {
-			const { possibleCoords } = payload;
-
-			this.component.setMarkers(possibleCoords);
-		});
-
-		this.piecesController.pieceDeselected$?.subscribe(() => {
-			this.component.setMarkers([]);
-		});
-	}
+	) {}
 
 	public init() {
 		this.component.initCells();
 		this.component.initPhysics();
 
+		this.piecesController.pieceDeselected$?.subscribe(() => {
+			this.component.setMarkers([]);
+		});
+
 		this.appModule.world
 			.scene()
-			.add(this.component.instancedSquare, this.component.markersGroup);
+			.add(this.component.instancedCell, this.component.markersGroup);
+
+		this.engineController.pieceSelected$?.subscribe((payload) => {
+			const { possibleCoords } = payload;
+
+			this.component.setMarkers(possibleCoords);
+		});
 	}
 
 	public dispose() {}

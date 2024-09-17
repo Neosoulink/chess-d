@@ -80,7 +80,7 @@ export class PiecesController {
 
 						const intersection = intersections.find(
 							(inter) =>
-								inter.object.name === this.boardComponent.instancedSquare.name
+								inter.object.name === this.boardComponent.instancedCell.name
 						);
 
 						if (typeof intersection?.instanceId === "number")
@@ -124,7 +124,7 @@ export class PiecesController {
 	) {
 		this.component.groups?.[color]?.[type]?.setPieceCoord(
 			id,
-			this.boardComponent.instancedSquare,
+			this.boardComponent.instancedCell,
 			coord
 		);
 	}

@@ -1,40 +1,56 @@
 import { inject, singleton } from "tsyringe";
-import { AppModule, Module } from "@quick-threejs/reactive";
+import { Module } from "@quick-threejs/reactive";
 
 import { EngineComponent } from "./engine.component";
 import { EngineController } from "./engine.controller";
-import { InstancedSquare } from "../../shared";
-import { BoardComponent } from "../board/board.component";
+import { EnginePieceUpdatePayload, InstancedSquare } from "../../shared";
 import { PiecesController } from "../pieces/pieces.controller";
+import { copyProperties } from "@quick-threejs/utils";
 
 @singleton()
 export class EngineModule implements Module {
 	constructor(
-		@inject(AppModule) private readonly appModule: AppModule,
 		@inject(EngineComponent) private readonly component: EngineComponent,
-		@inject(BoardComponent) private readonly boardComponent: BoardComponent,
 		@inject(EngineController) private readonly controller: EngineController,
 		@inject(PiecesController) private readonly pieceController: PiecesController
 	) {}
 
 	public init() {
-		this.controller.pieceDeselected$?.subscribe((payload) => {
-			const { intersection, piece } = payload;
+		this.controller.pieceDeselected$?.subscribe(
+			this._pieceDeselectedNotification.bind(this)
+		);
+	}
 
-			if (typeof intersection?.instanceId !== "number") return;
+	private _pieceDeselectedNotification(payload: EnginePieceUpdatePayload) {
+		const { intersection, piece, possibleCoords, possibleMoves } = payload;
 
-			const instancedSquare = intersection.object as InstancedSquare;
-			const square = instancedSquare.getSquareByIndex(intersection.instanceId);
+		const instancedCell = intersection?.object as InstancedSquare;
+		const cell =
+			typeof intersection?.instanceId === "number" &&
+			instancedCell.getCellByIndex(intersection.instanceId);
+		const nextMoveIndex = possibleCoords.findIndex(
+			(coord) =>
+				cell && coord.col === cell.coord.col && coord.row === cell.coord.row
+		);
+		const nextMove = possibleMoves[nextMoveIndex];
 
-			if (!square) return;
+		if (!intersection || !cell || !(nextMoveIndex >= 0) || !nextMove) {
+			piece.setPosition({
+				...copyProperties(piece.userData.initialPosition, ["x", "z"]),
+				y: 0.8
+			});
 
-			this.pieceController.setPieceCoord(
-				piece.type,
-				piece.color,
-				piece.id,
-				square.coord
-			);
-		});
+			return;
+		}
+
+		this.pieceController.setPieceCoord(
+			piece.type,
+			piece.color,
+			piece.id,
+			cell.coord
+		);
+
+		this.component.game.move(nextMove);
 	}
 
 	public dispose() {}

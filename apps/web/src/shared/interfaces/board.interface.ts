@@ -5,8 +5,3 @@ export interface BoardCoord {
 	/** @description Also known as **[rank](https://en.wikipedia.org/wiki/Chessboard#:~:text=are%20known%20as-,ranks,-%2C%20and%20the%20lines)** */
 	row: number;
 }
-
-/** @description Board cell (or square). */
-export interface BoardCell extends BoardCoord {
-	isBlack: boolean;
-}

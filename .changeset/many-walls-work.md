@@ -4,6 +4,11 @@
 
 # Logs
 
+## refactor(web): handle de-selection notifications
+
+- Place pieces depending on the game logic
+- Rename resources from `square` to `cell` to make the diff from actual engine squares
+
 ## feat(web): handle piece placement
 
 - Rename all `cell` resources name to `square`

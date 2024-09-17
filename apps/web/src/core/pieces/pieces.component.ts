@@ -37,7 +37,7 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
+			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
 				col: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 - index : index,
 				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 2 : 1
 			});
@@ -58,7 +58,7 @@ export class PiecesComponent {
 			const piece = group.pieces[parseInt(id)];
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
-			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
+			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
 				col: index === 0 ? 0 : BOARD_MATRIX_RANGE_SIZE - 1,
 				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
 			});
@@ -80,7 +80,7 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
+			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
 				col: isBlack
 					? index === 0
 						? BOARD_MATRIX_RANGE_SIZE - 2
@@ -108,7 +108,7 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
+			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
 				col: isBlack
 					? index === 0
 						? BOARD_MATRIX_RANGE_SIZE - 3
@@ -136,7 +136,7 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
+			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
 				col: isBlack ? BOARD_MATRIX_RANGE_SIZE - 4 : 3,
 				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
 			});
@@ -158,7 +158,7 @@ export class PiecesComponent {
 			if (!piece) return;
 			const isBlack = piece.color === ColorVariant.black;
 
-			group.setPieceCoord(piece.id, this.boardComponent.instancedSquare, {
+			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
 				col: isBlack ? BOARD_MATRIX_RANGE_SIZE - 5 : 4,
 				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
 			});

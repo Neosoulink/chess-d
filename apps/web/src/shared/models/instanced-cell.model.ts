@@ -7,12 +7,12 @@ import {
 	COLOR_BLACK,
 	COLOR_WHITE
 } from "../constants";
-import { SquareModel } from "./square.model";
+import { CellModel } from "./cell.model";
 import { BoardCoord } from "../interfaces";
 import { ColorVariant } from "../enums";
 
 export class InstancedSquare extends InstancedMesh {
-	public readonly squares: SquareModel[][] = [];
+	public readonly cells: CellModel[][] = [];
 
 	constructor() {
 		super(
@@ -24,11 +24,11 @@ export class InstancedSquare extends InstancedMesh {
 		this.name = InstancedSquare.name;
 	}
 
-	public getSquareByCoord(coord: BoardCoord): SquareModel | undefined {
-		return this.squares[coord.row]?.[coord.col];
+	public getSquareByCoord(coord: BoardCoord): CellModel | undefined {
+		return this.cells[coord.row]?.[coord.col];
 	}
 
-	public getSquareByIndex(index: number): SquareModel | undefined {
+	public getCellByIndex(index: number): CellModel | undefined {
 		const row = Math.floor(index / BOARD_MATRIX_RANGE_SIZE);
 		const col = index % BOARD_MATRIX_RANGE_SIZE;
 
@@ -36,8 +36,8 @@ export class InstancedSquare extends InstancedMesh {
 	}
 
 	public copy(pieceGroup: InstancedSquare, recursive?: boolean): this {
-		Object.keys(this.squares).forEach((id) => {
-			pieceGroup.squares[id] = this.squares[id];
+		Object.keys(this.cells).forEach((id) => {
+			pieceGroup.cells[id] = this.cells[id];
 		});
 
 		return super.copy(pieceGroup, recursive);
@@ -46,19 +46,19 @@ export class InstancedSquare extends InstancedMesh {
 	public dispose(): this {
 		this.removeEventListener("dispose", this.dispose.bind(this));
 
-		Object.keys(this.squares).forEach((id) => this.squares[id].dispose());
+		Object.keys(this.cells).forEach((id) => this.cells[id].dispose());
 
 		return super.dispose();
 	}
 
 	setSquareColor(index: number, colorVariant: ColorVariant): void {
-		const square = this.getSquareByIndex(index);
-		if (!square) return;
+		const cell = this.getCellByIndex(index);
+		if (!cell) return;
 
 		const color =
 			colorVariant === ColorVariant.black ? COLOR_BLACK : COLOR_WHITE;
 
-		square.color = colorVariant;
+		cell.color = colorVariant;
 
 		return this.setColorAt(index, color);
 	}

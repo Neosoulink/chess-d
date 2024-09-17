@@ -11,8 +11,7 @@ import { BoardCoord } from "../interfaces";
  *
  * @see [PGN MoveText](https://en.wikipedia.org/wiki/Portable_Game_Notation)
  */
-export const coordToEngineSquare = (coord: BoardCoord): Square => {
-	const { col, row } = coord;
+export const coordToEngineSquare = ({ col, row }: BoardCoord): Square => {
 	return `${ENGINE_SQUARE_NUMBER_KEYS[col]}${row + 1}` as Square;
 };
 

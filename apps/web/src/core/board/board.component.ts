@@ -17,13 +17,13 @@ import {
 	BOARD_MATRIX_RANGE_SIZE,
 	BOARD_RANGE_CELLS_HALF_SIZE,
 	ColorVariant,
-	SquareModel
+	CellModel
 } from "../../shared";
 
 @singleton()
 export class BoardComponent {
-	public readonly instancedSquare = new InstancedSquare();
-	public markersGroup = new CellsMakerGroupModel(this.instancedSquare);
+	public readonly instancedCell = new InstancedSquare();
+	public markersGroup = new CellsMakerGroupModel(this.instancedCell);
 	public physics!: PhysicsProperties;
 
 	constructor(@inject(Physics) private readonly _physics: Physics) {}
@@ -34,25 +34,25 @@ export class BoardComponent {
 		);
 		let isBlack = false;
 
-		this.instancedSquare.position.set(
+		this.instancedCell.position.set(
 			BOARD_RANGE_CELLS_HALF_SIZE,
 			0,
 			-BOARD_RANGE_CELLS_HALF_SIZE
 		);
-		this.instancedSquare.instanceMatrix.setUsage(DynamicDrawUsage);
+		this.instancedCell.instanceMatrix.setUsage(DynamicDrawUsage);
 
-		for (let i = 0; i < this.instancedSquare.count; i++) {
+		for (let i = 0; i < this.instancedCell.count; i++) {
 			const coord: BoardCoord = {
 				col: Math.floor(i % BOARD_MATRIX_RANGE_SIZE) + 1,
 				row: Math.floor(i / BOARD_MATRIX_RANGE_SIZE) + 1
 			};
 
-			if (!this.instancedSquare.squares[coord.row - 1]) {
+			if (!this.instancedCell.cells[coord.row - 1]) {
 				isBlack = !isBlack;
-				this.instancedSquare.squares.push([]);
+				this.instancedCell.cells.push([]);
 			}
 
-			this.instancedSquare.getMatrixAt(i, MATRIX);
+			this.instancedCell.getMatrixAt(i, MATRIX);
 
 			VECTOR.set(
 				-(coord.col * BOARD_CELL_SIZE),
@@ -61,14 +61,14 @@ export class BoardComponent {
 			);
 			MATRIX.compose(VECTOR, _QUATERNION, SCALE);
 
-			this.instancedSquare.setMatrixAt(i, MATRIX);
-			this.instancedSquare.squares[coord.row - 1]?.push(
-				new SquareModel({
+			this.instancedCell.setMatrixAt(i, MATRIX);
+			this.instancedCell.cells[coord.row - 1]?.push(
+				new CellModel({
 					row: coord.row - 1,
 					col: coord.col - 1
 				})
 			);
-			this.instancedSquare.setSquareColor(
+			this.instancedCell.setSquareColor(
 				i,
 				isBlack ? ColorVariant.black : ColorVariant.white
 			);
@@ -78,15 +78,15 @@ export class BoardComponent {
 	}
 
 	public initPhysics() {
-		this.instancedSquare.name = BoardComponent.name;
+		this.instancedCell.name = BoardComponent.name;
 
-		this.instancedSquare.userData = {
-			...this.instancedSquare.userData,
+		this.instancedCell.userData = {
+			...this.instancedCell.userData,
 			useBoundingBox: true
 		};
 
 		this.physics = this._physics?.addToWorld(
-			this.instancedSquare
+			this.instancedCell
 		) as PhysicsProperties;
 
 		this.physics.rigidBody.setTranslation({ x: 0, y: 0, z: 0 }, true);

@@ -30,7 +30,7 @@ export class CoreModule implements Module {
 		@inject(Physics) private readonly physics: Physics
 	) {
 		this.appModule.camera.instance()?.position.set(0, 5, 5);
-		this.appModule.camera.miniCamera()?.position.set(2, 5, 6);
+		this.appModule.camera.miniCamera()?.position.set(6, 2, 0);
 
 		this.init();
 
@@ -56,6 +56,10 @@ export class CoreModule implements Module {
 		(this.appModule.debug.cameraControls() as OrbitControls).enableRotate =
 			false;
 		(this.appModule.debug.cameraControls() as OrbitControls).enableZoom = false;
+		(this.appModule.debug.miniCameraControls() as OrbitControls).enableRotate =
+			false;
+		(this.appModule.debug.miniCameraControls() as OrbitControls).enableZoom =
+			false;
 
 		self.onmessage = (e: MessageEvent) => {
 			if ((e.data?.type as string)?.startsWith("gui_"))

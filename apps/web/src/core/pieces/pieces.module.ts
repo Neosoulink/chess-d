@@ -28,17 +28,6 @@ export class PiecesModule implements Module {
 				y: 0.8
 			});
 		});
-
-		this.controller.pieceDeselected$?.subscribe((payload) => {
-			const { intersection, piece } = payload;
-
-			if (intersection) return;
-
-			piece.setPosition({
-				...copyProperties(piece.userData.initialPosition, ["x", "z"]),
-				y: 0.8
-			});
-		});
 	}
 
 	init() {
