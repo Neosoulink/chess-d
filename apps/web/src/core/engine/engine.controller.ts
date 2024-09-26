@@ -1,6 +1,7 @@
 import { inject, singleton } from "tsyringe";
-import { map, Observable, Subject } from "rxjs";
+import { filter, map, Observable, Subject } from "rxjs";
 import { AppModule } from "@quick-threejs/reactive";
+import { Move } from "chess.js";
 
 import { EngineComponent } from "./engine.component";
 import { PiecesController } from "../pieces/pieces.controller";
@@ -8,6 +9,7 @@ import {
 	coordToEngineSquare,
 	EnginePieceUpdatePayload,
 	engineSquareToCoord,
+	ObservablePayload,
 	PieceUpdatePayload
 } from "../../shared";
 
@@ -15,7 +17,13 @@ import {
 export class EngineController {
 	public readonly started$$ = new Subject<any>();
 	public readonly pieceSelected$?: Observable<EnginePieceUpdatePayload>;
-	public readonly pieceDeselected$?: EngineController["pieceSelected$"];
+	public readonly pieceMoved$?: Observable<
+		EnginePieceUpdatePayload & {
+			nextMoveIndex: number;
+			nextMove?: Move;
+		} & ObservablePayload<PiecesController["pieceDeselected$"]>
+	>;
+	public readonly pieceCaptured$?: EngineController["pieceMoved$"];
 
 	constructor(
 		@inject(EngineComponent) private readonly component: EngineComponent,
@@ -27,8 +35,31 @@ export class EngineController {
 			map((payload) => this._getEnginePayLoadFromPiece(payload))
 		);
 
-		this.pieceDeselected$ = this.pieceController.pieceDeselected$?.pipe(
-			map((payload) => this._getEnginePayLoadFromPiece(payload))
+		this.pieceMoved$ = this.pieceController.pieceDeselected$?.pipe(
+			map((payload) => {
+				const { possibleCoords, possibleMoves, ...enginePAyload } =
+					this._getEnginePayLoadFromPiece(payload);
+				const { cell } = payload;
+
+				const nextMoveIndex = possibleCoords.findIndex(
+					(coord) =>
+						cell && coord.col === cell.coord.col && coord.row === cell.coord.row
+				);
+				const nextMove = possibleMoves[nextMoveIndex];
+
+				return {
+					...payload,
+					...enginePAyload,
+					possibleCoords,
+					possibleMoves,
+					nextMoveIndex,
+					nextMove
+				};
+			})
+		);
+
+		this.pieceCaptured$ = this.pieceMoved$?.pipe(
+			filter((payload) => !!payload?.nextMove?.captured)
 		);
 	}
 

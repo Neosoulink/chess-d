@@ -14,7 +14,9 @@ import { Physics } from "@chess-d/rapier-physics";
 
 import {
 	BoardCoord,
+	CellModel,
 	ColorVariant,
+	InstancedCell,
 	PieceId,
 	PieceModel,
 	PiecesGroupModel,
@@ -31,7 +33,12 @@ export class PiecesController {
 		PieceUpdatePayload<PiecesGroupModel<PieceType, ColorVariant>>
 	>;
 	public readonly pieceMoved$?: Observable<PieceUpdatePayload<InstancedMesh>>;
-	public readonly pieceDeselected$?: PiecesController["pieceMoved$"];
+	public readonly pieceDeselected$?: Observable<
+		PieceUpdatePayload<
+			InstancedMesh,
+			{ cell: CellModel; instancedCell: InstancedCell }
+		>
+	>;
 	public readonly pieceDropped$$ = new Subject<PieceModel>();
 
 	constructor(
@@ -98,9 +105,19 @@ export class PiecesController {
 		);
 
 		this.pieceDeselected$ = this.pieceMoved$?.pipe(
-			switchMap((latestPayload) =>
+			switchMap((payload) =>
 				(this.appModule.mouseup$?.() as Observable<Event>).pipe(
-					map(() => latestPayload),
+					map(() => {
+						const { intersection } = payload;
+						const instancedCell = intersection?.object as InstancedCell;
+						const cell = (
+							typeof intersection?.instanceId === "number"
+								? instancedCell.getCellByIndex(intersection.instanceId)
+								: undefined
+						) as CellModel;
+
+						return { ...payload, instancedCell, cell };
+					}),
 					take(1)
 				)
 			)

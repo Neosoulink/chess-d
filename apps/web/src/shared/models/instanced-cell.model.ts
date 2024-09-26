@@ -11,7 +11,7 @@ import { CellModel } from "./cell.model";
 import { BoardCoord } from "../interfaces";
 import { ColorVariant } from "../enums";
 
-export class InstancedSquare extends InstancedMesh {
+export class InstancedCell extends InstancedMesh {
 	public readonly cells: CellModel[][] = [];
 
 	constructor() {
@@ -21,7 +21,7 @@ export class InstancedSquare extends InstancedMesh {
 			BOARD_MATRIX_SIZE
 		);
 
-		this.name = InstancedSquare.name;
+		this.name = InstancedCell.name;
 	}
 
 	public getSquareByCoord(coord: BoardCoord): CellModel | undefined {
@@ -35,7 +35,7 @@ export class InstancedSquare extends InstancedMesh {
 		return this.getSquareByCoord({ row, col });
 	}
 
-	public copy(pieceGroup: InstancedSquare, recursive?: boolean): this {
+	public copy(pieceGroup: InstancedCell, recursive?: boolean): this {
 		Object.keys(this.cells).forEach((id) => {
 			pieceGroup.cells[id] = this.cells[id];
 		});

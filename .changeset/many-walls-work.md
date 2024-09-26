@@ -13,9 +13,9 @@
 
 - Rename all `cell` resources name to `square`
 - Add a new `SquareModel`
-- Implement `InstancedSquare` model
+- Implement `InstancedCell` model
   - replace `BoardModule` `mesh` & `cells` properties
-- Use `InstancedSquare` to place pieces
+- Use `InstancedCell` to place pieces
 
 ## feat(web): handle engine moves
 

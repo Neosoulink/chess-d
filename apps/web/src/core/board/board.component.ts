@@ -7,7 +7,7 @@ import { Physics } from "@chess-d/rapier-physics";
 
 import {
 	BoardCoord,
-	InstancedSquare,
+	InstancedCell,
 	CellsMakerGroupModel,
 	MATRIX,
 	QUATERNION,
@@ -22,7 +22,7 @@ import {
 
 @singleton()
 export class BoardComponent {
-	public readonly instancedCell = new InstancedSquare();
+	public readonly instancedCell = new InstancedCell();
 	public markersGroup = new CellsMakerGroupModel(this.instancedCell);
 	public physics!: PhysicsProperties;
 
