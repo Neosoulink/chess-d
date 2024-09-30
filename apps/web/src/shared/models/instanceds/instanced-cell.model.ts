@@ -6,13 +6,13 @@ import {
 	BOARD_MATRIX_SIZE,
 	COLOR_BLACK,
 	COLOR_WHITE
-} from "../constants";
-import { CellModel } from "./cell.model";
-import { BoardCoord } from "../interfaces";
-import { ColorVariant } from "../enums";
+} from "../../constants";
+import { MatrixCellModel } from "../matrixes/matrix-cell.model";
+import { BoardCoord } from "../../interfaces";
+import { ColorVariant } from "../../enums";
 
-export class InstancedCell extends InstancedMesh {
-	public readonly cells: CellModel[][] = [];
+export class InstancedCellModel extends InstancedMesh {
+	public readonly cells: MatrixCellModel[][] = [];
 
 	constructor() {
 		super(
@@ -21,21 +21,21 @@ export class InstancedCell extends InstancedMesh {
 			BOARD_MATRIX_SIZE
 		);
 
-		this.name = InstancedCell.name;
+		this.name = InstancedCellModel.name;
 	}
 
-	public getSquareByCoord(coord: BoardCoord): CellModel | undefined {
+	public getSquareByCoord(coord: BoardCoord): MatrixCellModel | undefined {
 		return this.cells[coord.row]?.[coord.col];
 	}
 
-	public getCellByIndex(index: number): CellModel | undefined {
+	public getCellByIndex(index: number): MatrixCellModel | undefined {
 		const row = Math.floor(index / BOARD_MATRIX_RANGE_SIZE);
 		const col = index % BOARD_MATRIX_RANGE_SIZE;
 
 		return this.getSquareByCoord({ row, col });
 	}
 
-	public copy(pieceGroup: InstancedCell, recursive?: boolean): this {
+	public copy(pieceGroup: InstancedCellModel, recursive?: boolean): this {
 		Object.keys(this.cells).forEach((id) => {
 			pieceGroup.cells[id] = this.cells[id];
 		});

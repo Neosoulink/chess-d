@@ -7,14 +7,14 @@ import {
 	MeshBasicMaterial
 } from "three";
 
-import { BoardCoord } from "../interfaces";
+import { BoardCoord } from "../../interfaces";
 import {
 	BOARD_CELL_SIZE,
 	MATRIX,
 	QUATERNION,
 	SCALE,
 	VECTOR
-} from "../constants";
+} from "../../constants";
 
 export class CellsMakerGroupModel extends InstancedMesh {
 	constructor(

@@ -8,26 +8,26 @@ import { Subject, Subscription } from "rxjs";
 import { Physics } from "@chess-d/rapier-physics";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
-import { BoardCoord, PieceId } from "../interfaces";
-import { ColorVariant, PieceType } from "../enums";
-import { COLOR_BLACK, COLOR_WHITE } from "../constants";
-import { PieceModel } from "./piece.model";
+import { BoardCoord, PieceId } from "../../interfaces";
+import { ColorVariant, PieceType } from "../../enums";
+import { COLOR_BLACK, COLOR_WHITE } from "../../constants";
+import { MatrixPieceModel } from "../matrixes/matrix-piece.model";
 
-export class PiecesGroupModel<
+export class InstancedPieceModel<
 	Type extends PieceType = PieceType,
 	Color extends ColorVariant = ColorVariant
 > extends InstancedMesh {
-	public readonly pieces: Record<PieceId, PieceModel<Type, Color>> = {};
+	public readonly pieces: Record<PieceId, MatrixPieceModel<Type, Color>> = {};
 	public readonly pieceUpdateSubscriptions: Record<PieceId, Subscription> = {};
-	public readonly update$$ = new Subject<PiecesGroupModel<Type, Color>>();
-	public readonly pieceMoved$$ = new Subject<PieceModel<Type, Color>>();
+	public readonly update$$ = new Subject<InstancedPieceModel<Type, Color>>();
+	public readonly pieceMoved$$ = new Subject<MatrixPieceModel<Type, Color>>();
 
 	constructor(
 		public readonly piecesType: Type,
 		public readonly piecesColor: Color,
 		count: PieceId,
 		geometry: BufferGeometry,
-		pieces?: Record<PieceId, PieceModel<Type, Color>>
+		pieces?: Record<PieceId, MatrixPieceModel<Type, Color>>
 	) {
 		const piecesMatrix = pieces
 			? Object.keys(pieces)
@@ -39,7 +39,7 @@ export class PiecesGroupModel<
 		piecesMatrix.forEach((pieceKey: number, i) => {
 			const oldPiece = pieces?.[pieceKey];
 			const piece =
-				oldPiece ?? new PieceModel(i, this.piecesType, this.piecesColor);
+				oldPiece ?? new MatrixPieceModel(i, this.piecesType, this.piecesColor);
 			piece.index = i;
 
 			this.setMatrixAt(i, piece);
@@ -56,7 +56,7 @@ export class PiecesGroupModel<
 		this.pieceMoved$$.subscribe(this.update.bind(this));
 	}
 
-	private _subscribePiece(piece: PieceModel<Type, Color>): void {
+	private _subscribePiece(piece: MatrixPieceModel<Type, Color>): void {
 		this.pieceUpdateSubscriptions[piece.id] = piece.update$$.subscribe(
 			this._onPieceMoved.bind(this)
 		);
@@ -78,7 +78,7 @@ export class PiecesGroupModel<
 		this.update();
 	}
 
-	private _onPieceMoved(piece: PieceModel<Type, Color>) {
+	private _onPieceMoved(piece: MatrixPieceModel<Type, Color>) {
 		if (this.pieces[piece.id] !== piece) return;
 
 		const _safePice = this.pieces[piece.id];
@@ -89,11 +89,13 @@ export class PiecesGroupModel<
 		this.pieceMoved$$.next(piece);
 	}
 
-	public getPieceById(id: PieceId): PieceModel<Type, Color> | undefined {
+	public getPieceById(id: PieceId): MatrixPieceModel<Type, Color> | undefined {
 		return this.pieces[id];
 	}
 
-	public getPieceByIndex(index: number): PieceModel<Type, Color> | undefined {
+	public getPieceByIndex(
+		index: number
+	): MatrixPieceModel<Type, Color> | undefined {
 		const id = Object.keys(this.pieces)[index];
 
 		if (!id) return undefined;
@@ -114,7 +116,7 @@ export class PiecesGroupModel<
 	}
 
 	public copy(
-		pieceGroup: PiecesGroupModel<Type, Color>,
+		pieceGroup: InstancedPieceModel<Type, Color>,
 		recursive?: boolean
 	): this {
 		Object.keys(this.pieces).forEach((id) => {
@@ -127,7 +129,7 @@ export class PiecesGroupModel<
 	public setPiecePosition(
 		id: PieceId,
 		position: Vector3
-	): PieceModel<Type, Color> | undefined {
+	): MatrixPieceModel<Type, Color> | undefined {
 		return this.pieces[id]?.setPosition(position);
 	}
 
@@ -158,12 +160,12 @@ export class PiecesGroupModel<
 	public dropPiece(
 		id: PieceId,
 		physics?: Physics
-	): PiecesGroupModel<Type, Color> | undefined {
+	): InstancedPieceModel<Type, Color> | undefined {
 		if (!this.pieces[id]) return undefined;
 		this._deletePiece(id);
 
 		const parent = this.parent;
-		const newGroup = new PiecesGroupModel(
+		const newGroup = new InstancedPieceModel(
 			this.piecesType,
 			this.piecesColor,
 			0,

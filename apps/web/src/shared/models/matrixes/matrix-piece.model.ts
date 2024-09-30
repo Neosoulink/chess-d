@@ -2,18 +2,21 @@ import { InstancedMesh, Matrix4, Object3D, Vector3, Vector3Like } from "three";
 import { Subject } from "rxjs";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
-import { BoardCoord, PieceId } from "../interfaces";
-import { ColorVariant, PieceType } from "../enums";
-import { MATRIX, QUATERNION, SCALE, VECTOR } from "../constants";
+import { BoardCoord, PieceId } from "../../interfaces";
+import { ColorVariant, PieceType } from "../../enums";
+import { MATRIX, QUATERNION, SCALE, VECTOR } from "../../constants";
 
-export class PieceModel<
+export class MatrixPieceModel<
 	T extends PieceType = PieceType,
 	C extends ColorVariant = ColorVariant
 > extends Matrix4 {
 	public readonly update$$ = new Subject<typeof this>();
 	public readonly coord: BoardCoord = { col: 0, row: 0 };
 	public readonly position = new Vector3();
-	public readonly userData: Object3D["userData"] = {};
+	public readonly userData: Object3D["userData"] & {
+		initialPosition?: Vector3;
+		lastPosition?: Vector3;
+	} = {};
 
 	public physics?: PhysicsProperties;
 
