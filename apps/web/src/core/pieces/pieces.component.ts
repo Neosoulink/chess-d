@@ -216,6 +216,34 @@ export class PiecesComponent {
 		};
 	}
 
+	public getPieceByCoord<Type extends PieceType, Color extends ColorVariant>(
+		pieceGroup: Type,
+		pieceColor: Color,
+		coord: BoardCoord
+	): MatrixPieceModel<Type, Color> | undefined {
+		const group = this.groups?.[pieceColor]?.[pieceGroup];
+		const pieceId = Object.keys(group?.pieces ?? {}).find((id) => {
+			const piece = group?.pieces[parseInt(id)];
+
+			if (
+				group &&
+				piece &&
+				piece.coord.col === coord.col &&
+				piece.coord.row === coord.row
+			)
+				return true;
+
+			return false;
+		});
+
+		if (!group || !pieceId) return undefined;
+
+		return group.pieces[parseInt(pieceId)] as unknown as MatrixPieceModel<
+			Type,
+			Color
+		>;
+	}
+
 	public movePieceByPosition<
 		Type extends PieceType,
 		Color extends ColorVariant

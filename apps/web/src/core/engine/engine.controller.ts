@@ -1,5 +1,5 @@
 import { inject, singleton } from "tsyringe";
-import { filter, map, Observable, Subject } from "rxjs";
+import { map, Observable, Subject } from "rxjs";
 import { AppModule } from "@quick-threejs/reactive";
 import { Move } from "chess.js";
 
@@ -23,7 +23,6 @@ export class EngineController {
 			nextMove?: Move;
 		} & ObservablePayload<PiecesController["pieceDeselected$"]>
 	>;
-	public readonly pieceCaptured$?: EngineController["pieceMoved$"];
 
 	constructor(
 		@inject(EngineComponent) private readonly component: EngineComponent,
@@ -55,10 +54,6 @@ export class EngineController {
 					nextMove
 				};
 			})
-		);
-
-		this.pieceCaptured$ = this.pieceMoved$?.pipe(
-			filter((payload) => !!payload?.nextMove?.captured)
 		);
 	}
 
