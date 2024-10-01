@@ -7,7 +7,7 @@ import { Physics } from "@chess-d/rapier-physics";
 
 import {
 	BoardCoord,
-	InstancedCell,
+	InstancedCellModel,
 	CellsMakerGroupModel,
 	MATRIX,
 	QUATERNION,
@@ -17,12 +17,12 @@ import {
 	BOARD_MATRIX_RANGE_SIZE,
 	BOARD_RANGE_CELLS_HALF_SIZE,
 	ColorVariant,
-	CellModel
+	MatrixCellModel
 } from "../../shared";
 
 @singleton()
 export class BoardComponent {
-	public readonly instancedCell = new InstancedCell();
+	public readonly instancedCell = new InstancedCellModel();
 	public markersGroup = new CellsMakerGroupModel(this.instancedCell);
 	public physics!: PhysicsProperties;
 
@@ -63,7 +63,7 @@ export class BoardComponent {
 
 			this.instancedCell.setMatrixAt(i, MATRIX);
 			this.instancedCell.cells[coord.row - 1]?.push(
-				new CellModel({
+				new MatrixCellModel({
 					row: coord.row - 1,
 					col: coord.col - 1
 				})

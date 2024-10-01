@@ -14,14 +14,14 @@ import { Physics } from "@chess-d/rapier-physics";
 
 import {
 	BoardCoord,
-	CellModel,
+	MatrixCellModel,
 	ColorVariant,
-	InstancedCell,
+	InstancedCellModel,
 	PieceId,
-	PieceModel,
-	PiecesGroupModel,
+	MatrixPieceModel,
+	InstancedPieceModel,
 	PieceType,
-	PieceUpdatePayload
+	PieceNotificationPayload
 } from "../../shared";
 import { BoardComponent } from "../board/board.component";
 import { PiecesComponent } from "./pieces.component";
@@ -30,21 +30,23 @@ import { CoreComponent } from "../core.component";
 @singleton()
 export class PiecesController {
 	public readonly pieceSelected$?: Observable<
-		PieceUpdatePayload<PiecesGroupModel<PieceType, ColorVariant>>
+		PieceNotificationPayload<InstancedPieceModel<PieceType, ColorVariant>>
 	>;
-	public readonly pieceMoved$?: Observable<PieceUpdatePayload<InstancedMesh>>;
+	public readonly pieceMoved$?: Observable<
+		PieceNotificationPayload<InstancedMesh>
+	>;
 	public readonly pieceDeselected$?: Observable<
-		PieceUpdatePayload<
+		PieceNotificationPayload<
 			InstancedMesh,
-			{ cell: CellModel; instancedCell: InstancedCell }
+			{ cell: MatrixCellModel; instancedCell: InstancedCellModel }
 		>
 	>;
-	public readonly pieceDropped$$ = new Subject<PieceModel>();
+	public readonly pieceDropped$$ = new Subject<MatrixPieceModel>();
 
 	constructor(
 		@inject(PiecesComponent) private readonly component: PiecesComponent,
-		@inject(BoardComponent) private readonly boardComponent: BoardComponent,
 		@inject(CoreComponent) private readonly coreComponent: CoreComponent,
+		@inject(BoardComponent) private readonly boardComponent: BoardComponent,
 		@inject(AppModule) private readonly appModule: AppModule,
 		@inject(Physics) private readonly physics: Physics
 	) {
@@ -52,37 +54,36 @@ export class PiecesController {
 			map(() => {
 				const intersections = this.coreComponent.getIntersections();
 				const intersection = intersections.find(
-					(inter) => inter.object instanceof PiecesGroupModel
-				) as Intersection<PiecesGroupModel> | undefined;
-				const piecesGroup = intersection?.object;
+					(inter) => inter.object instanceof InstancedPieceModel
+				) as Intersection<InstancedPieceModel> | undefined;
+				const instancedPiece = intersection?.object;
 
-				let piece: PieceModel | undefined;
+				let piece: MatrixPieceModel | undefined;
 
 				if (
 					typeof intersection?.instanceId !== "number" ||
-					!(piecesGroup instanceof PiecesGroupModel) ||
-					!(piece = piecesGroup.getPieceByIndex(intersection.instanceId))
+					!(instancedPiece instanceof InstancedPieceModel) ||
+					!(piece = instancedPiece.getPieceByIndex(intersection.instanceId))
 				)
-					return void undefined as any;
+					return undefined as any;
 
 				piece.userData.initialPosition = piece.position.clone();
 				piece.userData.lastPosition = piece.userData.initialPosition;
 
-				return { piecesGroup, piece, intersection };
+				return { instancedPiece, piece, intersection };
 			}),
-			filter((payload) => !!payload?.piece)
+			filter((payload) => !!payload?.piece && !!payload?.instancedPiece)
 		);
 
 		this.pieceMoved$ = this.pieceSelected$?.pipe(
-			switchMap((payload) =>
+			switchMap((pieceSelectedPayload) =>
 				this.appModule.timer.step$().pipe(
 					map(() => {
-						const { piece, pieceGroup } = payload as NonNullable<
-							typeof payload
-						>;
+						const { piece, instancedPiece } =
+							pieceSelectedPayload as NonNullable<typeof pieceSelectedPayload>;
 						const intersections =
 							this.coreComponent.getIntersections<
-								PiecesGroupModel<PieceType, ColorVariant>
+								InstancedPieceModel<PieceType, ColorVariant>
 							>();
 
 						const intersection = intersections.find(
@@ -94,7 +95,7 @@ export class PiecesController {
 							piece.userData.lastPosition = intersection.point;
 
 						return {
-							pieceGroup,
+							instancedPiece,
 							piece,
 							intersection
 						};
@@ -109,12 +110,12 @@ export class PiecesController {
 				(this.appModule.mouseup$?.() as Observable<Event>).pipe(
 					map(() => {
 						const { intersection } = payload;
-						const instancedCell = intersection?.object as InstancedCell;
+						const instancedCell = intersection?.object as InstancedCellModel;
 						const cell = (
 							typeof intersection?.instanceId === "number"
 								? instancedCell.getCellByIndex(intersection.instanceId)
 								: undefined
-						) as CellModel;
+						) as MatrixCellModel;
 
 						return { ...payload, instancedCell, cell };
 					}),
@@ -150,10 +151,10 @@ export class PiecesController {
 		type: Type,
 		color: Color,
 		id: PieceId
-	): PieceModel<Type, Color> | undefined {
+	): MatrixPieceModel<Type, Color> | undefined {
 		const groups = this.component.groups;
 		const piecesGroup = groups?.[color][type] as unknown as
-			| PiecesGroupModel<Type, Color>
+			| InstancedPieceModel<Type, Color>
 			| undefined;
 		const pieces = piecesGroup?.pieces;
 
@@ -164,7 +165,7 @@ export class PiecesController {
 
 		this.component.setGroupType(type, color, newGroup);
 		this.pieceDropped$$.next(
-			pieces[id] as unknown as PieceModel<PieceType, ColorVariant>
+			pieces[id] as unknown as MatrixPieceModel<PieceType, ColorVariant>
 		);
 
 		return pieces[id];

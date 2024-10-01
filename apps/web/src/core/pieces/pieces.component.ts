@@ -3,7 +3,7 @@ import { BufferGeometry } from "three";
 import { Physics } from "@chess-d/rapier-physics";
 
 import {
-	PiecesGroupModel,
+	InstancedPieceModel,
 	PiecesGroups,
 	PieceType,
 	ColorVariant,
@@ -172,9 +172,9 @@ export class PiecesComponent {
 		color: Color,
 		count: number,
 		geometry: BufferGeometry,
-		pieces?: PiecesGroupModel<Type, Color>["pieces"]
+		pieces?: InstancedPieceModel<Type, Color>["pieces"]
 	) {
-		const group = new PiecesGroupModel(type, color, count, geometry, pieces);
+		const group = new InstancedPieceModel(type, color, count, geometry, pieces);
 		group.initPhysics(this._physics);
 
 		return group;
@@ -183,9 +183,9 @@ export class PiecesComponent {
 	public setGroupType<Type extends PieceType, Color extends ColorVariant>(
 		type: Type,
 		color: Color,
-		newGroup: PiecesGroupModel<Type, Color>
-	): PiecesGroupModel<Type, Color> | undefined {
-		if (!(this.groups?.[color][type] instanceof PiecesGroupModel)) return;
+		newGroup: InstancedPieceModel<Type, Color>
+	): InstancedPieceModel<Type, Color> | undefined {
+		if (!(this.groups?.[color][type] instanceof InstancedPieceModel)) return;
 
 		// @ts-ignore <unsupported never type>
 		this.groups[color][type] = newGroup;

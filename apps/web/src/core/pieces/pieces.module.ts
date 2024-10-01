@@ -5,7 +5,7 @@ import { copyProperties } from "@quick-threejs/utils";
 
 import { PiecesComponent } from "./pieces.component";
 import { PiecesController } from "./pieces.controller";
-import { ColorVariant } from "../../shared";
+import { ColorVariant, VECTOR } from "../../shared";
 import { EngineController } from "../engine/engine.controller";
 
 @singleton()
@@ -17,43 +17,7 @@ export class PiecesModule implements Module {
 		private readonly controller: PiecesController,
 		@inject(EngineController)
 		private readonly engineController: EngineController
-	) {
-		this.engineController.pieceSelected$?.subscribe(() => {});
-
-		this.controller.pieceMoved$?.subscribe((payload) => {
-			const { intersection, piece } = payload;
-
-			piece.setPosition({
-				...copyProperties(
-					intersection?.point instanceof Vector3
-						? intersection.point
-						: piece.userData.lastPosition,
-					["x", "z"]
-				),
-				y: 0.8
-			});
-		});
-
-		this.engineController.pieceMoved$?.subscribe((payload) => {
-			const { piece, cell, intersection, nextMoveIndex, nextMove } = payload;
-
-			if (!intersection || !cell || !(nextMoveIndex >= 0) || !nextMove) {
-				piece.setPosition({
-					...copyProperties(piece.userData.initialPosition, ["x", "z"]),
-					y: 0.8
-				});
-
-				return;
-			}
-
-			this.controller.setPieceCoord(
-				piece.type,
-				piece.color,
-				piece.id,
-				cell.coord
-			);
-		});
-	}
+	) {}
 
 	init() {
 		this.component.initPieces();
@@ -74,6 +38,20 @@ export class PiecesModule implements Module {
 					if (whiteGroup) this.appModule.world.scene().add(whiteGroup);
 				}
 			);
+
+		this.controller.pieceMoved$?.subscribe((payload) => {
+			const { intersection, piece } = payload;
+
+			piece.setPosition({
+				...copyProperties(
+					intersection?.point instanceof Vector3
+						? intersection.point
+						: (piece.userData.lastPosition ?? VECTOR),
+					["x", "z"]
+				),
+				y: 0.8
+			});
+		});
 	}
 
 	dispose() {}

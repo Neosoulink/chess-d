@@ -7,18 +7,18 @@ import { EngineComponent } from "./engine.component";
 import { PiecesController } from "../pieces/pieces.controller";
 import {
 	coordToEngineSquare,
-	EnginePieceUpdatePayload,
+	EngineNotificationPayload,
 	engineSquareToCoord,
 	ObservablePayload,
-	PieceUpdatePayload
+	PieceNotificationPayload
 } from "../../shared";
 
 @singleton()
 export class EngineController {
 	public readonly started$$ = new Subject<any>();
-	public readonly pieceSelected$?: Observable<EnginePieceUpdatePayload>;
+	public readonly pieceSelected$?: Observable<EngineNotificationPayload>;
 	public readonly pieceMoved$?: Observable<
-		EnginePieceUpdatePayload & {
+		EngineNotificationPayload & {
 			nextMoveIndex: number;
 			nextMove?: Move;
 		} & ObservablePayload<PiecesController["pieceDeselected$"]>
@@ -37,9 +37,8 @@ export class EngineController {
 
 		this.pieceMoved$ = this.pieceController.pieceDeselected$?.pipe(
 			map((payload) => {
-				const { possibleCoords, possibleMoves, ...enginePAyload } =
+				const { cell, possibleCoords, possibleMoves, ...enginePayload } =
 					this._getEnginePayLoadFromPiece(payload);
-				const { cell } = payload;
 
 				const nextMoveIndex = possibleCoords.findIndex(
 					(coord) =>
@@ -49,7 +48,7 @@ export class EngineController {
 
 				return {
 					...payload,
-					...enginePAyload,
+					...enginePayload,
 					possibleCoords,
 					possibleMoves,
 					nextMoveIndex,
@@ -63,12 +62,10 @@ export class EngineController {
 		);
 	}
 
-	private _getEnginePayLoadFromPiece(
-		piecePayload: PieceUpdatePayload
-	): EnginePieceUpdatePayload {
-		const pgnSquare = coordToEngineSquare(
-			piecePayload.piece.coord
-		) as EnginePieceUpdatePayload["pgnSquare"];
+	private _getEnginePayLoadFromPiece<
+		PiecePayload extends PieceNotificationPayload
+	>(piecePayload: PiecePayload): EngineNotificationPayload & PiecePayload {
+		const pgnSquare = coordToEngineSquare(piecePayload.piece.coord);
 		const possibleMoves = this.component.game.moves({
 			square: pgnSquare,
 			verbose: true

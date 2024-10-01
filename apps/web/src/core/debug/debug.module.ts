@@ -12,10 +12,19 @@ export class DebugModule implements Module {
 		@inject(DebugController) private readonly controller: DebugController,
 		@inject(AppModule) private readonly appModule: AppModule
 	) {
-		if (this.appModule.debug.enabled())
-			appModule.world.scene().add(this.component.lines);
+		self.addEventListener("message", this._onMessage.bind(this));
+	}
 
-		this.controller.physicsDebugRender$.subscribe({
+	private _onMessage(e: MessageEvent): void {
+		if ((e.data?.type as string)?.startsWith("gui_"))
+			this.controller.gui$$.next(e.data);
+	}
+
+	public init(): void {
+		if (this.appModule.debug.enabled())
+			this.appModule.world.scene().add(this.component.lines);
+
+		this.controller.physicsDebugRendered$.subscribe({
 			next: (buffers) => {
 				this.component.lines.geometry.setAttribute(
 					"position",
@@ -29,9 +38,7 @@ export class DebugModule implements Module {
 		});
 	}
 
-	init(): void {}
-
-	dispose(): void {
-		throw new Error("Method not implemented.");
+	public dispose(): void {
+		self.removeEventListener("message", this._onMessage.bind(this));
 	}
 }

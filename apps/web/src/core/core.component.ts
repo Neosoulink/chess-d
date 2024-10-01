@@ -1,5 +1,3 @@
-import "reflect-metadata";
-
 import { Object3D, Object3DEventMap, Raycaster, Vector2 } from "three";
 import { inject, singleton } from "tsyringe";
 import { AppModule } from "@quick-threejs/reactive";

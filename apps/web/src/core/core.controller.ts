@@ -1,9 +1,4 @@
-import "reflect-metadata";
-
-import { Subject } from "rxjs";
 import { singleton } from "tsyringe";
 
 @singleton()
-export class CoreController {
-	public readonly gui$$ = new Subject<any>();
-}
+export class CoreController {}
