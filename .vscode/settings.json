@@ -1,16 +1,19 @@
 {
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ],
-  "cSpell.words": [
-    "Angvel",
-    "dimforge",
-    "Linvel",
-    "mrdoob",
-    "timestep",
-    "tsyringe"
-  ],
-  "editor.formatOnSave": true
+	"eslint.workingDirectories": [
+		{
+			"mode": "auto"
+		}
+	],
+	"cSpell.words": [
+		"Angvel",
+		"commitlint",
+		"dimforge",
+		"instanceds",
+		"Linvel",
+		"mrdoob",
+		"timestep",
+		"tsyringe",
+		"turborepo"
+	],
+	"editor.formatOnSave": true
 }
