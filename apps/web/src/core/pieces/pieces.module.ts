@@ -42,7 +42,7 @@ export class PiecesModule implements Module {
 		this.controller.pieceMoved$?.subscribe((payload) => {
 			const { intersection, piece } = payload;
 
-			piece.setPosition({
+			this.component.movePieceByPosition(piece, {
 				...copyProperties(
 					intersection?.point instanceof Vector3
 						? intersection.point

@@ -2,7 +2,7 @@ import {
 	BufferGeometry,
 	DynamicDrawUsage,
 	InstancedMesh,
-	Vector3
+	Vector3Like
 } from "three";
 import { Subject, Subscription } from "rxjs";
 import { Physics } from "@chess-d/rapier-physics";
@@ -128,7 +128,7 @@ export class InstancedPieceModel<
 
 	public setPiecePosition(
 		id: PieceId,
-		position: Vector3
+		position: Vector3Like
 	): MatrixPieceModel<Type, Color> | undefined {
 		return this.pieces[id]?.setPosition(position);
 	}

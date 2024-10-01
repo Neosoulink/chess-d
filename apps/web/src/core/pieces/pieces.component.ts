@@ -1,5 +1,5 @@
 import { inject, singleton } from "tsyringe";
-import { BufferGeometry } from "three";
+import { BufferGeometry, Vector3Like } from "three";
 import { Physics } from "@chess-d/rapier-physics";
 
 import {
@@ -7,7 +7,9 @@ import {
 	PiecesGroups,
 	PieceType,
 	ColorVariant,
-	BOARD_MATRIX_RANGE_SIZE
+	BOARD_MATRIX_RANGE_SIZE,
+	MatrixPieceModel,
+	BoardCoord
 } from "../../shared";
 import { BoardComponent } from "../board/board.component";
 import { ResourceComponent } from "../resource/resource.component";
@@ -21,7 +23,7 @@ export class PiecesComponent {
 		private readonly boardComponent: BoardComponent,
 		@inject(ResourceComponent)
 		private readonly resourceComponent: ResourceComponent,
-		@inject(Physics) private readonly _physics: Physics
+		@inject(Physics) private readonly physics: Physics
 	) {}
 
 	private _initPawns<Color extends ColorVariant>(color: Color) {
@@ -175,7 +177,7 @@ export class PiecesComponent {
 		pieces?: InstancedPieceModel<Type, Color>["pieces"]
 	) {
 		const group = new InstancedPieceModel(type, color, count, geometry, pieces);
-		group.initPhysics(this._physics);
+		group.initPhysics(this.physics);
 
 		return group;
 	}
@@ -212,5 +214,46 @@ export class PiecesComponent {
 				[PieceType.king]: this._initKings(ColorVariant.white)
 			}
 		};
+	}
+
+	public movePieceByPosition<
+		Type extends PieceType,
+		Color extends ColorVariant
+	>(piece: MatrixPieceModel<Type, Color>, position: Vector3Like) {
+		this.groups?.[piece.color]?.[piece.type]?.setPiecePosition(
+			piece.id,
+			position
+		);
+	}
+
+	public movePieceByCoord<Type extends PieceType, Color extends ColorVariant>(
+		piece: MatrixPieceModel<Type, Color>,
+		coord: BoardCoord
+	) {
+		this.groups?.[piece.color]?.[piece.type]?.setPieceCoord(
+			piece.id,
+			this.boardComponent.instancedCell,
+			coord
+		);
+	}
+
+	public dropPiece<Type extends PieceType, Color extends ColorVariant>(
+		piece: MatrixPieceModel<Type, Color>
+	): MatrixPieceModel<Type, Color> | undefined {
+		const piecesGroup = this.groups?.[piece.color]?.[piece.type];
+		const pieces = piecesGroup?.pieces;
+
+		if (!pieces || !pieces[piece.id]) return;
+
+		const newGroup = piecesGroup.dropPiece(
+			piece.id,
+			this.physics
+		) as unknown as InstancedPieceModel<Type, Color> | undefined;
+
+		if (!newGroup) return;
+
+		this.setGroupType(piece.type, piece.color, newGroup);
+
+		return pieces[piece.id] as MatrixPieceModel<Type, Color> | undefined;
 	}
 }
