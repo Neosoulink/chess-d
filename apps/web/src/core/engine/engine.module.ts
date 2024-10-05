@@ -4,7 +4,13 @@ import { Module } from "@quick-threejs/reactive";
 import { EngineComponent } from "./engine.component";
 import { PiecesComponent } from "../pieces/pieces.component";
 import { EngineController } from "./engine.controller";
-import { getOppositeColor, PieceType } from "../../shared";
+import {
+	getOppositeColor,
+	MatrixPieceModel,
+	MoveFlags,
+	ObservablePayload,
+	PieceType
+} from "../../shared";
 
 @singleton()
 export class EngineModule implements Module {
@@ -14,32 +20,68 @@ export class EngineModule implements Module {
 		@inject(EngineController) private readonly controller: EngineController
 	) {}
 
-	public init() {
-		this.controller.pieceMoved$?.subscribe((payload) => {
-			const { piece, cell, intersection, nextMoveIndex, nextMove } = payload;
+	private _pieceMovedHandler(
+		payload: ObservablePayload<EngineController["pieceMoved$"]>
+	) {
+		const { piece, cell, intersection, nextMoveIndex, nextMove } = payload;
+		const flags = nextMove?.flags as MoveFlags;
+		const oppositeColor = getOppositeColor(piece.color);
 
-			if (!intersection || !cell || !(nextMoveIndex >= 0) || !nextMove)
-				return this.pieceComponent.movePieceByCoord(piece, piece.coord);
+		let pieceToDrop: MatrixPieceModel | undefined = undefined;
 
-			if (nextMove.captured) {
-				const pieceToDelete = this.pieceComponent.getPieceByCoord(
-					nextMove.captured as PieceType,
-					getOppositeColor(piece.color),
-					nextMove.flags === "e"
-						? {
-								...cell.coord,
-								row: cell.coord.row + (nextMove.color === "w" ? -1 : 1)
-							}
-						: cell.coord
-				);
+		if (!intersection || !cell || !(nextMoveIndex >= 0) || !nextMove)
+			return this.pieceComponent.movePieceByCoord(piece, piece.coord);
 
-				if (pieceToDelete) this.pieceComponent.dropPiece(pieceToDelete);
+		if (nextMove.captured)
+			pieceToDrop = this.pieceComponent.getPieceByCoord(
+				nextMove.captured as PieceType,
+				oppositeColor,
+				nextMove.flags === "e"
+					? {
+							...cell.coord,
+							row: cell.coord.row + (nextMove.color === "w" ? -1 : 1)
+						}
+					: cell.coord
+			);
+
+		if (
+			flags === MoveFlags.kingside_castle ||
+			flags === MoveFlags.queenside_castle
+		) {
+			const rockCoord = {
+				...cell.coord,
+				col: flags === MoveFlags.kingside_castle ? 7 : 0
+			};
+			const rock = this.pieceComponent.getPieceByCoord(
+				PieceType.rock,
+				oppositeColor,
+				rockCoord
+			);
+
+			if (rock) {
+				const newRockCoord = {
+					...cell.coord,
+					col: flags === MoveFlags.kingside_castle ? 5 : 3
+				};
+
+				this.pieceComponent.movePieceByCoord(rock, newRockCoord);
 			}
+		}
 
-			if (payload.nextMove) this.component.game.move(payload.nextMove);
+		// if (nextMove.promotion) {
+		// 	const
+		// }
 
-			this.pieceComponent.movePieceByCoord(piece, cell.coord);
-		});
+		if (pieceToDrop) {
+			this.pieceComponent.dropPiece(pieceToDrop);
+		}
+
+		this.pieceComponent.movePieceByCoord(piece, cell.coord);
+		this.component.game.move(nextMove);
+	}
+
+	public init() {
+		this.controller.pieceMoved$?.subscribe(this._pieceMovedHandler.bind(this));
 	}
 
 	public dispose() {}

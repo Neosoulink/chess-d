@@ -17,6 +17,14 @@ export type PiecesGroup<Color extends ColorVariant> = {
 	[Type in PieceType]: InstancedPieceModel<Type, Color>;
 };
 
+export type DroppedPiecesGroup<Color extends ColorVariant> = {
+	[Type in PieceType]: MatrixPieceModel<Type, Color>[] | undefined;
+};
+
 export type PiecesGroups = {
 	[Color in ColorVariant]: PiecesGroup<Color>;
+};
+
+export type DroppedPiecesGroups = {
+	[Color in ColorVariant]: DroppedPiecesGroup<Color>;
 };

@@ -1,12 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { PieceSymbol } from "chess.js";
+import { BISHOP, KING, KNIGHT, PAWN, PieceSymbol, QUEEN, ROOK } from "chess.js";
 
 /**  @description Piece type based on the {@link PieceSymbol ChessJs.PieceSymbol}. */
 export enum PieceType {
-	pawn = "p",
-	bishop = "b",
-	knight = "n",
-	rock = "r",
-	queen = "q",
-	king = "k"
+	pawn = PAWN,
+	bishop = BISHOP,
+	knight = KNIGHT,
+	rock = ROOK,
+	queen = QUEEN,
+	king = KING
 }

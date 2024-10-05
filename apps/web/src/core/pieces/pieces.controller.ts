@@ -50,7 +50,9 @@ export class PiecesController {
 				if (
 					typeof intersection?.instanceId !== "number" ||
 					!(instancedPiece instanceof InstancedPieceModel) ||
-					!(piece = instancedPiece.getPieceByIndex(intersection.instanceId))
+					!(piece = instancedPiece.getPieceByInstanceId(
+						intersection.instanceId
+					))
 				)
 					return undefined as any;
 

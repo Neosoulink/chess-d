@@ -9,7 +9,8 @@ import {
 	ColorVariant,
 	BOARD_MATRIX_RANGE_SIZE,
 	MatrixPieceModel,
-	BoardCoord
+	BoardCoord,
+	DroppedPiecesGroups
 } from "../../shared";
 import { BoardComponent } from "../board/board.component";
 import { ResourceComponent } from "../resource/resource.component";
@@ -17,6 +18,7 @@ import { ResourceComponent } from "../resource/resource.component";
 @singleton()
 export class PiecesComponent {
 	public groups?: PiecesGroups;
+	public droppedGroups?: DroppedPiecesGroups;
 
 	constructor(
 		@inject(BoardComponent)
@@ -33,13 +35,10 @@ export class PiecesComponent {
 			BOARD_MATRIX_RANGE_SIZE,
 			this.resourceComponent.getGeometryByPieceType(PieceType.pawn)
 		);
+		const isBlack = color === ColorVariant.black;
 
-		Object.keys(group.pieces).forEach((id, index) => {
-			const piece = group.pieces[parseInt(id)];
-			if (!piece) return;
-			const isBlack = piece.color === ColorVariant.black;
-
-			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
+		group.pieces.forEach((piece, index) => {
+			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
 				col: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 - index : index,
 				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 2 : 1
 			});
@@ -55,41 +54,11 @@ export class PiecesComponent {
 			2,
 			this.resourceComponent.getGeometryByPieceType(PieceType.rock)
 		);
+		const isBlack = color === ColorVariant.black;
 
-		Object.keys(group.pieces).forEach((id, index) => {
-			const piece = group.pieces[parseInt(id)];
-			if (!piece) return;
-			const isBlack = piece.color === ColorVariant.black;
-			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
+		group.pieces.forEach((piece, index) => {
+			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
 				col: index === 0 ? 0 : BOARD_MATRIX_RANGE_SIZE - 1,
-				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
-			});
-		});
-
-		return group;
-	}
-
-	private _initBishops<Color extends ColorVariant>(color: Color) {
-		const group = this.createGroup(
-			PieceType.bishop,
-			color,
-			2,
-			this.resourceComponent.getGeometryByPieceType(PieceType.bishop)
-		);
-
-		Object.keys(group.pieces).forEach((id, index) => {
-			const piece = group.pieces[parseInt(id)];
-			if (!piece) return;
-			const isBlack = piece.color === ColorVariant.black;
-
-			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
-				col: isBlack
-					? index === 0
-						? BOARD_MATRIX_RANGE_SIZE - 2
-						: 1
-					: index === 0
-						? 1
-						: BOARD_MATRIX_RANGE_SIZE - 2,
 				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
 			});
 		});
@@ -104,13 +73,35 @@ export class PiecesComponent {
 			2,
 			this.resourceComponent.getGeometryByPieceType(PieceType.knight)
 		);
+		const isBlack = color === ColorVariant.black;
 
-		Object.keys(group.pieces).forEach((id, index) => {
-			const piece = group.pieces[parseInt(id)];
-			if (!piece) return;
-			const isBlack = piece.color === ColorVariant.black;
+		group.pieces.forEach((piece, index) => {
+			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
+				col: isBlack
+					? index === 0
+						? BOARD_MATRIX_RANGE_SIZE - 2
+						: 1
+					: index === 0
+						? 1
+						: BOARD_MATRIX_RANGE_SIZE - 2,
+				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
+			});
+		});
 
-			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
+		return group;
+	}
+
+	private _initBishops<Color extends ColorVariant>(color: Color) {
+		const group = this.createGroup(
+			PieceType.bishop,
+			color,
+			2,
+			this.resourceComponent.getGeometryByPieceType(PieceType.bishop)
+		);
+		const isBlack = color === ColorVariant.black;
+
+		group.pieces.forEach((piece, index) => {
+			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
 				col: isBlack
 					? index === 0
 						? BOARD_MATRIX_RANGE_SIZE - 3
@@ -132,14 +123,11 @@ export class PiecesComponent {
 			1,
 			this.resourceComponent.getGeometryByPieceType(PieceType.queen)
 		);
+		const isBlack = color === ColorVariant.black;
 
-		Object.keys(group.pieces).forEach((id) => {
-			const piece = group.pieces[parseInt(id)];
-			if (!piece) return;
-			const isBlack = piece.color === ColorVariant.black;
-
-			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
-				col: isBlack ? BOARD_MATRIX_RANGE_SIZE - 4 : 3,
+		group.pieces.forEach((piece) => {
+			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
+				col: 3,
 				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
 			});
 		});
@@ -154,14 +142,11 @@ export class PiecesComponent {
 			1,
 			this.resourceComponent.getGeometryByPieceType(PieceType.king)
 		);
+		const isBlack = color === ColorVariant.black;
 
-		Object.keys(group.pieces).forEach((id) => {
-			const piece = group.pieces[parseInt(id)];
-			if (!piece) return;
-			const isBlack = piece.color === ColorVariant.black;
-
-			group.setPieceCoord(piece.id, this.boardComponent.instancedCell, {
-				col: isBlack ? BOARD_MATRIX_RANGE_SIZE - 5 : 4,
+		group.pieces.forEach((piece) => {
+			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
+				col: 4,
 				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
 			});
 		});
@@ -196,23 +181,32 @@ export class PiecesComponent {
 	}
 
 	public initPieces() {
+		const createGroup = <C extends ColorVariant = ColorVariant>(color: C) => ({
+			[PieceType.pawn]: this._initPawns(color),
+			[PieceType.rock]: this._initRocks(color),
+			[PieceType.knight]: this._initKnights(color),
+			[PieceType.bishop]: this._initBishops(color),
+			[PieceType.queen]: this._initQueens(color),
+			[PieceType.king]: this._initKings(color)
+		});
+
+		const createDroppedGroup = () => ({
+			[PieceType.pawn]: [],
+			[PieceType.rock]: [],
+			[PieceType.knight]: [],
+			[PieceType.bishop]: [],
+			[PieceType.queen]: [],
+			[PieceType.king]: []
+		});
+
 		this.groups = {
-			[ColorVariant.black]: {
-				[PieceType.pawn]: this._initPawns(ColorVariant.black),
-				[PieceType.rock]: this._initRocks(ColorVariant.black),
-				[PieceType.bishop]: this._initBishops(ColorVariant.black),
-				[PieceType.knight]: this._initKnights(ColorVariant.black),
-				[PieceType.queen]: this._initQueens(ColorVariant.black),
-				[PieceType.king]: this._initKings(ColorVariant.black)
-			},
-			[ColorVariant.white]: {
-				[PieceType.pawn]: this._initPawns(ColorVariant.white),
-				[PieceType.rock]: this._initRocks(ColorVariant.white),
-				[PieceType.bishop]: this._initBishops(ColorVariant.white),
-				[PieceType.knight]: this._initKnights(ColorVariant.white),
-				[PieceType.queen]: this._initQueens(ColorVariant.white),
-				[PieceType.king]: this._initKings(ColorVariant.white)
-			}
+			[ColorVariant.black]: createGroup(ColorVariant.black),
+			[ColorVariant.white]: createGroup(ColorVariant.white)
+		};
+
+		this.droppedGroups = {
+			[ColorVariant.black]: createDroppedGroup(),
+			[ColorVariant.white]: createDroppedGroup()
 		};
 	}
 
@@ -249,7 +243,7 @@ export class PiecesComponent {
 		Color extends ColorVariant
 	>(piece: MatrixPieceModel<Type, Color>, position: Vector3Like) {
 		this.groups?.[piece.color]?.[piece.type]?.setPiecePosition(
-			piece.id,
+			piece.instanceId,
 			position
 		);
 	}
@@ -259,7 +253,7 @@ export class PiecesComponent {
 		coord: BoardCoord
 	) {
 		this.groups?.[piece.color]?.[piece.type]?.setPieceCoord(
-			piece.id,
+			piece.instanceId,
 			this.boardComponent.instancedCell,
 			coord
 		);
@@ -271,17 +265,45 @@ export class PiecesComponent {
 		const piecesGroup = this.groups?.[piece.color]?.[piece.type];
 		const pieces = piecesGroup?.pieces;
 
-		if (!pieces || !pieces[piece.id]) return;
+		if (
+			!piecesGroup ||
+			!(pieces?.[piece.instanceId] instanceof MatrixPieceModel)
+		)
+			return undefined;
 
 		const newGroup = piecesGroup.dropPiece(
-			piece.id,
+			piece.instanceId,
 			this.physics
 		) as unknown as InstancedPieceModel<Type, Color> | undefined;
 
-		if (!newGroup) return;
+		if (!newGroup) return undefined;
 
 		this.setGroupType(piece.type, piece.color, newGroup);
 
-		return pieces[piece.id] as MatrixPieceModel<Type, Color> | undefined;
+		return piece;
+	}
+
+	public promotePiece<Color extends ColorVariant, ToType extends PieceType>(
+		piece: MatrixPieceModel<PieceType.pawn, Color>,
+		toPiece: ToType
+	) {
+		const promotedPieceGroup = this.groups?.[piece.color]?.[
+			toPiece
+		] as unknown as InstancedPieceModel<ToType, Color>;
+		const droppedPiecesGroup =
+			this.droppedGroups?.[piece.color]?.[PieceType.pawn];
+		const droppedPiece = this.dropPiece(piece);
+
+		if (!droppedPiece || !droppedPiecesGroup || !promotedPieceGroup) return;
+
+		const newPiece = new MatrixPieceModel(
+			toPiece,
+			piece.color,
+			piece.instanceId,
+			piece.type
+		);
+
+		promotedPieceGroup.createPiece(newPiece, this.physics);
+		droppedPiecesGroup.push(droppedPiece);
 	}
 }
