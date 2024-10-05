@@ -216,9 +216,7 @@ export class PiecesComponent {
 		coord: BoardCoord
 	): MatrixPieceModel<Type, Color> | undefined {
 		const group = this.groups?.[pieceColor]?.[pieceGroup];
-		const pieceId = Object.keys(group?.pieces ?? {}).find((id) => {
-			const piece = group?.pieces[parseInt(id)];
-
+		const piece = group?.pieces.find((piece) => {
 			if (
 				group &&
 				piece &&
@@ -230,12 +228,9 @@ export class PiecesComponent {
 			return false;
 		});
 
-		if (!group || !pieceId) return undefined;
+		if (!group || !piece) return undefined;
 
-		return group.pieces[parseInt(pieceId)] as unknown as MatrixPieceModel<
-			Type,
-			Color
-		>;
+		return piece as unknown as MatrixPieceModel<Type, Color>;
 	}
 
 	public movePieceByPosition<

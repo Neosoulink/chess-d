@@ -8,7 +8,7 @@ import { Subject, Subscription } from "rxjs";
 import { Physics } from "@chess-d/rapier-physics";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 
-import { BoardCoord, PieceId } from "../../interfaces";
+import { BoardCoord } from "../../interfaces";
 import { ColorVariant, PieceType } from "../../enums";
 import { COLOR_BLACK, COLOR_WHITE } from "../../constants";
 import { MatrixPieceModel } from "../matrixes/matrix-piece.model";
@@ -187,12 +187,12 @@ export class InstancedPieceModel<
 	}
 
 	public dropPiece(
-		id: PieceId,
+		instanceId: number,
 		physics?: Physics
 	): InstancedPieceModel<Type, Color> | undefined {
-		if (!this.pieces[id] || !physics) return undefined;
+		if (!this.pieces[instanceId] || !physics) return undefined;
 
-		this._deletePiece(id);
+		this._deletePiece(instanceId);
 
 		return this._reConstruct(physics, this.pieces);
 	}

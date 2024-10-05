@@ -2,8 +2,6 @@ import { InstancedMesh, Intersection } from "three";
 import { ColorVariant, PieceType } from "../enums";
 import { MatrixPieceModel, InstancedPieceModel } from "../models";
 
-export type PieceId = number;
-
 export type PieceNotificationPayload<
 	T extends InstancedMesh = InstancedMesh,
 	Extra extends object = object
