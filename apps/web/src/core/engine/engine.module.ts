@@ -50,18 +50,18 @@ export class EngineModule implements Module {
 		) {
 			const rockCoord = {
 				...cell.coord,
-				col: flags === MoveFlags.kingside_castle ? 7 : 0
+				col: flags === MoveFlags.queenside_castle ? 0 : 7
 			};
 			const rock = this.pieceComponent.getPieceByCoord(
 				PieceType.rock,
-				oppositeColor,
+				piece.color,
 				rockCoord
 			);
 
 			if (rock) {
 				const newRockCoord = {
 					...cell.coord,
-					col: flags === MoveFlags.kingside_castle ? 5 : 3
+					col: flags === MoveFlags.queenside_castle ? 3 : 5
 				};
 
 				this.pieceComponent.movePieceByCoord(rock, newRockCoord);
