@@ -257,6 +257,7 @@ export class PiecesComponent {
 	public dropPiece<Type extends PieceType, Color extends ColorVariant>(
 		piece: MatrixPieceModel<Type, Color>
 	): MatrixPieceModel<Type, Color> | undefined {
+		const droppedPiecesGroup = this.droppedGroups?.[piece.color]?.[piece.type];
 		const piecesGroup = this.groups?.[piece.color]?.[piece.type];
 		const pieces = piecesGroup?.pieces;
 
@@ -273,7 +274,10 @@ export class PiecesComponent {
 
 		if (!newGroup) return undefined;
 
-		this.setGroupType(piece.type, piece.color, newGroup);
+		this.setGroupType(newGroup.piecesType, newGroup.piecesColor, newGroup);
+
+		// @ts-ignore <unsupported never type>
+		droppedPiecesGroup?.push(piece);
 
 		return piece;
 	}
@@ -281,15 +285,13 @@ export class PiecesComponent {
 	public promotePiece<Color extends ColorVariant, ToType extends PieceType>(
 		piece: MatrixPieceModel<PieceType.pawn, Color>,
 		toPiece: ToType
-	) {
+	): void {
 		const promotedPieceGroup = this.groups?.[piece.color]?.[
 			toPiece
 		] as unknown as InstancedPieceModel<ToType, Color>;
-		const droppedPiecesGroup =
-			this.droppedGroups?.[piece.color]?.[PieceType.pawn];
 		const droppedPiece = this.dropPiece(piece);
 
-		if (!droppedPiece || !droppedPiecesGroup || !promotedPieceGroup) return;
+		if (!droppedPiece || !promotedPieceGroup) return;
 
 		const newPiece = new MatrixPieceModel(
 			toPiece,
@@ -297,8 +299,13 @@ export class PiecesComponent {
 			piece.instanceId,
 			piece.type
 		);
+		newPiece.position.copy(piece.position);
+		newPiece.coord.col = piece.coord.col;
+		newPiece.coord.row = piece.coord.row;
 
-		promotedPieceGroup.createPiece(newPiece, this.physics);
-		droppedPiecesGroup.push(droppedPiece);
+		const newGroup = promotedPieceGroup.addPiece(newPiece, this.physics);
+		if (!newGroup) return;
+
+		this.setGroupType(newGroup.piecesType, newGroup.piecesColor, newGroup);
 	}
 }

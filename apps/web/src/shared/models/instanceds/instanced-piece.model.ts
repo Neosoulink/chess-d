@@ -47,6 +47,7 @@ export class InstancedPieceModel<
 			if (oldPiece instanceof MatrixPieceModel) {
 				piece.coord.col = oldPiece.coord.col;
 				piece.coord.row = oldPiece.coord.row;
+				piece.promotedFromType = oldPiece.promotedFromType;
 				piece.setPosition(oldPiece.position);
 			}
 
@@ -93,6 +94,8 @@ export class InstancedPieceModel<
 		instance.initPhysics(physics);
 		parent?.add(instance);
 
+		this.update();
+
 		return instance;
 	}
 
@@ -123,14 +126,11 @@ export class InstancedPieceModel<
 			1
 		) as PhysicsProperties[];
 
-		physicsProperties.forEach((_, i) => {
-			const piece = this.getPieceByInstanceId(i);
+		physicsProperties.forEach((physicsProps, instanceId) => {
+			const piece = this.getPieceByInstanceId(instanceId);
 
-			if (
-				piece instanceof MatrixPieceModel &&
-				typeof physicsProperties[i] === "object"
-			)
-				piece.physics = physicsProperties[i];
+			if (piece instanceof MatrixPieceModel && typeof physicsProps === "object")
+				piece.physics = physicsProps;
 		});
 	}
 
@@ -178,12 +178,15 @@ export class InstancedPieceModel<
 		return this.pieces[instanceId];
 	}
 
-	public createPiece(
+	public addPiece(
 		piece: MatrixPieceModel<Type, Color>,
 		physics: Physics
-	): void {
-		physics.removeFromWorld(this);
-		this.initPhysics(physics);
+	): InstancedPieceModel<Type, Color> | undefined {
+		if (!(piece instanceof MatrixPieceModel)) return undefined;
+
+		this.pieces.push(piece);
+
+		return this._reConstruct(physics, this.pieces);
 	}
 
 	public dropPiece(

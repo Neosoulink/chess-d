@@ -24,7 +24,7 @@ export class MatrixPieceModel<
 		public readonly type: T,
 		public readonly color: C,
 		public readonly instanceId: number,
-		public readonly promotedFromType?: PieceType
+		public promotedFromType?: PieceType
 	) {
 		super();
 	}

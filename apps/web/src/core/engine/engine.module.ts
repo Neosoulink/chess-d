@@ -68,16 +68,19 @@ export class EngineModule implements Module {
 			}
 		}
 
-		// if (nextMove.promotion) {
-		// 	const
-		// }
-
 		if (pieceToDrop) {
 			this.pieceComponent.dropPiece(pieceToDrop);
 		}
 
 		this.pieceComponent.movePieceByCoord(piece, cell.coord);
 		this.component.game.move(nextMove);
+
+		if (nextMove.promotion && piece.type === PieceType.pawn) {
+			this.pieceComponent.promotePiece(
+				piece as MatrixPieceModel<PieceType.pawn, (typeof piece)["color"]>,
+				nextMove.promotion as PieceType
+			);
+		}
 	}
 
 	public init() {
