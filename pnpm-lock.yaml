@@ -176,8 +176,8 @@ importers:
         specifier: ^1.7.0
         version: 1.7.0
       three:
-        specifier: ^0.166.1
-        version: 0.166.1
+        specifier: ^0.168.0
+        version: 0.168.0
       typescript-ioc:
         specifier: ^3.2.2
         version: 3.2.2
@@ -186,8 +186,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/configs
       '@types/three':
-        specifier: ^0.166.0
-        version: 0.166.0
+        specifier: ^0.168.0
+        version: 0.168.0
       reflect-metadata:
         specifier: ^0.2.0
         version: 0.2.2
@@ -226,15 +226,15 @@ importers:
         specifier: ^0.14.0
         version: 0.14.0
       three:
-        specifier: ^0.166.1
-        version: 0.166.1
+        specifier: ^0.168.0
+        version: 0.168.0
     devDependencies:
       '@chess-d/configs':
         specifier: workspace:*
         version: link:../configs
       '@types/three':
-        specifier: ^0.166.0
-        version: 0.166.0
+        specifier: ^0.168.0
+        version: 0.168.0
       typescript:
         specifier: ^5.5.3
         version: 5.6.2
@@ -1445,8 +1445,8 @@ packages:
   '@types/supertest@6.0.2':
     resolution: {integrity: sha512-137ypx2lk/wTQbW6An6safu9hXmajAifU/s7szAHLN/FeIm5w7yR0Wkl9fdJMRSHwOn4HLAI0DaB2TOORuhPDg==}
 
-  '@types/three@0.166.0':
-    resolution: {integrity: sha512-FHMnpcdhdbdOOIYbfkTkUVpYMW53odxbTRwd0/xJpYnTzEsjnVnondGAvHZb4z06UW0vo6WPVuvH0/9qrxKx7g==}
+  '@types/three@0.168.0':
+    resolution: {integrity: sha512-qAGLGzbaYgkkonOBfwOr+TZpOskPfFjrDAj801WQSVkUz0/D9zwir4vhruJ/CC/GteywzR9pqeVVfs5th/2oKw==}
 
   '@types/tough-cookie@4.0.5':
     resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
@@ -1610,6 +1610,9 @@ packages:
 
   '@webassemblyjs/wast-printer@1.12.1':
     resolution: {integrity: sha512-+X4WAlOisVWQMikjbcvY2e0rwPsKQ9F688lksZhBcPycBBuii3O7m8FACbDMWDojpAqvjIncrG8J0XHKyQfVeA==}
+
+  '@webgpu/types@0.1.45':
+    resolution: {integrity: sha512-0TBBF/mhakJoK0qUWCZugBnh23x+VwmYA5RLmtNQwvZt1pQ4P2fzIvQUiSe6jxzkBi4GF8R4BejJjro0ZSoSXQ==}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -4504,11 +4507,11 @@ packages:
   threads@1.7.0:
     resolution: {integrity: sha512-Mx5NBSHX3sQYR6iI9VYbgHKBLisyB+xROCBGjjWm1O9wb9vfLxdaGtmT/KCjUqMsSNW6nERzCW3T6H43LqjDZQ==}
 
-  three@0.166.1:
-    resolution: {integrity: sha512-LtuafkKHHzm61AQA1be2MAYIw1IjmhOUxhBa0prrLpEMWbV7ijvxCRHjSgHPGp2493wLBzwKV46tA9nivLEgKg==}
-
   three@0.167.1:
     resolution: {integrity: sha512-gYTLJA/UQip6J/tJvl91YYqlZF47+D/kxiWrbTon35ZHlXEN0VOo+Qke2walF1/x92v55H6enomymg4Dak52kw==}
+
+  three@0.168.0:
+    resolution: {integrity: sha512-6m6jXtDwMJEK/GGMbAOTSAmxNdzKvvBzgd7q8bE/7Tr6m7PaBh5kKLrN7faWtlglXbzj7sVba48Idwx+NRsZXw==}
 
   through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
@@ -6487,11 +6490,12 @@ snapshots:
       '@types/methods': 1.1.4
       '@types/superagent': 8.1.9
 
-  '@types/three@0.166.0':
+  '@types/three@0.168.0':
     dependencies:
       '@tweenjs/tween.js': 23.1.3
       '@types/stats.js': 0.17.3
       '@types/webxr': 0.5.20
+      '@webgpu/types': 0.1.45
       fflate: 0.8.2
       meshoptimizer: 0.18.1
 
@@ -6740,6 +6744,8 @@ snapshots:
     dependencies:
       '@webassemblyjs/ast': 1.12.1
       '@xtuc/long': 4.2.2
+
+  '@webgpu/types@0.1.45': {}
 
   '@xtuc/ieee754@1.2.0': {}
 
@@ -10149,9 +10155,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  three@0.166.1: {}
-
   three@0.167.1: {}
+
+  three@0.168.0: {}
 
   through@2.3.8: {}
 

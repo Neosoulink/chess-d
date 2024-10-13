@@ -12,7 +12,7 @@
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
-		"@types/three": "^0.166.0",
+		"@types/three": "^0.168.0",
 		"reflect-metadata": "^0.2.0",
 		"tsyringe": "^4.8.0"
 	},
@@ -23,7 +23,7 @@
 		"chess.js": "1.0.0-beta.8",
 		"rxjs": "^7.8.1",
 		"threads": "^1.7.0",
-		"three": "^0.166.1",
+		"three": "^0.168.0",
 		"typescript-ioc": "^3.2.2"
 	}
 }
