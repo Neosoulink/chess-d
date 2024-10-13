@@ -1,13 +1,13 @@
 import { Chess } from "chess.js";
-import { singleton } from "tsyringe";
+import { inject, singleton } from "tsyringe";
+
+import { fenToCoords } from "../../shared";
 
 @singleton()
 export class EngineComponent {
-	public readonly game = new Chess(
-		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"
-	);
+	constructor(@inject(Chess) public readonly game: Chess) {}
 
-	constructor() {
-		console.log("EngineComponent", this.game.turn());
+	public getFenCoords() {
+		return fenToCoords(this.game.fen());
 	}
 }

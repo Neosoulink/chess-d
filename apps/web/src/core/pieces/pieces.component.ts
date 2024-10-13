@@ -1,5 +1,5 @@
 import { inject, singleton } from "tsyringe";
-import { BufferGeometry, Vector3Like } from "three";
+import { Vector3Like } from "three";
 import { Physics } from "@chess-d/rapier-physics";
 
 import {
@@ -7,20 +7,28 @@ import {
 	PiecesGroups,
 	PieceType,
 	ColorVariant,
-	BOARD_MATRIX_RANGE_SIZE,
 	MatrixPieceModel,
 	BoardCoord,
 	DroppedPiecesGroups
 } from "../../shared";
+import { EngineComponent } from "../engine/engine.component";
 import { BoardComponent } from "../board/board.component";
 import { ResourceComponent } from "../resource/resource.component";
 
 @singleton()
 export class PiecesComponent {
-	public groups?: PiecesGroups;
-	public droppedGroups?: DroppedPiecesGroups;
+	public readonly groups: PiecesGroups = {
+		[ColorVariant.white]: {},
+		[ColorVariant.black]: {}
+	};
+	public readonly droppedGroups: DroppedPiecesGroups = {
+		[ColorVariant.white]: {},
+		[ColorVariant.black]: {}
+	};
 
 	constructor(
+		@inject(EngineComponent)
+		private readonly engineComponent: EngineComponent,
 		@inject(BoardComponent)
 		private readonly boardComponent: BoardComponent,
 		@inject(ResourceComponent)
@@ -28,186 +36,56 @@ export class PiecesComponent {
 		@inject(Physics) private readonly physics: Physics
 	) {}
 
-	private _initPawns<Color extends ColorVariant>(color: Color) {
-		const group = this.createGroup(
-			PieceType.pawn,
-			color,
-			BOARD_MATRIX_RANGE_SIZE,
-			this.resourceComponent.getGeometryByPieceType(PieceType.pawn)
-		);
-		const isBlack = color === ColorVariant.black;
-
-		group.pieces.forEach((piece, index) => {
-			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
-				col: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 - index : index,
-				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 2 : 1
-			});
-		});
-
-		return group;
-	}
-
-	private _initRocks<Color extends ColorVariant>(color: Color) {
-		const group = this.createGroup(
-			PieceType.rock,
-			color,
-			2,
-			this.resourceComponent.getGeometryByPieceType(PieceType.rock)
-		);
-		const isBlack = color === ColorVariant.black;
-
-		group.pieces.forEach((piece, index) => {
-			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
-				col: index === 0 ? 0 : BOARD_MATRIX_RANGE_SIZE - 1,
-				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
-			});
-		});
-
-		return group;
-	}
-
-	private _initKnights<Color extends ColorVariant>(color: Color) {
-		const group = this.createGroup(
-			PieceType.knight,
-			color,
-			2,
-			this.resourceComponent.getGeometryByPieceType(PieceType.knight)
-		);
-		const isBlack = color === ColorVariant.black;
-
-		group.pieces.forEach((piece, index) => {
-			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
-				col: isBlack
-					? index === 0
-						? BOARD_MATRIX_RANGE_SIZE - 2
-						: 1
-					: index === 0
-						? 1
-						: BOARD_MATRIX_RANGE_SIZE - 2,
-				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
-			});
-		});
-
-		return group;
-	}
-
-	private _initBishops<Color extends ColorVariant>(color: Color) {
-		const group = this.createGroup(
-			PieceType.bishop,
-			color,
-			2,
-			this.resourceComponent.getGeometryByPieceType(PieceType.bishop)
-		);
-		const isBlack = color === ColorVariant.black;
-
-		group.pieces.forEach((piece, index) => {
-			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
-				col: isBlack
-					? index === 0
-						? BOARD_MATRIX_RANGE_SIZE - 3
-						: 2
-					: index === 0
-						? 2
-						: BOARD_MATRIX_RANGE_SIZE - 3,
-				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
-			});
-		});
-
-		return group;
-	}
-
-	private _initQueens<Color extends ColorVariant>(color: Color) {
-		const group = this.createGroup(
-			PieceType.queen,
-			color,
-			1,
-			this.resourceComponent.getGeometryByPieceType(PieceType.queen)
-		);
-		const isBlack = color === ColorVariant.black;
-
-		group.pieces.forEach((piece) => {
-			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
-				col: 3,
-				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
-			});
-		});
-
-		return group;
-	}
-
-	private _initKings<Color extends ColorVariant>(color: Color) {
-		const group = this.createGroup(
-			PieceType.king,
-			color,
-			1,
-			this.resourceComponent.getGeometryByPieceType(PieceType.king)
-		);
-		const isBlack = color === ColorVariant.black;
-
-		group.pieces.forEach((piece) => {
-			group.setPieceCoord(piece.instanceId, this.boardComponent.instancedCell, {
-				col: 4,
-				row: isBlack ? BOARD_MATRIX_RANGE_SIZE - 1 : 0
-			});
-		});
-
-		return group;
-	}
-
 	public createGroup<Type extends PieceType, Color extends ColorVariant>(
 		type: Type,
 		color: Color,
-		count: number,
-		geometry: BufferGeometry,
+		coords: BoardCoord[],
 		pieces?: InstancedPieceModel<Type, Color>["pieces"]
 	) {
-		const group = new InstancedPieceModel(type, color, count, geometry, pieces);
+		const group = new InstancedPieceModel(
+			type,
+			color,
+			coords.length,
+			this.resourceComponent.getGeometryByPieceType(type),
+			pieces
+		);
+
+		coords.forEach((coord, instanceId) => {
+			group.setPieceCoord(instanceId, this.boardComponent.instancedCell, coord);
+		});
+
 		group.initPhysics(this.physics);
 
 		return group;
 	}
 
-	public setGroupType<Type extends PieceType, Color extends ColorVariant>(
-		type: Type,
-		color: Color,
+	public setGroup<Type extends PieceType, Color extends ColorVariant>(
 		newGroup: InstancedPieceModel<Type, Color>
 	): InstancedPieceModel<Type, Color> | undefined {
-		if (!(this.groups?.[color][type] instanceof InstancedPieceModel)) return;
-
 		// @ts-ignore <unsupported never type>
-		this.groups[color][type] = newGroup;
+		this.groups[newGroup.piecesColor][newGroup.piecesType] = newGroup;
 
-		return this.groups[color][type] as unknown as typeof newGroup;
+		return this.groups[newGroup.piecesColor][
+			newGroup.piecesType
+		] as unknown as typeof newGroup;
 	}
 
 	public initPieces() {
-		const createGroup = <C extends ColorVariant = ColorVariant>(color: C) => ({
-			[PieceType.pawn]: this._initPawns(color),
-			[PieceType.rock]: this._initRocks(color),
-			[PieceType.knight]: this._initKnights(color),
-			[PieceType.bishop]: this._initBishops(color),
-			[PieceType.queen]: this._initQueens(color),
-			[PieceType.king]: this._initKings(color)
-		});
+		const fenCoords = this.engineComponent.getFenCoords();
 
-		const createDroppedGroup = () => ({
-			[PieceType.pawn]: [],
-			[PieceType.rock]: [],
-			[PieceType.knight]: [],
-			[PieceType.bishop]: [],
-			[PieceType.queen]: [],
-			[PieceType.king]: []
-		});
+		if (fenCoords)
+			[ColorVariant.black, ColorVariant.white].forEach((color) => {
+				const pieceCoords = fenCoords[color];
+				Object.keys(pieceCoords).forEach((_pieceType) => {
+					const coords = pieceCoords[_pieceType];
+					const pieceType = _pieceType.toLowerCase() as PieceType;
 
-		this.groups = {
-			[ColorVariant.black]: createGroup(ColorVariant.black),
-			[ColorVariant.white]: createGroup(ColorVariant.white)
-		};
+					const newGroup = this.createGroup(pieceType, color, coords ?? []);
 
-		this.droppedGroups = {
-			[ColorVariant.black]: createDroppedGroup(),
-			[ColorVariant.white]: createDroppedGroup()
-		};
+					this.setGroup(newGroup);
+					this.droppedGroups[color][pieceType] = [];
+				});
+			});
 	}
 
 	public getPieceByCoord<Type extends PieceType, Color extends ColorVariant>(
@@ -274,7 +152,7 @@ export class PiecesComponent {
 
 		if (!newGroup) return undefined;
 
-		this.setGroupType(newGroup.piecesType, newGroup.piecesColor, newGroup);
+		this.setGroup(newGroup);
 
 		// @ts-ignore <unsupported never type>
 		droppedPiecesGroup?.push(piece);
@@ -306,6 +184,6 @@ export class PiecesComponent {
 		const newGroup = promotedPieceGroup.addPiece(newPiece, this.physics);
 		if (!newGroup) return;
 
-		this.setGroupType(newGroup.piecesType, newGroup.piecesColor, newGroup);
+		this.setGroup(newGroup);
 	}
 }

@@ -20,9 +20,9 @@ export type DroppedPiecesGroup<Color extends ColorVariant> = {
 };
 
 export type PiecesGroups = {
-	[Color in ColorVariant]: PiecesGroup<Color>;
+	[Color in ColorVariant]: Partial<PiecesGroup<Color>>;
 };
 
 export type DroppedPiecesGroups = {
-	[Color in ColorVariant]: DroppedPiecesGroup<Color>;
+	[Color in ColorVariant]: Partial<DroppedPiecesGroup<Color>>;
 };

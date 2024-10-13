@@ -5,7 +5,7 @@ import { copyProperties } from "@quick-threejs/utils";
 
 import { PiecesComponent } from "./pieces.component";
 import { PiecesController } from "./pieces.controller";
-import { ColorVariant, VECTOR } from "../../shared";
+import { ColorVariant, PieceType, VECTOR } from "../../shared";
 import { EngineController } from "../engine/engine.controller";
 
 @singleton()
@@ -26,13 +26,10 @@ export class PiecesModule implements Module {
 			[...Object.keys(this.component.groups[ColorVariant.black])].forEach(
 				(key) => {
 					const blackGroup =
-						this.component.groups?.[ColorVariant.black][
-							key as unknown as keyof (typeof this.component.groups)[ColorVariant.black]
-						];
+						this.component.groups?.[ColorVariant.black][key as PieceType];
+
 					const whiteGroup =
-						this.component.groups?.[ColorVariant.white][
-							key as unknown as keyof (typeof this.component.groups)[ColorVariant.white]
-						];
+						this.component.groups?.[ColorVariant.white][key as PieceType];
 
 					if (blackGroup) this.appModule.world.scene().add(blackGroup);
 					if (whiteGroup) this.appModule.world.scene().add(whiteGroup);

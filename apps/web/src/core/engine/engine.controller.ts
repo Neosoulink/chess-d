@@ -6,9 +6,9 @@ import { Move } from "chess.js";
 import { EngineComponent } from "./engine.component";
 import { PiecesController } from "../pieces/pieces.controller";
 import {
-	coordToEngineSquare,
+	coordToSquare,
 	EngineNotificationPayload,
-	engineSquareToCoord,
+	squareToCoord,
 	ObservablePayload,
 	PieceNotificationPayload
 } from "../../shared";
@@ -60,13 +60,13 @@ export class EngineController {
 	private _getEnginePayLoadFromPiece<
 		PiecePayload extends PieceNotificationPayload
 	>(piecePayload: PiecePayload): EngineNotificationPayload & PiecePayload {
-		const pgnSquare = coordToEngineSquare(piecePayload.piece.coord);
+		const pgnSquare = coordToSquare(piecePayload.piece.coord);
 		const possibleMoves = this.component.game.moves({
 			square: pgnSquare,
 			verbose: true
 		});
 		const possibleCoords = possibleMoves.map((moves) =>
-			engineSquareToCoord(moves.to)
+			squareToCoord(moves.to)
 		);
 
 		return {

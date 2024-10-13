@@ -1,9 +1,10 @@
-import { Square } from "chess.js";
+import { PieceSymbol, Square, validateFen } from "chess.js";
 
 import {
 	ENGINE_SQUARE_KEY_NUMBERS,
 	ENGINE_SQUARE_NUMBER_KEYS
 } from "../constants";
+import { ColorVariant, PieceType } from "../enums";
 import { BoardCoord } from "../interfaces";
 
 /**
@@ -11,12 +12,12 @@ import { BoardCoord } from "../interfaces";
  *
  * @see [PGN MoveText](https://en.wikipedia.org/wiki/Portable_Game_Notation)
  */
-export const coordToEngineSquare = ({ col, row }: BoardCoord): Square => {
+export const coordToSquare = ({ col, row }: BoardCoord): Square => {
 	return `${ENGINE_SQUARE_NUMBER_KEYS[col]}${row + 1}` as Square;
 };
 
 /** @description convert the engine {@link Square} to a valid {@link BoardCoord}. */
-export const engineSquareToCoord = (square: Square): BoardCoord => {
+export const squareToCoord = (square: Square): BoardCoord => {
 	if (typeof square !== "string" || !square[0] || !square[1])
 		throw new Error("Invalid square type");
 
@@ -24,4 +25,78 @@ export const engineSquareToCoord = (square: Square): BoardCoord => {
 		col: ENGINE_SQUARE_KEY_NUMBERS[square[0]],
 		row: parseInt(square[1]) - 1
 	};
+};
+
+/**
+ * @description Get the square color from the square key (p, P, r, R ...).
+ *
+ * @param piece Piece square
+ */
+export const getPieceSymbolColor = (
+	piece: PieceSymbol | Capitalize<PieceSymbol>
+) => {
+	if (!PieceType[piece.toLowerCase()]) return undefined;
+
+	if (piece === piece.toLowerCase()) return ColorVariant.black;
+
+	return ColorVariant.white;
+};
+
+/**
+ * @description convert FEN string to position object.
+ * Returns `undefined` if the FEN string is invalid.
+ *
+ * @param fen FEN string.
+ *
+ * @inspiration_from Chris Oakman <chris@oakmac.com>
+ */
+export const fenToCoords = (rawFen: string) => {
+	if (!validateFen(rawFen)) return;
+
+	// cut off any move, castling, etc info from the end
+	// we're only interested in position information
+	const fen = rawFen.replace(/ .+$/, "");
+	const rows = fen.split("/");
+	const positions: Record<
+		ColorVariant,
+		Partial<Record<PieceSymbol | Capitalize<PieceSymbol>, BoardCoord[]>>
+	> = {
+		[ColorVariant.white]: {},
+		[ColorVariant.black]: {}
+	};
+
+	let currentRow = 8;
+	for (let i = 0; i < 8; i++) {
+		const row =
+			(rows[i]?.split("") as (PieceSymbol | Capitalize<PieceSymbol>)[]) ?? [];
+		let colIdx = 0;
+
+		// loop through each character in the FEN section
+		for (let j = 0; j < row.length; j++) {
+			const piece = row[j];
+
+			// number / empty squares
+			if (piece && piece.search(/[1-8]/) !== -1) {
+				const numEmptySquares = parseInt(piece, 10);
+				colIdx = colIdx + numEmptySquares;
+			} else if (piece) {
+				const color = getPieceSymbolColor(piece);
+
+				if (!color) return undefined;
+
+				if (!positions[color][piece]) positions[color][piece] = [];
+
+				positions[color][piece].push(
+					squareToCoord(
+						`${ENGINE_SQUARE_NUMBER_KEYS[colIdx]}${currentRow}` as Square
+					)
+				);
+				colIdx = colIdx + 1;
+			}
+		}
+
+		currentRow = currentRow - 1;
+	}
+
+	return positions;
 };
