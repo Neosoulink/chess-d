@@ -1,0 +1,26 @@
+{
+	"name": "@chess-d/ai",
+	"private": true,
+	"version": "0.1.0",
+	"type": "module",
+	"scripts": {
+		"dev": "tsc --watch",
+		"build": "tsc"
+	},
+	"main": "./dist/main.js",
+	"types": "./dist/main.d.ts",
+	"devDependencies": {
+		"@chess-d/configs": "workspace:*",
+		"reflect-metadata": "^0.2.0",
+		"tsyringe": "^4.8.0",
+		"typescript": "^5.5.3"
+	},
+	"peerDependencies": {
+		"chess.js": "1.0.0-beta.8",
+		"@quick-threejs/utils": "^0.1.9"
+	},
+	"keywords": [
+		"ai",
+		"chess"
+	]
+}
