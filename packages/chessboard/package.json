@@ -12,9 +12,9 @@
 	"types": "./dist/main.d.ts",
 	"dependencies": {
 		"chess.js": "1.0.0-beta.8",
-		"@quick-threejs/utils": "^0.1.9",
+		"@quick-threejs/utils": "^0.1.10",
 		"@chess-d/rapier-physics": "workspace:*",
-		"@quick-threejs/reactive": "^0.1.14",
+		"@quick-threejs/reactive": "^0.1.15",
 		"rxjs": "^7.8.1",
 		"threads": "^1.7.0",
 		"three": "^0.169.0",

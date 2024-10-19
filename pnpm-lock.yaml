@@ -164,11 +164,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/chessboard
       '@quick-threejs/reactive':
-        specifier: ^0.1.14
-        version: 0.1.14(stats.js@0.17.0)
+        specifier: ^0.1.15
+        version: 0.1.15(stats.js@0.17.0)
       '@quick-threejs/utils':
-        specifier: ^0.1.9
-        version: 0.1.9
+        specifier: ^0.1.10
+        version: 0.1.10
       chess.js:
         specifier: 1.0.0-beta.8
         version: 1.0.0-beta.8
@@ -198,8 +198,8 @@ importers:
   packages/ai:
     dependencies:
       '@quick-threejs/utils':
-        specifier: ^0.1.9
-        version: 0.1.9
+        specifier: ^0.1.10
+        version: 0.1.10
       chess.js:
         specifier: 1.0.0-beta.8
         version: 1.0.0-beta.8
@@ -242,11 +242,11 @@ importers:
         specifier: workspace:*
         version: link:../rapier-physics
       '@quick-threejs/reactive':
-        specifier: ^0.1.14
-        version: 0.1.14(stats.js@0.17.0)
+        specifier: ^0.1.15
+        version: 0.1.15(stats.js@0.17.0)
       '@quick-threejs/utils':
-        specifier: ^0.1.9
-        version: 0.1.9
+        specifier: ^0.1.10
+        version: 0.1.10
       chess.js:
         specifier: 1.0.0-beta.8
         version: 1.0.0-beta.8
@@ -282,8 +282,8 @@ importers:
   packages/configs:
     devDependencies:
       '@quick-threejs/config':
-        specifier: ^0.1.8
-        version: 0.1.8
+        specifier: ^0.1.9
+        version: 0.1.9
 
   packages/rapier-physics:
     dependencies:
@@ -1292,13 +1292,16 @@ packages:
   '@quick-threejs/config@0.1.8':
     resolution: {integrity: sha512-dSInIxLPDfr6z+TfJ8OQ6nGkwcUrjMZ9EXs0SvydJaHqOFmwQfgXZY1im4zf9CPDxhWXADyWhHmZhpiou6FqMA==}
 
-  '@quick-threejs/reactive@0.1.14':
-    resolution: {integrity: sha512-YY7U+fBlmLv1CeriDCbxgY8CMO5r9vLD34S2HhxzaZG+y1B9XB8XnBV+It1m3hNyCyvLbzAUat/mz4FckMrHEA==}
+  '@quick-threejs/config@0.1.9':
+    resolution: {integrity: sha512-0z71r9B5+a30TQ630QgUUPMxGARZTSdNpHdmd/HtTTjsIB2CASjWXn4tH6EEWQRShmV5W+GA7IdbGu8oeHXsqQ==}
+
+  '@quick-threejs/reactive@0.1.15':
+    resolution: {integrity: sha512-qQm4/b5WUDDtW/fG4/Ad2fUuKGDoGMK+4WLlBv5NnNCNydbt08W3qzf/yDucCh8ZUaQc6eotsJC2ROYeYIBGxQ==}
     peerDependencies:
       stats.js: ^0.17.0
 
-  '@quick-threejs/utils@0.1.9':
-    resolution: {integrity: sha512-fPaqNTeFPUYDRL+CfbDvDw3RuQQiDhoj5pUcNI6FMVTi676QreQI+QP95yjRXjQicytj/mOW7IFW8/MdbM4/BA==}
+  '@quick-threejs/utils@0.1.10':
+    resolution: {integrity: sha512-JvlQVDUxjcHpvz38nWmk3W6LUtcyroHuPIynclwrC3RDgznEseMWq2wYtZw9ggSN1Pzxq/IKCSzRZaDFnGlbkQ==}
 
   '@rollup/rollup-android-arm-eabi@4.21.3':
     resolution: {integrity: sha512-MmKSfaB9GX+zXl6E8z4koOr/xU63AMVleLEa64v7R0QF/ZloMs5vcD1sHgM64GXXS1csaJutG+ddtzcueI/BLg==}
@@ -4583,9 +4586,6 @@ packages:
   threads@1.7.0:
     resolution: {integrity: sha512-Mx5NBSHX3sQYR6iI9VYbgHKBLisyB+xROCBGjjWm1O9wb9vfLxdaGtmT/KCjUqMsSNW6nERzCW3T6H43LqjDZQ==}
 
-  three@0.167.1:
-    resolution: {integrity: sha512-gYTLJA/UQip6J/tJvl91YYqlZF47+D/kxiWrbTon35ZHlXEN0VOo+Qke2walF1/x92v55H6enomymg4Dak52kw==}
-
   three@0.169.0:
     resolution: {integrity: sha512-Ed906MA3dR4TS5riErd4QBsRGPcx+HBDX2O5yYE5GqJeFQTPU+M56Va/f/Oph9X7uZo3W3o4l2ZhBZ6f6qUv0w==}
 
@@ -6348,21 +6348,23 @@ snapshots:
 
   '@quick-threejs/config@0.1.8': {}
 
-  '@quick-threejs/reactive@0.1.14(stats.js@0.17.0)':
+  '@quick-threejs/config@0.1.9': {}
+
+  '@quick-threejs/reactive@0.1.15(stats.js@0.17.0)':
     dependencies:
-      '@quick-threejs/utils': 0.1.9
+      '@quick-threejs/utils': 0.1.10
       rxjs: 7.8.1
       stats.js: 0.17.0
       threads: 1.7.0
-      three: 0.167.1
+      three: 0.169.0
     transitivePeerDependencies:
       - supports-color
 
-  '@quick-threejs/utils@0.1.9':
+  '@quick-threejs/utils@0.1.10':
     dependencies:
       rxjs: 7.8.1
       threads: 1.7.0
-      three: 0.167.1
+      three: 0.169.0
     transitivePeerDependencies:
       - supports-color
 
@@ -10240,8 +10242,6 @@ snapshots:
       tiny-worker: 2.3.0
     transitivePeerDependencies:
       - supports-color
-
-  three@0.167.1: {}
 
   three@0.169.0: {}
 
