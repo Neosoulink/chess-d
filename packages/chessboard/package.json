@@ -17,12 +17,12 @@
 		"@quick-threejs/reactive": "^0.1.14",
 		"rxjs": "^7.8.1",
 		"threads": "^1.7.0",
-		"three": "^0.166.1",
+		"three": "^0.169.0",
 		"typescript-ioc": "^3.2.2"
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
-		"@types/three": "^0.166.0",
+		"@types/three": "^0.169.0",
 		"reflect-metadata": "^0.2.0",
 		"tsyringe": "^4.8.0",
 		"typescript": "^5.5.3"
