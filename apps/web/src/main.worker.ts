@@ -1,9 +1,6 @@
 import "reflect-metadata";
 
 import { launchApp } from "@quick-threejs/reactive/worker";
+import { setup as onReady } from "@chess-d/chessboard";
 
-import { setupCoreModule } from "./core/core.util";
-
-launchApp({
-	onReady: (app) => setupCoreModule(app)
-});
+launchApp({ onReady });

@@ -6,7 +6,7 @@ import { Physics, RapierPhysics } from "@chess-d/rapier-physics";
 import { CoreModule } from "./core.module";
 import { Chess } from "chess.js";
 
-export const setupCoreModule = async (app: AppModule) => {
+export const setup = async (app: AppModule) => {
 	if (!isObject(app))
 		throw new Error("Unable to retrieve the application context.");
 

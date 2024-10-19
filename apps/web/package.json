@@ -1,29 +1,29 @@
 {
 	"name": "web",
 	"private": true,
-	"version": "0.1.1",
+	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite --clearScreen false --host",
-		"build": "lint && vite build",
+		"build": "pnpm run lint && vite build",
 		"preview": "vite preview",
 		"lint": "tsc && eslint \"src/**/*.ts\"",
 		"test": "jest --passWithNoTests"
+	},
+	"dependencies": {
+		"@chess-d/ai": "workspace:*",
+		"@chess-d/chessboard": "workspace:*",
+		"@quick-threejs/reactive": "^0.1.14",
+		"@quick-threejs/utils": "^0.1.9",
+		"chess.js": "1.0.0-beta.8",
+		"rxjs": "^7.8.1",
+		"threads": "^1.7.0",
+		"three": "^0.166.1"
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
 		"@types/three": "^0.166.0",
 		"reflect-metadata": "^0.2.0",
 		"tsyringe": "^4.8.0"
-	},
-	"dependencies": {
-		"@chess-d/rapier-physics": "workspace:*",
-		"@quick-threejs/reactive": "^0.1.14",
-		"@quick-threejs/utils": "^0.1.9",
-		"chess.js": "1.0.0-beta.8",
-		"rxjs": "^7.8.1",
-		"threads": "^1.7.0",
-		"three": "^0.166.1",
-		"typescript-ioc": "^3.2.2"
 	}
 }

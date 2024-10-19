@@ -4,7 +4,7 @@ import {
 	ENGINE_SQUARE_KEY_NUMBERS,
 	ENGINE_SQUARE_NUMBER_KEYS
 } from "../constants";
-import { ColorVariant, PieceType } from "../enums";
+import { ColorVariant } from "../enums";
 import { BoardCoord } from "../interfaces";
 
 /**
@@ -35,8 +35,6 @@ export const squareToCoord = (square: Square): BoardCoord => {
 export const getPieceSymbolColor = (
 	piece: PieceSymbol | Capitalize<PieceSymbol>
 ) => {
-	if (!PieceType[piece.toLowerCase()]) return undefined;
-
 	if (piece === piece.toLowerCase()) return ColorVariant.black;
 
 	return ColorVariant.white;

@@ -1,0 +1,34 @@
+{
+	"name": "@chess-d/chessboard",
+	"private": true,
+	"version": "0.1.1",
+	"type": "module",
+	"scripts": {
+		"dev": "tsc --watch",
+		"build": "tsc",
+		"test": "jest --passWithNoTests"
+	},
+	"main": "./dist/main.js",
+	"types": "./dist/main.d.ts",
+	"dependencies": {
+		"chess.js": "1.0.0-beta.8",
+		"@quick-threejs/utils": "^0.1.9",
+		"@chess-d/rapier-physics": "workspace:*",
+		"@quick-threejs/reactive": "^0.1.14",
+		"rxjs": "^7.8.1",
+		"threads": "^1.7.0",
+		"three": "^0.166.1",
+		"typescript-ioc": "^3.2.2"
+	},
+	"devDependencies": {
+		"@chess-d/configs": "workspace:*",
+		"@types/three": "^0.166.0",
+		"reflect-metadata": "^0.2.0",
+		"tsyringe": "^4.8.0",
+		"typescript": "^5.5.3"
+	},
+	"keywords": [
+		"chess",
+		"chessboard"
+	]
+}

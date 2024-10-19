@@ -1,5 +1,5 @@
 ---
-"web": patch
+"@chess-d/chessboard": patch
 ---
 
 # Logs
