@@ -1,14 +1,7 @@
 {
-	"extends": "@chess-d/configs/typescript/base.json",
-	"compilerOptions": {
-		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
-
-		"isolatedModules": false,
-
-		"outDir": "./dist",
-		"noEmit": true
-	},
-	"include": ["src"],
-	"exclude": ["*.config.cjs", "*.config.js", "*.config.ts"]
+	"files": [],
+	"references": [
+		{ "path": "./tsconfig.app.json" },
+		{ "path": "./tsconfig.node.json" }
+	]
 }

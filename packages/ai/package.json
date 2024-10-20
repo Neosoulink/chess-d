@@ -17,7 +17,7 @@
 	},
 	"peerDependencies": {
 		"chess.js": "1.0.0-beta.8",
-		"@quick-threejs/utils": "^0.1.10"
+		"@quick-threejs/utils": "^0.1.11"
 	},
 	"keywords": [
 		"ai",

@@ -1,7 +1,7 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"display": "Default",
-	"extends": "@quick-threejs/config/typescript.json",
+	"extends": "@quick-threejs/config/typescript",
 	"compilerOptions": {
 		"moduleResolution": "bundler",
 		"noUnusedParameters": false,
