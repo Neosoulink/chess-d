@@ -19,7 +19,7 @@ export class PiecesModule implements Module {
 		private readonly engineController: EngineController
 	) {}
 
-	init() {
+	public init() {
 		this.component.initPieces();
 
 		if (this.component.groups)

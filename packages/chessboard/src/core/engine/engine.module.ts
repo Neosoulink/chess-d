@@ -23,13 +23,13 @@ export class EngineModule implements Module {
 	private _pieceMovedHandler(
 		payload: ObservablePayload<EngineController["pieceMoved$"]>
 	) {
-		const { piece, cell, intersection, nextMoveIndex, nextMove } = payload;
+		const { piece, cell, nextMoveIndex, nextMove } = payload;
 		const flags = nextMove?.flags as MoveFlags;
 		const oppositeColor = getOppositeColor(piece.color);
 
 		let pieceToDrop: MatrixPieceModel | undefined = undefined;
 
-		if (!intersection || !cell || !(nextMoveIndex >= 0) || !nextMove)
+		if (!cell || !(nextMoveIndex >= 0) || !nextMove)
 			return this.pieceComponent.movePieceByCoord(piece, piece.coord);
 
 		if (nextMove.captured)

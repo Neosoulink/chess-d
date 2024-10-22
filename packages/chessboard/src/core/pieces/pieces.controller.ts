@@ -1,5 +1,15 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { inject, singleton } from "tsyringe";
-import { filter, map, Observable, switchMap, take, takeUntil } from "rxjs";
+import {
+	filter,
+	map,
+	merge,
+	Observable,
+	Subject,
+	switchMap,
+	take,
+	takeUntil
+} from "rxjs";
 import { InstancedMesh, Intersection } from "three";
 import { AppModule } from "@quick-threejs/reactive";
 
@@ -10,14 +20,23 @@ import {
 	MatrixPieceModel,
 	InstancedPieceModel,
 	PieceType,
-	PieceNotificationPayload
+	PieceNotificationPayload,
+	squareToCoord
 } from "../../shared";
 import { BoardComponent } from "../board/board.component";
 import { PiecesComponent } from "./pieces.component";
 import { CoreComponent } from "../core.component";
+import { Move } from "chess.js";
 
 @singleton()
 export class PiecesController {
+	private readonly pieceDeselected$$ = new Subject<
+		PieceNotificationPayload<
+			InstancedMesh,
+			{ cell: MatrixCellModel; instancedCell: InstancedCellModel }
+		>
+	>();
+
 	public readonly pieceSelected$?: Observable<
 		PieceNotificationPayload<InstancedPieceModel<PieceType, ColorVariant>>
 	>;
@@ -37,6 +56,8 @@ export class PiecesController {
 		@inject(BoardComponent) private readonly boardComponent: BoardComponent,
 		@inject(AppModule) private readonly appModule: AppModule
 	) {
+		self.addEventListener("message", this._onMessage.bind(this));
+
 		this.pieceSelected$ = this.appModule.mousedown$?.().pipe(
 			map(() => {
 				const intersections = this.coreComponent.getIntersections();
@@ -94,23 +115,48 @@ export class PiecesController {
 			)
 		);
 
-		this.pieceDeselected$ = this.pieceMoved$?.pipe(
-			switchMap((payload) =>
-				(this.appModule.mouseup$?.() as Observable<Event>).pipe(
-					map(() => {
-						const { intersection } = payload;
-						const instancedCell = intersection?.object as InstancedCellModel;
-						const cell = (
-							typeof intersection?.instanceId === "number"
-								? instancedCell.getCellByIndex(intersection.instanceId)
-								: undefined
-						) as MatrixCellModel;
+		this.pieceDeselected$ = merge(
+			this.pieceMoved$!.pipe(
+				switchMap((payload) =>
+					(this.appModule.mouseup$?.() as Observable<Event>).pipe(
+						map(() => {
+							const { intersection } = payload;
+							const instancedCell = intersection?.object as InstancedCellModel;
+							const cell = (
+								typeof intersection?.instanceId === "number"
+									? instancedCell.getCellByIndex(intersection.instanceId)
+									: undefined
+							) as MatrixCellModel;
 
-						return { ...payload, instancedCell, cell };
-					}),
-					take(1)
+							return { ...payload, instancedCell, cell };
+						}),
+						take(1)
+					)
 				)
-			)
+			),
+			this.pieceDeselected$$.pipe()
 		);
+	}
+
+	private _onMessage(e: MessageEvent<{ type: string; payload: Move }>): void {
+		if ((e.data?.type as string) === "piece_moved") {
+			const piece = this.component.getPieceByCoord(
+				e.data.payload.piece as PieceType,
+				e.data.payload.color as ColorVariant,
+				squareToCoord(e.data.payload.from)
+			)!;
+			const cell = this.boardComponent.instancedCell.getCellByCoord(
+				squareToCoord(e.data.payload.to)
+			)!;
+
+			this.pieceDeselected$$.next({
+				instancedPiece: this.component.groups[piece?.color!]?.[
+					piece?.type!
+				] as InstancedPieceModel,
+				piece,
+				cell,
+				instancedCell: this.boardComponent.instancedCell
+			});
+		}
 	}
 }

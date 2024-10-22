@@ -24,7 +24,7 @@ export class InstancedCellModel extends InstancedMesh {
 		this.name = InstancedCellModel.name;
 	}
 
-	public getSquareByCoord(coord: BoardCoord): MatrixCellModel | undefined {
+	public getCellByCoord(coord: BoardCoord): MatrixCellModel | undefined {
 		return this.cells[coord.row]?.[coord.col];
 	}
 
@@ -32,7 +32,7 @@ export class InstancedCellModel extends InstancedMesh {
 		const row = Math.floor(index / BOARD_MATRIX_RANGE_SIZE);
 		const col = index % BOARD_MATRIX_RANGE_SIZE;
 
-		return this.getSquareByCoord({ row, col });
+		return this.getCellByCoord({ row, col });
 	}
 
 	public copy(pieceGroup: InstancedCellModel, recursive?: boolean): this {
