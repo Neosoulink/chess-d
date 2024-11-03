@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { inject, singleton } from "tsyringe";
 import {
 	filter,
