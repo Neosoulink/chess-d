@@ -11,27 +11,28 @@ import {
 	DateScalar,
 	upperDirectiveTransformer
 } from "@chess-d/api";
-
-import { ExperienceModule } from "./experience/experience.module";
+import { PlayersModule } from "./players/players.module";
 
 @Module({
 	imports: [
-		GraphQLModule.forRoot<ApolloDriverConfig>({
+		GraphQLModule.forRootAsync<ApolloDriverConfig>({
 			driver: ApolloDriver,
-			autoSchemaFile: join(process.cwd(), "src/schema.gql"),
-			playground: false,
-			plugins: [ApolloServerPluginLandingPageLocalDefault()],
-			transformSchema: (schema) => upperDirectiveTransformer(schema, "upper"),
-			buildSchemaOptions: {
-				directives: [
-					new GraphQLDirective({
-						name: "upper",
-						locations: [DirectiveLocation.FIELD_DEFINITION]
-					})
-				]
-			}
+			useFactory: () => ({
+				autoSchemaFile: join(process.cwd(), "src/schema.gql"),
+				playground: false,
+				plugins: [ApolloServerPluginLandingPageLocalDefault()],
+				transformSchema: (schema) => upperDirectiveTransformer(schema, "upper"),
+				buildSchemaOptions: {
+					directives: [
+						new GraphQLDirective({
+							name: "upper",
+							locations: [DirectiveLocation.FIELD_DEFINITION]
+						})
+					]
+				}
+			})
 		}),
-		ExperienceModule
+		PlayersModule
 	],
 	providers: [
 		{

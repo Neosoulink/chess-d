@@ -15,8 +15,9 @@ import {
 export class ApolloComplexityPlugin implements ApolloServerPlugin {
 	constructor(private gqlSchemaHost: GraphQLSchemaHost) {}
 
-	async requestDidStart(): Promise<GraphQLRequestListener> {
-		const maxComplexity = 20;
+	async requestDidStart() {
+		// TODO: Handle schema fetching case
+		const maxComplexity = 400;
 		const { schema } = this.gqlSchemaHost;
 
 		return {
@@ -31,12 +32,13 @@ export class ApolloComplexityPlugin implements ApolloServerPlugin {
 						simpleEstimator({ defaultComplexity: 1 })
 					]
 				});
-				if (complexity > maxComplexity) {
+
+				if (complexity > maxComplexity)
 					throw new GraphQLError(
 						`Query is too complex: ${complexity}. Maximum allowed complexity: ${maxComplexity}`
 					);
-				}
-				console.log("Query Complexity:", complexity);
+
+				console.log("Query Complexity:", complexity, maxComplexity);
 			}
 		};
 	}
