@@ -1,21 +1,27 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "NestJS",
-  "extends": "./base.json",
-  "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": false,
-    "incremental": true,
-    "module": "commonjs",
-    "moduleResolution": "Node10",
-    "noFallthroughCasesInSwitch": false,
-    "noImplicitAny": false,
-    "removeComments": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strictNullChecks": false,
-    "strictBindCallApply": false
-  }
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"display": "NestJS",
+	"extends": "./base.json",
+	"compilerOptions": {
+		"target": "ES2021",
+		"allowSyntheticDefaultImports": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"forceConsistentCasingInFileNames": false,
+		"incremental": true,
+		"declaration": true,
+
+		"module": "Node16",
+		"esModuleInterop": true,
+		"moduleResolution": "Node16",
+		"noFallthroughCasesInSwitch": false,
+		"noImplicitAny": false,
+		"removeComments": true,
+		"skipLibCheck": true,
+
+		"sourceMap": true,
+
+		"strictNullChecks": false,
+		"strictBindCallApply": false
+	}
 }
