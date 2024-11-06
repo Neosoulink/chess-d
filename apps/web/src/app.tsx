@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { register, RegisterModule } from "@quick-threejs/reactive";
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { Move } from "chess.js";
+import { useSocket } from "./hooks/use-socket.hook";
 
 const location = new URL(
 	"./core/main.worker.ts",
@@ -34,6 +35,8 @@ const onReady = async (app: RegisterModule) => {
 };
 
 export const App = () => {
+	const { socket, currentPlayer, playersList } = useSocket();
+
 	useEffect(() => {
 		register({
 			location,
@@ -41,9 +44,16 @@ export const App = () => {
 			axesSizes: 5,
 			gridSizes: 10,
 			withMiniCamera: true,
-			onReady
+			onReady: async (app) => {
+				await onReady(app);
+				socket.connect();
+			}
 		});
 	}, []);
+
+	useEffect(() => {
+		console.log(currentPlayer, playersList);
+	}, [currentPlayer, playersList]);
 
 	return <div />;
 };

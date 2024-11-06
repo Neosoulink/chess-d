@@ -2,19 +2,26 @@ import { Injectable } from "@nestjs/common";
 
 import { CreatePlayerInput } from "./dto/create-player.input";
 import { UpdatePlayerInput } from "./dto/update-player.input";
-import { Player } from "./entities/player.entity";
 
 @Injectable()
 export class PlayersService {
+	constructor() {}
+
 	create(createPlayerInput: CreatePlayerInput) {
-		return "This action adds a new player";
+		const newPlayer = {
+			...createPlayerInput,
+			id: 0,
+			connectedAt: new Date()
+		};
+
+		return newPlayer;
 	}
 
-	findAll(): Player[] {
+	findAll() {
 		return [];
 	}
 
-	findOne(id: number): Player {
+	findOne(id: number) {
 		return {
 			id,
 			connectedAt: new Date()
@@ -22,7 +29,13 @@ export class PlayersService {
 	}
 
 	update(id: number, updatePlayerInput: UpdatePlayerInput) {
-		return `This action updates a #${id} player`;
+		const editedPlayer = {
+			...updatePlayerInput,
+			id,
+			connectedAt: new Date()
+		};
+
+		return editedPlayer;
 	}
 
 	remove(id: number) {
