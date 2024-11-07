@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-
 import { register, RegisterModule } from "@quick-threejs/reactive";
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { Move } from "chess.js";
+
 import { useSocket } from "./hooks/use-socket.hook";
 
 const location = new URL(
@@ -49,7 +49,7 @@ export const App = () => {
 				socket.connect();
 			}
 		});
-	}, []);
+	}, [socket]);
 
 	useEffect(() => {
 		console.log(currentPlayer, playersList);

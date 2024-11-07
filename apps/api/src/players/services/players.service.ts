@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
-import { CreatePlayerInput } from "./dto/create-player.input";
-import { UpdatePlayerInput } from "./dto/update-player.input";
+import { CreatePlayerInput } from "../dto/create-player.input";
+import { UpdatePlayerInput } from "../dto/update-player.input";
 
 @Injectable()
 export class PlayersService {

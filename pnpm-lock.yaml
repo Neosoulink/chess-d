@@ -178,6 +178,9 @@ importers:
       '@chess-d/ai':
         specifier: workspace:*
         version: link:../../packages/ai
+      '@chess-d/api':
+        specifier: workspace:*
+        version: link:../../packages/api
       '@chess-d/chessboard':
         specifier: workspace:*
         version: link:../../packages/chessboard
