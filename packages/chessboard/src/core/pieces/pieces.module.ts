@@ -12,9 +12,9 @@ import { EngineController } from "../engine/engine.controller";
 export class PiecesModule implements Module {
 	constructor(
 		@inject(AppModule) private readonly appModule: AppModule,
-		@inject(PiecesComponent) private readonly component: PiecesComponent,
+		@inject(PiecesComponent) public readonly component: PiecesComponent,
 		@inject(PiecesController)
-		private readonly controller: PiecesController,
+		public readonly controller: PiecesController,
 		@inject(EngineController)
 		private readonly engineController: EngineController
 	) {}

@@ -16,19 +16,19 @@ import { DebugModule } from "./debug/debug.module";
 export class CoreModule implements Module {
 	constructor(
 		@inject(AppModule) private readonly appModule: AppModule,
-		@inject(Physics) private readonly physics: Physics,
-		@inject(CoreComponent) private readonly component: CoreComponent,
-		@inject(CoreController) private readonly controller: CoreController,
+		@inject(Physics) public readonly physics: Physics,
+		@inject(CoreComponent) public readonly component: CoreComponent,
+		@inject(CoreController) public readonly controller: CoreController,
 		@inject(ResourceModule)
-		private readonly resourceModule: ResourceModule,
-		@inject(WorldModule) private readonly worldModule: WorldModule,
+		public readonly resourceModule: ResourceModule,
+		@inject(WorldModule) public readonly worldModule: WorldModule,
 		@inject(BoardModule)
-		private readonly boardModule: BoardModule,
+		public readonly boardModule: BoardModule,
 		@inject(PiecesModule)
-		private readonly piecesModule: PiecesModule,
-		@inject(EngineModule) private readonly engineModule: EngineModule,
+		public readonly piecesModule: PiecesModule,
+		@inject(EngineModule) public readonly engineModule: EngineModule,
 		@inject(DebugModule)
-		private readonly debugModule: DebugModule
+		public readonly debugModule: DebugModule
 	) {
 		this.init();
 	}

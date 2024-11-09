@@ -29,7 +29,7 @@ import { Move } from "chess.js";
 
 @singleton()
 export class PiecesController {
-	private readonly pieceDeselected$$ = new Subject<
+	public readonly pieceDeselected$$ = new Subject<
 		PieceNotificationPayload<
 			InstancedMesh,
 			{ cell: MatrixCellModel; instancedCell: InstancedCellModel }
@@ -55,8 +55,6 @@ export class PiecesController {
 		@inject(BoardComponent) private readonly boardComponent: BoardComponent,
 		@inject(AppModule) private readonly appModule: AppModule
 	) {
-		self.addEventListener("message", this._onMessage.bind(this));
-
 		this.pieceSelected$ = this.appModule.mousedown$?.().pipe(
 			map(() => {
 				const intersections = this.coreComponent.getIntersections();

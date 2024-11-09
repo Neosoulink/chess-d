@@ -12,9 +12,9 @@ export class BoardModule implements Module {
 	constructor(
 		@inject(AppModule) private readonly appModule: AppModule,
 		@inject(BoardComponent)
-		private readonly component: BoardComponent,
+		public readonly component: BoardComponent,
 		@inject(BoardController)
-		private readonly controller: BoardController,
+		public readonly controller: BoardController,
 		@inject(EngineController)
 		private readonly engineController: EngineController,
 		@inject(PiecesController)
