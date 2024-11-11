@@ -33,7 +33,7 @@
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
-		"@nestjs/cli": "^10.0.0",
+		"@nestjs/cli": "^10.4.7",
 		"@nestjs/schematics": "^10.1.2",
 		"@nestjs/testing": "^10.4.4",
 		"source-map-support": "^0.5.21",
