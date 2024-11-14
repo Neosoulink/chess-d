@@ -36,17 +36,16 @@
 	},
 	"dependencies": {
 		"@apollo/server": "^4.10.4",
-		"@graphql-tools/utils": "^10.5.5",
 		"@nestjs/apollo": "^12.2.0",
-		"@nestjs/graphql": "^12.2.0",
 		"@nestjs/mapped-types": "*",
 		"apollo-server-plugin-base": "^3.7.2",
-		"graphql": "^16.9.0",
-		"graphql-query-complexity": "^1.0.0"
+		"chess.js": "1.0.0-beta.8",
+		"three": "^0.169.0"
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
 		"@types/node": "^22.5.1",
+		"@types/three": "^0.169.0",
 		"ts-jest": "^29.1.0",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.6.3"

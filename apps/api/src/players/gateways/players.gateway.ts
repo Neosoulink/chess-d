@@ -33,8 +33,8 @@ export class PlayersGateway
 
 		const newPlayer: PlayerEntity = {
 			id: player.id,
-			position: { x: 0, y: 0, z: 0 },
-			rotation: { w: 0, x: 0, y: 0, z: 0 },
+			color: "b",
+			isOpponent: false,
 			connectedAt: new Date()
 		};
 

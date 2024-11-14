@@ -1,59 +1,69 @@
-import { useEffect } from "react";
-import { register, RegisterModule } from "@quick-threejs/reactive";
-import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
-import { Move } from "chess.js";
+import { useEffect, useMemo } from "react";
 
-import { useSocket } from "./hooks/use-socket.hook";
-
-const location = new URL(
-	"./core/main.worker.ts",
-	import.meta.url
-) as unknown as string;
-const enableDebug = !!import.meta.env?.DEV;
-
-const onReady = async (app: RegisterModule) => {
-	const gui = app.gui() as GUI | undefined;
-	gui?.close();
-
-	const aiWorker = await app.workerPool().run({
-		payload: {
-			path: new URL(
-				"./core/ai.worker.ts",
-				import.meta.url
-			) as unknown as string,
-			subject: {}
-		}
-	});
-
-	aiWorker.thread?.movePerformed$()?.subscribe((payload: Move) => {
-		console.log("AI move performed...", payload);
-		app.worker()?.postMessage?.({
-			type: "piece_moved",
-			payload
-		});
-	});
-};
+import { merge } from "rxjs";
+import { useActions, useAi, useGame, useSocket } from "./shared/hooks";
+import { PlayerModel } from "./shared/models";
 
 export const App = () => {
-	const { socket, currentPlayer, playersList } = useSocket();
+	const { setup: setupGame, app } = useGame();
+	const { setup: setupActions, movePiece: movePieceAction } = useActions();
+	const { setup: setupAI, worker: aiWorker, player: opponentPlayer } = useAi();
+	const { socket } = useSocket();
 
+	// TODO: Players color should be defined by the user.
+	const currentPlayer = useMemo(() => new PlayerModel(), []);
+
+	// Setting up the game.
 	useEffect(() => {
-		register({
-			location,
-			enableDebug,
-			axesSizes: 5,
-			gridSizes: 10,
-			withMiniCamera: true,
-			onReady: async (app) => {
-				await onReady(app);
-				socket.connect();
-			}
+		if (!app) setupGame();
+
+		return () => {
+			app?.dispose();
+		};
+	}, [app, setupGame]);
+
+	// Setting up the game actions.
+	useEffect(() => {
+		if (app) setupActions(app);
+
+		return () => {};
+	}, [app, setupActions]);
+
+	// Setting up the AI player.
+	useEffect(() => {
+		if (app && !aiWorker) setupAI(app);
+
+		return () => {
+			aiWorker?.worker?.terminate?.();
+		};
+	}, [app, setupAI, aiWorker]);
+
+	// Setting up the socket player.
+	useEffect(() => {
+		if (app && !socket.connected) socket.connect();
+
+		return () => {
+			socket.disconnect();
+		};
+	}, [app, socket]);
+
+	// Setting up the socket player.
+	useEffect(() => {
+		const playersActionsSubscription = merge(
+			currentPlayer.pieceMoved$$,
+			opponentPlayer.pieceMoved$$
+		).subscribe((move) => {
+			movePieceAction(move);
 		});
-	}, [socket]);
 
-	useEffect(() => {
-		console.log(currentPlayer, playersList);
-	}, [currentPlayer, playersList]);
+		return () => {
+			playersActionsSubscription.unsubscribe();
+		};
+	}, [
+		currentPlayer.pieceMoved$$,
+		movePieceAction,
+		opponentPlayer.pieceMoved$$
+	]);
 
 	return <div />;
 };

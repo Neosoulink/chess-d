@@ -11,7 +11,7 @@ export interface UseSocketContext {
 export const useSocket: () => UseSocketContext = () => {
 	const socket = useMemo(
 		() =>
-			io("http://192.168.1.72:3000", {
+			io("http://localhost:3000", {
 				autoConnect: false
 			}),
 		[]
@@ -71,7 +71,8 @@ export const useSocket: () => UseSocketContext = () => {
 		onPlayersInfo,
 		onPlayerJoined,
 		onPlayerLeft,
-		onPlayersUpdated
+		onPlayersUpdated,
+		socket
 	]);
 
 	return {
