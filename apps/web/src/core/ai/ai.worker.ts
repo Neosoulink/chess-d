@@ -1,36 +1,36 @@
+import "reflect-metadata";
+
+import { container } from "tsyringe";
 import { expose } from "threads/worker";
-import { Subject } from "rxjs";
-import { Chess, Move } from "chess.js";
-import { register, SupportedAiModel } from "@chess-d/ai";
-import { AppLifecycleState } from "@quick-threejs/reactive";
+import { Chess } from "chess.js";
+import { AiModel, register, SupportedAiModel } from "@chess-d/ai";
 import { ExposedAppModule } from "@quick-threejs/reactive/worker";
 
-const lifecycle$$ = new Subject<AppLifecycleState>();
-const movePerformed$$ = new Subject<Move>();
-const lifecycle$ = lifecycle$$.pipe();
-const movePerformed$ = movePerformed$$.pipe();
+import { AiModule } from "./ai.module";
 
-expose({
-	movePerformed$: () => movePerformed$,
-	lifecycle$: () => lifecycle$
-} satisfies ExposedAppModule);
-
-export const performAI = () => {
-	console.log("AI is performing...");
-
+const setupAiModule = () => {
 	const game = new Chess(
 		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"
 	);
-	const aiModel = register(SupportedAiModel.zeyu, game);
 
-	const move = aiModel?.getMove(game.turn());
+	container.register(Chess, { useValue: game });
+	container.register(AiModel, {
+		useValue: register(SupportedAiModel.zeyu, game)
+	});
 
-	if (move) {
-		game.move(move);
-		movePerformed$$.next(move);
-	}
+	return container.resolve(AiModule);
 };
 
-setTimeout(() => {
-	performAI();
-}, 100);
+const aiModule = setupAiModule();
+aiModule.init();
+
+const exposedAiModule = {
+	movePerformed$: aiModule.controller.movePerformed$$.pipe.bind(
+		aiModule.controller.movePerformed$$
+	),
+	lifecycle$: aiModule.lifecycle$.bind(aiModule)
+};
+
+expose(exposedAiModule satisfies ExposedAppModule);
+
+export type ExposedAModule = typeof exposedAiModule;
