@@ -1,0 +1,1 @@
+export const INITIAL_FEN_TOKEN = "INITIAL_FEN";

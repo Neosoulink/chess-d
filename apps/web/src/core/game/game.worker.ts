@@ -6,6 +6,7 @@ import { launchApp } from "@quick-threejs/reactive/worker";
 import { isObject } from "@quick-threejs/utils";
 import { CoreModule as ChessboardModule } from "@chess-d/chessboard/dist/core/core.module";
 import { setup as setupChessboard } from "@chess-d/chessboard";
+import { Chess } from "chess.js";
 
 import { GameModule } from "./game.module";
 
@@ -16,6 +17,7 @@ launchApp({
 		if (!isObject(app) || !app.camera)
 			throw new Error("Unable to retrieve the application context.");
 
+		container.register(Chess, { useValue: new Chess() });
 		container.register(AppModule, { useValue: app });
 		container.register(ChessboardModule, { useValue: chessboard });
 

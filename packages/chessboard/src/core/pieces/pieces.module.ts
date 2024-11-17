@@ -1,53 +1,27 @@
 import { inject, singleton } from "tsyringe";
-import { Vector3 } from "three";
-import { AppModule, Module } from "@quick-threejs/reactive";
-import { copyProperties } from "@quick-threejs/utils";
+import { Module } from "@quick-threejs/reactive";
 
 import { PiecesComponent } from "./pieces.component";
 import { PiecesController } from "./pieces.controller";
-import { ColorVariant, PieceType, VECTOR } from "../../shared";
-import { EngineController } from "../engine/engine.controller";
 
 @singleton()
 export class PiecesModule implements Module {
 	constructor(
-		@inject(AppModule) private readonly appModule: AppModule,
 		@inject(PiecesComponent) public readonly component: PiecesComponent,
 		@inject(PiecesController)
-		public readonly controller: PiecesController,
-		@inject(EngineController)
-		private readonly engineController: EngineController
+		public readonly controller: PiecesController
 	) {}
 
 	public init() {
 		this.component.initPieces();
 
-		if (this.component.groups)
-			[...Object.keys(this.component.groups[ColorVariant.black])].forEach(
-				(key) => {
-					const blackGroup =
-						this.component.groups?.[ColorVariant.black][key as PieceType];
+		this.controller.pieceMoving$?.subscribe(
+			this.component.handlePieceMoving.bind(this.component)
+		);
 
-					const whiteGroup =
-						this.component.groups?.[ColorVariant.white][key as PieceType];
-
-					if (blackGroup) this.appModule.world.scene().add(blackGroup);
-					if (whiteGroup) this.appModule.world.scene().add(whiteGroup);
-				}
-			);
-
-		this.controller.pieceMoved$?.subscribe((payload) => {
-			const { intersection, piece } = payload;
-
-			this.component.movePieceByPosition(piece, {
-				...copyProperties(
-					intersection?.point instanceof Vector3
-						? intersection.point
-						: (piece.userData.lastPosition ?? VECTOR),
-					["x", "z"]
-				),
-				y: 0.8
-			});
+		this.controller.pieceDeselected$?.subscribe((payload) => {
+			this.component.handlePieceDeselected(payload);
+			this.controller.pieceMoved$$.next(payload);
 		});
 	}
 

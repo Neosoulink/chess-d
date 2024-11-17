@@ -1,5 +1,7 @@
 import { inject, singleton } from "tsyringe";
-import { Vector3Like } from "three";
+import { Vector3, Vector3Like } from "three";
+import { AppModule } from "@quick-threejs/reactive";
+import { copyProperties } from "@quick-threejs/utils";
 import { Physics } from "@chess-d/rapier-physics";
 
 import {
@@ -9,9 +11,12 @@ import {
 	ColorVariant,
 	MatrixPieceModel,
 	BoardCoord,
-	DroppedPiecesGroups
+	DroppedPiecesGroups,
+	INITIAL_FEN_TOKEN,
+	fenToCoords,
+	PieceNotificationPayload,
+	VECTOR
 } from "../../shared";
-import { EngineComponent } from "../engine/engine.component";
 import { BoardComponent } from "../board/board.component";
 import { ResourceComponent } from "../resource/resource.component";
 
@@ -27,13 +32,12 @@ export class PiecesComponent {
 	};
 
 	constructor(
-		@inject(EngineComponent)
-		private readonly engineComponent: EngineComponent,
-		@inject(BoardComponent)
-		private readonly boardComponent: BoardComponent,
+		@inject(INITIAL_FEN_TOKEN) private readonly initialFen: string,
+		@inject(AppModule) private readonly app: AppModule,
+		@inject(Physics) private readonly physics: Physics,
+		@inject(BoardComponent) private readonly boardComponent: BoardComponent,
 		@inject(ResourceComponent)
-		private readonly resourceComponent: ResourceComponent,
-		@inject(Physics) private readonly physics: Physics
+		private readonly resourceComponent: ResourceComponent
 	) {}
 
 	public createGroup<Type extends PieceType, Color extends ColorVariant>(
@@ -71,7 +75,7 @@ export class PiecesComponent {
 	}
 
 	public initPieces() {
-		const fenCoords = this.engineComponent.getFenCoords();
+		const fenCoords = fenToCoords(this.initialFen);
 
 		if (fenCoords)
 			[ColorVariant.black, ColorVariant.white].forEach((color) => {
@@ -85,6 +89,16 @@ export class PiecesComponent {
 					this.setGroup(newGroup);
 					this.droppedGroups[color][pieceType] = [];
 				});
+			});
+
+		if (this.groups)
+			[...Object.keys(this.groups[ColorVariant.black])].forEach((key) => {
+				const blackGroup = this.groups?.[ColorVariant.black][key as PieceType];
+
+				const whiteGroup = this.groups?.[ColorVariant.white][key as PieceType];
+
+				if (blackGroup) this.app.world.scene().add(blackGroup);
+				if (whiteGroup) this.app.world.scene().add(whiteGroup);
 			});
 	}
 
@@ -185,5 +199,25 @@ export class PiecesComponent {
 		if (!newGroup) return;
 
 		this.setGroup(newGroup);
+	}
+
+	public handlePieceMoving(payload: PieceNotificationPayload) {
+		const { cellsIntersection, piece, lastPosition } = payload;
+
+		this.movePieceByPosition(piece, {
+			...copyProperties(
+				cellsIntersection?.point instanceof Vector3
+					? cellsIntersection.point
+					: (lastPosition ?? VECTOR),
+				["x", "z"]
+			),
+			y: 0.8
+		});
+	}
+
+	public handlePieceDeselected(payload: PieceNotificationPayload) {
+		const { piece, cell, endCoord, startCoord } = payload;
+
+		this.movePieceByCoord(piece, endCoord ?? cell?.coord ?? startCoord);
 	}
 }

@@ -4,7 +4,7 @@ import {
 	PieceType,
 	squareToCoord
 } from "@chess-d/chessboard";
-import { CoreModule as ChessCoreModule } from "@chess-d/chessboard/dist/core/core.module";
+import { CoreModule as ChessCoreModule } from "@chess-d/chessboard";
 import { inject, singleton } from "tsyringe";
 
 import { MoveLike } from "../../../shared/types/chess";
@@ -16,24 +16,25 @@ export class PlayersService {
 	) {}
 
 	movePiece(move: MoveLike) {
-		const piece = this.chessboard.piecesModule.component.getPieceByCoord(
+		const piece = this.chessboard.pieces.component.getPieceByCoord(
 			move.piece as PieceType,
 			move.color as ColorVariant,
 			squareToCoord(move.from)
 		)!;
 
-		const cell =
-			this.chessboard.boardModule.component.instancedCell.getCellByCoord(
-				squareToCoord(move.to)
-			)!;
+		const cell = this.chessboard.board.component.instancedCell.getCellByCoord(
+			squareToCoord(move.to)
+		)!;
+		const startCoord = squareToCoord(move.from);
+		const endCoord = squareToCoord(move.to);
 
-		this.chessboard.piecesModule.controller.pieceDeselected$$.next({
-			instancedPiece: this.chessboard.piecesModule.component.groups[
-				piece?.color
-			]?.[piece?.type] as InstancedPieceModel,
+		this.chessboard.pieces.controller.pieceDeselected$$.next({
 			piece,
 			cell,
-			instancedCell: this.chessboard.boardModule.component.instancedCell
+			startPosition: piece.position,
+			startSquare: "",
+			startCoord,
+			endCoord
 		});
 	}
 }

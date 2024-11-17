@@ -9,103 +9,106 @@ import {
 	take,
 	takeUntil
 } from "rxjs";
-import { InstancedMesh, Intersection } from "three";
+import { Intersection, Vector3, Vector3Like } from "three";
 import { AppModule } from "@quick-threejs/reactive";
+import { copyProperties } from "@quick-threejs/utils";
 
 import {
-	MatrixCellModel,
-	ColorVariant,
 	InstancedCellModel,
 	MatrixPieceModel,
 	InstancedPieceModel,
-	PieceType,
 	PieceNotificationPayload,
-	squareToCoord
+	coordToSquare,
+	ObservablePayload,
+	BoardCoord
 } from "../../shared";
-import { BoardComponent } from "../board/board.component";
 import { PiecesComponent } from "./pieces.component";
 import { CoreComponent } from "../core.component";
-import { Move } from "chess.js";
 
 @singleton()
 export class PiecesController {
-	public readonly pieceDeselected$$ = new Subject<
-		PieceNotificationPayload<
-			InstancedMesh,
-			{ cell: MatrixCellModel; instancedCell: InstancedCellModel }
-		>
+	public readonly pieceDeselected$$ = new Subject<PieceNotificationPayload>();
+	public readonly pieceMoved$$ = new Subject<
+		ObservablePayload<PiecesController["pieceDeselected$$"]>
 	>();
 
-	public readonly pieceSelected$?: Observable<
-		PieceNotificationPayload<InstancedPieceModel<PieceType, ColorVariant>>
-	>;
-	public readonly pieceMoved$?: Observable<
-		PieceNotificationPayload<InstancedMesh>
-	>;
+	public readonly pieceSelected$?: Observable<PieceNotificationPayload>;
+	public readonly pieceMoving$?: Observable<PieceNotificationPayload>;
 	public readonly pieceDeselected$?: Observable<
-		PieceNotificationPayload<
-			InstancedMesh,
-			{ cell: MatrixCellModel; instancedCell: InstancedCellModel }
-		>
+		ObservablePayload<PiecesController["pieceDeselected$$"]>
 	>;
 
 	constructor(
 		@inject(PiecesComponent) private readonly component: PiecesComponent,
 		@inject(CoreComponent) private readonly coreComponent: CoreComponent,
-		@inject(BoardComponent) private readonly boardComponent: BoardComponent,
 		@inject(AppModule) private readonly appModule: AppModule
 	) {
 		this.pieceSelected$ = this.appModule.mousedown$?.().pipe(
 			map(() => {
 				const intersections = this.coreComponent.getIntersections();
-				const intersection = intersections.find(
+				const piecesIntersection = intersections.find(
 					(inter) => inter.object instanceof InstancedPieceModel
 				) as Intersection<InstancedPieceModel> | undefined;
-				const instancedPiece = intersection?.object;
+				const instancedPiece = piecesIntersection?.object;
 
 				let piece: MatrixPieceModel | undefined;
 
 				if (
-					typeof intersection?.instanceId !== "number" ||
+					typeof piecesIntersection?.instanceId !== "number" ||
 					!(instancedPiece instanceof InstancedPieceModel) ||
 					!(piece = instancedPiece.getPieceByInstanceId(
-						intersection.instanceId
+						piecesIntersection.instanceId
 					))
 				)
 					return undefined as any;
 
-				piece.userData.initialPosition = piece.position.clone();
-				piece.userData.lastPosition = piece.userData.initialPosition;
+				const startPosition = piece.position.clone();
+				const startSquare = coordToSquare(piece.coord);
+				const startCoord = copyProperties(piece.coord, [
+					"col",
+					"row"
+				]) as BoardCoord;
+				const lastPosition = startPosition;
 
-				return { instancedPiece, piece, intersection };
+				return {
+					piecesIntersection,
+					piece,
+					startPosition,
+					startSquare,
+					startCoord,
+					lastPosition
+				} satisfies PieceNotificationPayload;
 			}),
-			filter((payload) => !!payload?.piece && !!payload?.instancedPiece)
+			filter<PieceNotificationPayload>(
+				(payload) =>
+					payload?.piece instanceof MatrixPieceModel &&
+					payload?.piecesIntersection?.object instanceof InstancedPieceModel
+			)
 		);
 
-		this.pieceMoved$ = this.pieceSelected$?.pipe(
+		this.pieceMoving$ = this.pieceSelected$?.pipe(
 			switchMap((pieceSelectedPayload) =>
 				this.appModule.timer.step$().pipe(
 					map(() => {
-						const { piece, instancedPiece } =
-							pieceSelectedPayload as NonNullable<typeof pieceSelectedPayload>;
+						const payload = pieceSelectedPayload as NonNullable<
+							typeof pieceSelectedPayload
+						>;
 						const intersections =
-							this.coreComponent.getIntersections<
-								InstancedPieceModel<PieceType, ColorVariant>
-							>();
-
-						const intersection = intersections.find(
-							(inter) =>
-								inter.object.name === this.boardComponent.instancedCell.name
+							this.coreComponent.getIntersections<InstancedCellModel>();
+						const cellsIntersection = intersections.find(
+							(inter) => inter.object instanceof InstancedCellModel
 						);
 
-						if (typeof intersection?.instanceId === "number")
-							piece.userData.lastPosition = intersection.point;
+						let lastPosition: Vector3Like | undefined;
+
+						if (cellsIntersection?.point instanceof Vector3)
+							lastPosition = cellsIntersection.point;
 
 						return {
-							instancedPiece,
-							piece,
-							intersection
-						};
+							...payload,
+							cellsIntersection,
+							lastPosition: lastPosition ?? payload.lastPosition
+						} satisfies PieceNotificationPayload;
 					}),
 					takeUntil(this.appModule.mouseup$?.() as Observable<Event>)
 				)
@@ -113,19 +116,26 @@ export class PiecesController {
 		);
 
 		this.pieceDeselected$ = merge(
-			this.pieceMoved$!.pipe(
+			this.pieceMoving$!.pipe(
 				switchMap((payload) =>
 					(this.appModule.mouseup$?.() as Observable<Event>).pipe(
 						map(() => {
-							const { intersection } = payload;
-							const instancedCell = intersection?.object as InstancedCellModel;
-							const cell = (
-								typeof intersection?.instanceId === "number"
-									? instancedCell.getCellByIndex(intersection.instanceId)
-									: undefined
-							) as MatrixCellModel;
+							const { cellsIntersection } = payload;
+							const instancedCell = cellsIntersection?.object;
+							const cell =
+								typeof cellsIntersection?.instanceId === "number"
+									? instancedCell?.getCellByIndex(cellsIntersection.instanceId)
+									: undefined;
 
-							return { ...payload, instancedCell, cell };
+							const endCoord = cell?.coord;
+							const endSquare = endCoord && coordToSquare(endCoord);
+
+							return {
+								...payload,
+								cell,
+								endCoord,
+								endSquare
+							} satisfies PieceNotificationPayload;
 						}),
 						take(1)
 					)
@@ -133,27 +143,5 @@ export class PiecesController {
 			),
 			this.pieceDeselected$$.pipe()
 		);
-	}
-
-	private _onMessage(e: MessageEvent<{ type: string; payload: Move }>): void {
-		if ((e.data?.type as string) === "piece_moved") {
-			const piece = this.component.getPieceByCoord(
-				e.data.payload.piece as PieceType,
-				e.data.payload.color as ColorVariant,
-				squareToCoord(e.data.payload.from)
-			)!;
-			const cell = this.boardComponent.instancedCell.getCellByCoord(
-				squareToCoord(e.data.payload.to)
-			)!;
-
-			this.pieceDeselected$$.next({
-				instancedPiece: this.component.groups[piece?.color!]?.[
-					piece?.type!
-				] as InstancedPieceModel,
-				piece,
-				cell,
-				instancedCell: this.boardComponent.instancedCell
-			});
-		}
 	}
 }

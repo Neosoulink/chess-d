@@ -1,17 +1,15 @@
 import { inject, singleton } from "tsyringe";
 import { map, Observable, Subject } from "rxjs";
-import { AppModule } from "@quick-threejs/reactive";
-import { Move } from "chess.js";
+import { Chess, Move } from "chess.js";
+import { CoreModule as ChessboardModule } from "@chess-d/chessboard";
 
-import { EngineComponent } from "./engine.component";
-import { PiecesController } from "../pieces/pieces.controller";
 import {
 	coordToSquare,
 	EngineNotificationPayload,
 	squareToCoord,
 	ObservablePayload,
 	PieceNotificationPayload
-} from "../../shared";
+} from "@chess-d/chessboard";
 
 @singleton()
 export class EngineController {
@@ -21,27 +19,28 @@ export class EngineController {
 		EngineNotificationPayload & {
 			nextMoveIndex: number;
 			nextMove?: Move;
-		} & ObservablePayload<PiecesController["pieceDeselected$"]>
+		} & ObservablePayload<
+				ChessboardModule["pieces"]["controller"]["pieceMoved$$"]
+			>
 	>;
 
 	constructor(
-		@inject(EngineComponent) private readonly component: EngineComponent,
-		@inject(PiecesController)
-		private readonly pieceController: PiecesController,
-		@inject(AppModule) private readonly appModule: AppModule
+		@inject(Chess) private readonly game: Chess,
+		@inject(ChessboardModule) private readonly chessboard: ChessboardModule
 	) {
-		this.pieceSelected$ = this.pieceController.pieceSelected$?.pipe(
-			map((payload) => this._getEnginePayLoadFromPiece(payload))
-		);
+		this.pieceSelected$ =
+			this.chessboard.pieces.controller.pieceSelected$?.pipe(
+				map((payload) => this._getEnginePayLoadFromPiece(payload))
+			);
 
-		this.pieceMoved$ = this.pieceController.pieceDeselected$?.pipe(
+		this.pieceMoved$ = this.chessboard.pieces.controller.pieceMoved$$?.pipe(
 			map((payload) => {
-				const { cell, possibleCoords, possibleMoves, ...enginePayload } =
+				const { endCoord, possibleCoords, possibleMoves, ...enginePayload } =
 					this._getEnginePayLoadFromPiece(payload);
 
 				const nextMoveIndex = possibleCoords.findIndex(
 					(coord) =>
-						cell && coord.col === cell.coord.col && coord.row === cell.coord.row
+						endCoord && coord.col === endCoord.col && coord.row === endCoord.row
 				);
 				const nextMove = possibleMoves[nextMoveIndex];
 
@@ -60,8 +59,8 @@ export class EngineController {
 	private _getEnginePayLoadFromPiece<
 		PiecePayload extends PieceNotificationPayload
 	>(piecePayload: PiecePayload): EngineNotificationPayload & PiecePayload {
-		const pgnSquare = coordToSquare(piecePayload.piece.coord);
-		const possibleMoves = this.component.game.moves({
+		const pgnSquare = coordToSquare(piecePayload.startCoord);
+		const possibleMoves = this.game.moves({
 			square: pgnSquare,
 			verbose: true
 		});

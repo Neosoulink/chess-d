@@ -1,15 +1,25 @@
-import { InstancedMesh, Intersection } from "three";
+import { Intersection, Vector3Like } from "three";
 import { ColorVariant, PieceType } from "../enums";
-import { MatrixPieceModel, InstancedPieceModel } from "../models";
+import {
+	MatrixPieceModel,
+	InstancedPieceModel,
+	InstancedCellModel,
+	MatrixCellModel
+} from "../models";
+import { BoardCoord } from "./board.interface";
 
-export type PieceNotificationPayload<
-	T extends InstancedMesh = InstancedMesh,
-	Extra extends object = object
-> = {
-	intersection?: Intersection<T>;
-	instancedPiece: InstancedPieceModel;
+export type PieceNotificationPayload = {
+	piecesIntersection?: Intersection<InstancedPieceModel>;
+	cellsIntersection?: Intersection<InstancedCellModel>;
 	piece: MatrixPieceModel;
-} & Extra;
+	startPosition: Vector3Like;
+	lastPosition?: Vector3Like;
+	startSquare: string;
+	endSquare?: string;
+	startCoord: BoardCoord;
+	endCoord?: BoardCoord;
+	cell?: MatrixCellModel;
+};
 
 export type PiecesGroup<Color extends ColorVariant> = {
 	[Type in PieceType]: InstancedPieceModel<Type, Color>;
