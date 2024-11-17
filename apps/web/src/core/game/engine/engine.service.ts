@@ -18,6 +18,10 @@ export class EngineService {
 		@inject(ChessboardModule) private readonly chessboard: ChessboardModule
 	) {}
 
+	public getFen() {
+		return this.game.fen();
+	}
+
 	public handlePieceMoved(
 		payload: ObservablePayload<EngineController["pieceMoved$"]>
 	) {

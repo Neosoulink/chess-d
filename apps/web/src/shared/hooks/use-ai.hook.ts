@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { RegisterModule } from "@quick-threejs/reactive";
 
 import { PlayerModel } from "../models";
-import { MoveLike } from "../types";
+import { MessageEventPayload, MoveLike } from "../types";
 
 /** @description Ai login worker location. */
 const workerLocation = new URL(
@@ -14,42 +14,37 @@ const workerLocation = new URL(
 export const useAi = () => {
 	const player = useMemo(() => new PlayerModel(), []);
 
-	const [worker, setWorker] = useState<
+	const [workerThread, setWorkerThread] = useState<
 		| Awaited<ReturnType<ReturnType<RegisterModule["workerPool"]>["run"]>>
 		| undefined
 	>();
 
 	const setup = useCallback(async (app: RegisterModule) => {
-		const _worker = await app.workerPool().run({
+		const _workerThread = await app.workerPool().run({
 			payload: {
 				path: workerLocation,
 				subject: {}
 			}
 		});
 
-		setTimeout(() => {
-			_worker?.worker.postMessage?.({
-				type: "perform_move",
-				payload: { move: {} }
-			});
-		}, 100);
-
-		setWorker(_worker);
+		setWorkerThread(_workerThread);
 	}, []);
 
 	useEffect(() => {
-		if (worker?.thread)
-			worker.thread
+		if (workerThread?.thread)
+			workerThread.thread
 				?.movePerformed$()
-				?.subscribe((message: { payload: MoveLike }) => {
-					player.pickPiece(message.payload.piece, message.payload.from);
-					player.movePiece(message.payload.to);
+				?.subscribe((message: MessageEventPayload<MoveLike>) => {
+					if (!message.value) return;
+
+					player.pickPiece(message.value?.piece, message.value?.from);
+					player.movePiece(message.value);
 				});
-	}, [worker, player]);
+	}, [workerThread, player]);
 
 	return {
 		setup,
-		worker,
+		workerThread,
 		player
 	};
 };

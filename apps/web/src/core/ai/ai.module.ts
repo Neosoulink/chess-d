@@ -1,14 +1,15 @@
-import { container, inject, singleton } from "tsyringe";
+import { inject, singleton } from "tsyringe";
 import { Module } from "@quick-threejs/reactive";
 
 import { AiController } from "./ai.controller";
 import { AiService } from "./ai.service";
-import { Observable, Subscription } from "rxjs";
+import { Subscription } from "rxjs";
 import { WorkerThreadModule } from "@quick-threejs/utils";
+import { AI_PERFORMED_MOVE_TOKEN } from "../../shared/tokens";
 
 @singleton()
 export class AiModule implements Module, WorkerThreadModule {
-	performMoveSubscription?: Subscription;
+	private _subscriptions: Subscription[] = [];
 
 	constructor(
 		@inject(AiController) public readonly controller: AiController,
@@ -16,24 +17,25 @@ export class AiModule implements Module, WorkerThreadModule {
 	) {}
 
 	init(): void {
-		this.performMoveSubscription = this.controller.performMove$.subscribe(
-			() => {
-				const move = this.service.performMove();
+		this._subscriptions.push(
+			this.controller.willPerformMove$.subscribe((payload) => {
+				const move = this.service.handleWillPerformMove(
+					payload.data.value?.fen
+				);
 
 				if (!move) return;
 
 				this.controller.movePerformed$$.next({
-					type: "move_performed",
-					payload: move
+					token: AI_PERFORMED_MOVE_TOKEN,
+					value: move
 				});
-			}
+			})
 		);
 	}
 
 	dispose(): void {
-		this.performMoveSubscription?.unsubscribe();
-		this.controller.movePerformed$$.complete();
-		this.controller.lifecycle$$.complete();
+		this._subscriptions.forEach((subscription) => subscription?.unsubscribe());
+		this._subscriptions = [];
 	}
 
 	lifecycle$() {

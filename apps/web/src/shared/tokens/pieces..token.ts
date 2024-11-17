@@ -1,1 +1,1 @@
-export const PIECE_MOVED_TOKEN = "PIECE_MOVED";
+export const PIECE_WILL_MOVE_TOKEN = "PIECE_WILL_MOVE";

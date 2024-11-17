@@ -10,7 +10,7 @@ export class PiecesService {
 		@inject(ChessCoreModule) private readonly chessboard: ChessCoreModule
 	) {}
 
-	handlePieceMoved(move: MoveLike) {
+	handlePlayerMovedPiece(move: MoveLike) {
 		const piece = this.chessboard.pieces.component.getPieceByCoord(
 			move.piece as PieceType,
 			move.color as ColorVariant,

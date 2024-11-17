@@ -13,7 +13,6 @@ import {
 
 @singleton()
 export class EngineController {
-	public readonly started$$ = new Subject<any>();
 	public readonly pieceSelected$?: Observable<EngineNotificationPayload>;
 	public readonly pieceMoved$?: Observable<
 		EngineNotificationPayload & {

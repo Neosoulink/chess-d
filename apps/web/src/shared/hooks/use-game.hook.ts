@@ -1,6 +1,8 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { register, RegisterModule } from "@quick-threejs/reactive";
+import { MessageEventPayload } from "../types";
+import { GAME_UPDATED_TOKEN } from "../tokens";
 
 /** @description Game login worker location. */
 const workerLocation = new URL(
@@ -15,6 +17,24 @@ export const useGame = () => {
 	const [app, setApp] = useState<RegisterModule | undefined>();
 	const [isAppReady, setIsAppReady] = useState(false);
 
+	const gameUpdatedCall = useRef<((fen: string) => unknown) | null>();
+
+	const gameUpdatedCallbackRegister = useCallback(
+		(callback: (fen: string) => unknown) => {
+			gameUpdatedCall.current = callback;
+		},
+		[]
+	);
+	const handleMessages = useCallback(
+		(message: MessageEvent<MessageEventPayload<{ fen?: string }>>) => {
+			if (!message.data?.token) return;
+
+			if (message.data.token === GAME_UPDATED_TOKEN && message.data?.value?.fen)
+				gameUpdatedCall.current?.(message.data.value.fen);
+		},
+		[]
+	);
+
 	const setup = useCallback(
 		() =>
 			register({
@@ -26,10 +46,25 @@ export const useGame = () => {
 				onReady: (_app) => {
 					setApp(_app);
 					setIsAppReady(true);
+
+					_app.worker()?.addEventListener("message", handleMessages);
 				}
 			}),
-		[]
+		[handleMessages]
 	);
 
-	return { game, app, workerLocation, isAppReady, setup };
+	const dispose = useCallback(() => {
+		app?.dispose();
+		app?.worker()?.removeEventListener("message", handleMessages);
+	}, [app, handleMessages]);
+
+	return {
+		game,
+		app,
+		workerLocation,
+		isAppReady,
+		setup,
+		dispose,
+		gameUpdatedCallbackRegister
+	};
 };

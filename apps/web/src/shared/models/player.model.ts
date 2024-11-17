@@ -30,16 +30,7 @@ export class PlayerModel implements PlayerEntity {
 		this.piecePicked$$.next(this.pickedPiece);
 	}
 
-	public movePiece(to: Square) {
-		if (!this.pickedPiece) return;
-
-		const move: MoveLike = {
-			color: this.color,
-			piece: this.pickedPiece.type,
-			from: this.pickedPiece.square,
-			to
-		};
-
+	public movePiece(move: MoveLike) {
 		this.pieceMoved$$.next(move);
 	}
 }

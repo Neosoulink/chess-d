@@ -1,5 +1,5 @@
 import { inject, singleton } from "tsyringe";
-import { Chess } from "chess.js";
+import { Chess, validateFen } from "chess.js";
 import { AiModel } from "@chess-d/ai";
 
 @singleton()
@@ -9,7 +9,18 @@ export class AiService {
 		@inject(AiModel) private readonly ai: AiModel
 	) {}
 
-	public performMove = () => {
+	public handleWillPerformMove = (fen?: string) => {
+		if (!fen || !validateFen(fen))
+			return console.warn("AI received invalid FEN string");
+
+		this.game.load(fen);
+		console.log(
+			"AI received FEN string",
+			fen,
+			this.game.fen(),
+			this.game.turn()
+		);
+
 		return this.ai?.getMove(this.game.turn());
 	};
 }

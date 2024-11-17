@@ -2,14 +2,13 @@ import { inject, singleton } from "tsyringe";
 import { Subscription } from "rxjs";
 import { Module } from "@quick-threejs/reactive";
 
-import { MoveLike, MessageEventPayload } from "../../../shared/types";
-import { PIECE_MOVED_TOKEN } from "../../../shared/tokens";
+import { PIECE_WILL_MOVE_TOKEN } from "../../../shared/tokens";
 import { PiecesService } from "./pieces.service";
 import { PiecesController } from "./pieces.controller";
 
 @singleton()
 export class PiecesModule implements Module {
-	private _subscriptions: (Subscription | undefined)[] = [];
+	private _subscriptions: Subscription[] = [];
 
 	constructor(
 		@inject(PiecesService) public readonly service: PiecesService,
@@ -17,26 +16,23 @@ export class PiecesModule implements Module {
 	) {}
 
 	public init(): void {
-		self.addEventListener("message", this._onMessage.bind(this));
-
 		this._subscriptions.push(
-			this.controller.pieceMoved$$.subscribe(
-				this.service.handlePieceMoved.bind(this.service)
-			)
+			this.controller.playerMovedPiece$$.subscribe(
+				this.service.handlePlayerMovedPiece.bind(this.service)
+			),
+			this.controller.pieceWillMove$.subscribe((payload) => {
+				const move = payload.data.value;
+
+				console.log("move", move);
+
+				if (payload.data?.token === PIECE_WILL_MOVE_TOKEN && move?.to)
+					this.controller.playerMovedPiece$$.next(move);
+			})
 		);
 	}
 
 	public dispose(): void {
-		self.removeEventListener("message", this._onMessage.bind(this));
-
 		this._subscriptions.forEach((subscription) => subscription?.unsubscribe());
 		this._subscriptions = [];
-	}
-
-	private _onMessage(e: MessageEvent<MessageEventPayload<MoveLike>>): void {
-		const move = e.data.value;
-
-		if (e.data?.token === PIECE_MOVED_TOKEN && move?.to)
-			this.controller.pieceMoved$$.next(move);
 	}
 }

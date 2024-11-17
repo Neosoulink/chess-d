@@ -1,9 +1,16 @@
 import { singleton } from "tsyringe";
-import { Subject } from "rxjs";
+import { filter, fromEvent, Subject } from "rxjs";
 
-import { MoveLike } from "../../../shared/types/chess.type";
+import { MessageEventPayload, MoveLike } from "../../../shared/types";
+import { PIECE_WILL_MOVE_TOKEN } from "../../../shared/tokens";
 
 @singleton()
 export class PiecesController {
-	public readonly pieceMoved$$ = new Subject<MoveLike>();
+	public readonly playerMovedPiece$$ = new Subject<MoveLike>();
+
+	public readonly pieceWillMove$ = fromEvent<
+		MessageEvent<MessageEventPayload<MoveLike>>
+	>(self, "message").pipe(
+		filter((payload) => payload.data.token === PIECE_WILL_MOVE_TOKEN)
+	);
 }
