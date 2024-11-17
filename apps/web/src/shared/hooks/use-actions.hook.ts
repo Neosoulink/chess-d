@@ -1,6 +1,8 @@
-import { RegisterModule } from "@quick-threejs/reactive";
 import { useCallback, useState } from "react";
-import { MoveLike } from "../types";
+import { RegisterModule } from "@quick-threejs/reactive";
+
+import { MessageEventPayload, MoveLike } from "../types";
+import { PIECE_MOVED_TOKEN } from "../tokens";
 
 /** @description Provide actions to control game (chessboard). */
 export const useActions = () => {
@@ -12,9 +14,9 @@ export const useActions = () => {
 
 	const movePiece = (move: MoveLike) => {
 		app?.worker()?.postMessage?.({
-			type: "piece_moved",
-			payload: move
-		});
+			token: PIECE_MOVED_TOKEN,
+			value: move
+		} satisfies MessageEventPayload<MoveLike>);
 	};
 
 	return {

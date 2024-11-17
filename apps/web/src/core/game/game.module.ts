@@ -2,22 +2,22 @@ import { inject, singleton } from "tsyringe";
 import { Module } from "@quick-threejs/reactive";
 
 import { EngineModule } from "./engine/engine.module";
-import { PlayersModule } from "./players/players.module";
+import { PiecesModule } from "./pieces/pieces.module";
 
 @singleton()
 export class GameModule implements Module {
 	constructor(
 		@inject(EngineModule) public readonly engine: EngineModule,
-		@inject(PlayersModule) public readonly players: PlayersModule
+		@inject(PiecesModule) public readonly pieces: PiecesModule
 	) {}
 
-	public init(...props: any[]): void {
+	public init(): void {
 		this.engine.init();
-		this.players.init(...props);
+		this.pieces.init();
 	}
 
 	public dispose(): void {
 		this.engine.dispose();
-		this.players.dispose();
+		this.pieces.dispose();
 	}
 }

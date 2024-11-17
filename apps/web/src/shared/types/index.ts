@@ -1,1 +1,2 @@
-export * from "./chess";
+export * from "./chess.type";
+export * from "./events.type";

@@ -1,0 +1,1 @@
+export const PIECE_MOVED_TOKEN = "PIECE_MOVED";

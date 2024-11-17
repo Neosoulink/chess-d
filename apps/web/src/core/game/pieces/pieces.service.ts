@@ -1,21 +1,16 @@
-import {
-	ColorVariant,
-	InstancedPieceModel,
-	PieceType,
-	squareToCoord
-} from "@chess-d/chessboard";
+import { ColorVariant, PieceType, squareToCoord } from "@chess-d/chessboard";
 import { CoreModule as ChessCoreModule } from "@chess-d/chessboard";
 import { inject, singleton } from "tsyringe";
 
-import { MoveLike } from "../../../shared/types/chess";
+import { MoveLike } from "../../../shared/types/chess.type";
 
 @singleton()
-export class PlayersService {
+export class PiecesService {
 	constructor(
 		@inject(ChessCoreModule) private readonly chessboard: ChessCoreModule
 	) {}
 
-	movePiece(move: MoveLike) {
+	handlePieceMoved(move: MoveLike) {
 		const piece = this.chessboard.pieces.component.getPieceByCoord(
 			move.piece as PieceType,
 			move.color as ColorVariant,
@@ -32,9 +27,10 @@ export class PlayersService {
 			piece,
 			cell,
 			startPosition: piece.position,
-			startSquare: "",
 			startCoord,
-			endCoord
+			startSquare: move.from,
+			endCoord,
+			endSquare: move.to
 		});
 	}
 }
