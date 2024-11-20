@@ -1,11 +1,12 @@
 import { inject, singleton } from "tsyringe";
 import { Subscription } from "rxjs";
+import { Color } from "chess.js";
 import { Module } from "@quick-threejs/reactive";
 
 import { EngineService } from "./engine.service";
 import { EngineController } from "./engine.controller";
 import { GAME_UPDATED_TOKEN } from "../../../shared/tokens";
-import { MessageEventPayload } from "../../../shared/types";
+import { MessageEventPayload, MoveLike } from "../../../shared/types";
 
 @singleton()
 export class EngineModule implements Module {
@@ -21,13 +22,21 @@ export class EngineModule implements Module {
 			this.controller.pieceSelected$?.subscribe(
 				this.service.handlePieceSelected.bind(this.service)
 			),
-			this.controller.pieceMoved$?.subscribe((message) => {
-				this.service.handlePieceMoved(message);
+			this.controller.pieceMoved$?.subscribe((payload) => {
+				this.service.handlePieceMoved(payload);
 
 				self.postMessage({
 					token: GAME_UPDATED_TOKEN,
-					value: { fen: this.service.getFen() }
-				} satisfies MessageEventPayload<{ fen: string }>);
+					value: {
+						fen: this.service.getFen(),
+						turn: this.service.getTurn(),
+						move: payload.nextMove
+					}
+				} satisfies MessageEventPayload<{
+					turn: Color;
+					fen: string;
+					move?: MoveLike;
+				}>);
 			})
 		);
 	}

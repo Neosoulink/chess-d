@@ -18,6 +18,10 @@ export class EngineService {
 		@inject(ChessboardModule) private readonly chessboard: ChessboardModule
 	) {}
 
+	public getTurn() {
+		return this.game.turn();
+	}
+
 	public getFen() {
 		return this.game.fen();
 	}

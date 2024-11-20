@@ -8,6 +8,7 @@ import { WorldModule } from "./world/world.module";
 import { BoardModule } from "./board/board.module";
 import { PiecesModule } from "./pieces/pieces.module";
 import { DebugModule } from "./debug/debug.module";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
 
 @singleton()
 export class CoreModule implements Module {
@@ -28,10 +29,14 @@ export class CoreModule implements Module {
 		this.app.camera.instance()?.position.set(0, 5, 5);
 		this.app.camera.miniCamera()?.position.set(6, 2, 0);
 
-		this.app.debug.cameraControls().enableRotate = false;
-		this.app.debug.cameraControls().enableZoom = false;
-		this.app.debug.miniCameraControls().enableRotate = false;
-		this.app.debug.miniCameraControls().enableZoom = false;
+		const orbitControls: OrbitControls = this.app.debug.cameraControls();
+		const miniOrbitControls: OrbitControls =
+			this.app.debug.miniCameraControls();
+
+		orbitControls.enableRotate = false;
+		orbitControls.enableZoom = false;
+		orbitControls.enablePan = false;
+		miniOrbitControls.enableRotate = false;
 
 		this.resource.init();
 		this.world.init();

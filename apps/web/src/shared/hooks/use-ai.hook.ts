@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { RegisterModule } from "@quick-threejs/reactive";
 
 import { PlayerModel } from "../models";
 import { MessageEventPayload, MoveLike } from "../types";
+import { validateFen } from "chess.js";
+import { AI_WILL_PERFORM_MOVE_TOKEN } from "../tokens";
 
 /** @description Ai login worker location. */
 const workerLocation = new URL(
@@ -12,7 +14,7 @@ const workerLocation = new URL(
 
 /** @description Provide resources about the chess game and the application logic. */
 export const useAi = () => {
-	const player = useMemo(() => new PlayerModel(), []);
+	const [player, setPlayer] = useState<PlayerModel | undefined>();
 
 	const [workerThread, setWorkerThread] = useState<
 		| Awaited<ReturnType<ReturnType<RegisterModule["workerPool"]>["run"]>>
@@ -28,19 +30,33 @@ export const useAi = () => {
 		});
 
 		setWorkerThread(_workerThread);
+		setPlayer(new PlayerModel());
 	}, []);
 
 	useEffect(() => {
-		if (workerThread?.thread)
-			workerThread.thread
-				?.movePerformed$()
-				?.subscribe((message: MessageEventPayload<MoveLike>) => {
-					if (!message.value) return;
+		workerThread?.thread
+			?.movePerformed$()
+			?.subscribe((message: MessageEventPayload<MoveLike>) => {
+				if (!message.value) return;
 
-					player.pickPiece(message.value?.piece, message.value?.from);
-					player.movePiece(message.value);
-				});
+				player?.pickPiece(message.value?.piece, message.value?.from);
+				player?.movePiece(message.value);
+			});
 	}, [workerThread, player]);
+
+	useEffect(() => {
+		const subscription = player?.notifyForPlayer$.subscribe((payload) => {
+			if (payload?.fen && validateFen(payload.fen))
+				workerThread?.worker.postMessage?.({
+					token: AI_WILL_PERFORM_MOVE_TOKEN,
+					value: { fen: payload.fen }
+				} satisfies MessageEventPayload<{ fen: string }>);
+		});
+
+		return () => {
+			subscription?.unsubscribe();
+		};
+	}, [player?.notify$$, player?.notifyForPlayer$, workerThread?.worker]);
 
 	return {
 		setup,

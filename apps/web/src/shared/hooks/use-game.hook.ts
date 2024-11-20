@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Chess } from "chess.js";
+import { Chess, Color } from "chess.js";
 import { register, RegisterModule } from "@quick-threejs/reactive";
-import { MessageEventPayload } from "../types";
-import { GAME_UPDATED_TOKEN } from "../tokens";
+import { MessageEventPayload, MoveLike } from "../types";
+import { GAME_UPDATED_TOKEN, PIECE_WILL_MOVE_TOKEN } from "../tokens";
 
 /** @description Game login worker location. */
 const workerLocation = new URL(
@@ -17,22 +17,45 @@ export const useGame = () => {
 	const [app, setApp] = useState<RegisterModule | undefined>();
 	const [isAppReady, setIsAppReady] = useState(false);
 
-	const gameUpdatedCall = useRef<((fen: string) => unknown) | null>();
+	const gameUpdatedCall = useRef<
+		| ((payload?: { turn: Color; fen: string; move?: MoveLike }) => unknown)
+		| null
+	>();
 
 	const gameUpdatedCallbackRegister = useCallback(
-		(callback: (fen: string) => unknown) => {
+		(
+			callback: (
+				payload: Parameters<NonNullable<(typeof gameUpdatedCall)["current"]>>[0]
+			) => unknown
+		) => {
 			gameUpdatedCall.current = callback;
 		},
 		[]
 	);
 	const handleMessages = useCallback(
-		(message: MessageEvent<MessageEventPayload<{ fen?: string }>>) => {
-			if (!message.data?.token) return;
+		(
+			payload: MessageEvent<
+				MessageEventPayload<
+					Parameters<NonNullable<(typeof gameUpdatedCall)["current"]>>[0]
+				>
+			>
+		) => {
+			if (!payload.data?.token) return;
 
-			if (message.data.token === GAME_UPDATED_TOKEN && message.data?.value?.fen)
-				gameUpdatedCall.current?.(message.data.value.fen);
+			if (payload.data.token === GAME_UPDATED_TOKEN && payload.data?.value?.fen)
+				gameUpdatedCall.current?.(payload.data.value);
 		},
 		[]
+	);
+
+	const movePiece = useCallback(
+		(move: MoveLike) => {
+			app?.worker()?.postMessage?.({
+				token: PIECE_WILL_MOVE_TOKEN,
+				value: move
+			} satisfies MessageEventPayload<MoveLike>);
+		},
+		[app]
 	);
 
 	const setup = useCallback(
@@ -64,6 +87,7 @@ export const useGame = () => {
 		workerLocation,
 		isAppReady,
 		setup,
+		movePiece,
 		dispose,
 		gameUpdatedCallbackRegister
 	};
