@@ -1,3 +1,5 @@
+import { BLACK, Color, WHITE } from "chess.js";
+
 export enum MoveFlags {
 	non_capture = "n",
 	pawn_two_squares = "b",
@@ -8,4 +10,13 @@ export enum MoveFlags {
 	queenside_castle = "q",
 	none_capture_promotion = "np",
 	capture_promotion = "cp"
+}
+
+/**
+ * @description Supported colors variations (or type),
+ * based on {@link Color ChessJs.Color}
+ */
+export enum ColorSide {
+	black = BLACK,
+	white = WHITE
 }

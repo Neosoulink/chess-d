@@ -12,15 +12,13 @@ import {
 import { Intersection, Vector3, Vector3Like } from "three";
 import { AppModule } from "@quick-threejs/reactive";
 import { copyProperties } from "@quick-threejs/utils";
+import { BoardCoord, coordToSquare, ObservablePayload } from "@chess-d/shared";
 
 import {
 	InstancedCellModel,
 	MatrixPieceModel,
 	InstancedPieceModel,
-	PieceNotificationPayload,
-	coordToSquare,
-	ObservablePayload,
-	BoardCoord
+	PieceNotificationPayload
 } from "../../shared";
 import { PiecesComponent } from "./pieces.component";
 import { CoreComponent } from "../core.component";

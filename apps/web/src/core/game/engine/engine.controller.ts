@@ -1,15 +1,17 @@
 import { inject, singleton } from "tsyringe";
-import { map, Observable, Subject } from "rxjs";
+import { map, Observable } from "rxjs";
 import { Chess, Move } from "chess.js";
-import { CoreModule as ChessboardModule } from "@chess-d/chessboard";
-
 import {
-	coordToSquare,
-	EngineNotificationPayload,
-	squareToCoord,
-	ObservablePayload,
+	CoreModule as ChessboardModule,
 	PieceNotificationPayload
 } from "@chess-d/chessboard";
+import {
+	coordToSquare,
+	ObservablePayload,
+	squareToCoord
+} from "@chess-d/shared";
+
+import { EngineNotificationPayload } from "../../../shared/interfaces";
 
 @singleton()
 export class EngineController {

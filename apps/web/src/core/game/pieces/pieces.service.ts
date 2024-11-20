@@ -1,5 +1,5 @@
-import { ColorVariant, PieceType, squareToCoord } from "@chess-d/chessboard";
 import { CoreModule as ChessCoreModule } from "@chess-d/chessboard";
+import { ColorSide, PieceType, squareToCoord } from "@chess-d/shared";
 import { inject, singleton } from "tsyringe";
 
 import { MoveLike } from "../../../shared/types/chess.type";
@@ -13,7 +13,7 @@ export class PiecesService {
 	handlePlayerMovedPiece(move: MoveLike) {
 		const piece = this.chessboard.pieces.component.getPieceByCoord(
 			move.piece as PieceType,
-			move.color as ColorVariant,
+			move.color as ColorSide,
 			squareToCoord(move.from)
 		)!;
 

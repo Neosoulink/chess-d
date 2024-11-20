@@ -1,0 +1,30 @@
+{
+	"name": "@chess-d/shared",
+	"private": true,
+	"description": "Shared utilities for the chess-d ecosystem",
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "tsc --watch",
+		"build": "tsc",
+		"test": "jest --passWithNoTests"
+	},
+	"main": "./dist/main.js",
+	"types": "./dist/main.d.ts",
+	"dependencies": {
+		"chess.js": "1.0.0-beta.8",
+		"@dimforge/rapier3d-compat": "^0.14.0",
+		"rxjs": "^7.8.1",
+		"three": "^0.169.0"
+	},
+	"devDependencies": {
+		"@chess-d/configs": "workspace:*",
+		"typescript": "^5.5.3"
+	},
+	"keywords": [
+		"chess",
+		"chessboard",
+		"shared",
+		"utils"
+	]
+}

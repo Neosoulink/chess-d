@@ -2,21 +2,23 @@ import "reflect-metadata";
 
 import { inject, singleton } from "tsyringe";
 import { DynamicDrawUsage, Euler } from "three";
+import {
+	BOARD_CELL_SIZE,
+	BOARD_MATRIX_RANGE_SIZE,
+	BOARD_RANGE_CELLS_HALF_SIZE,
+	BoardCoord,
+	ColorSide
+} from "@chess-d/shared";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
 import { Physics } from "@chess-d/rapier-physics";
 
 import {
-	BoardCoord,
 	InstancedCellModel,
 	CellsMakerGroupModel,
 	MATRIX,
 	QUATERNION,
 	SCALE,
 	VECTOR,
-	BOARD_CELL_SIZE,
-	BOARD_MATRIX_RANGE_SIZE,
-	BOARD_RANGE_CELLS_HALF_SIZE,
-	ColorVariant,
 	MatrixCellModel
 } from "../../shared";
 
@@ -70,7 +72,7 @@ export class BoardComponent {
 			);
 			this.instancedCell.setSquareColor(
 				i,
-				isBlack ? ColorVariant.black : ColorVariant.white
+				isBlack ? ColorSide.black : ColorSide.white
 			);
 
 			isBlack = !isBlack;

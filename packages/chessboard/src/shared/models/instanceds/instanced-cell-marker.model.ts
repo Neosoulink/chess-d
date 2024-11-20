@@ -6,15 +6,9 @@ import {
 	InstancedMesh,
 	MeshBasicMaterial
 } from "three";
+import { BOARD_CELL_SIZE, BoardCoord } from "@chess-d/shared";
 
-import { BoardCoord } from "../../interfaces";
-import {
-	BOARD_CELL_SIZE,
-	MATRIX,
-	QUATERNION,
-	SCALE,
-	VECTOR
-} from "../../constants";
+import { MATRIX, QUATERNION, SCALE, VECTOR } from "../../constants";
 
 export class CellsMakerGroupModel extends InstancedMesh {
 	constructor(

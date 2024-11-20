@@ -2,8 +2,7 @@ import "reflect-metadata";
 
 import { singleton } from "tsyringe";
 import { BoxGeometry, BufferGeometry } from "three";
-
-import { PieceType } from "../../shared";
+import { PieceType } from "@chess-d/shared";
 
 @singleton()
 export class ResourceComponent {

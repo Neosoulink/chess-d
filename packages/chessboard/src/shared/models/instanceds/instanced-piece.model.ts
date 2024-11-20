@@ -7,15 +7,14 @@ import {
 import { Subject, Subscription } from "rxjs";
 import { Physics } from "@chess-d/rapier-physics";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
+import { BoardCoord, ColorSide, PieceType } from "@chess-d/shared";
 
-import { BoardCoord } from "../../interfaces";
-import { ColorVariant, PieceType } from "../../enums";
 import { COLOR_BLACK, COLOR_WHITE } from "../../constants";
 import { MatrixPieceModel } from "../matrixes/matrix-piece.model";
 
 export class InstancedPieceModel<
 	Type extends PieceType = PieceType,
-	Color extends ColorVariant = ColorVariant
+	Color extends ColorSide = ColorSide
 > extends InstancedMesh {
 	public readonly pieces: MatrixPieceModel<Type, Color>[] = [];
 	public readonly pieceUpdateSubscriptions: Subscription[] = [];
@@ -30,8 +29,7 @@ export class InstancedPieceModel<
 		pieces?: InstancedPieceModel<Type, Color>["pieces"]
 	) {
 		const piecesMatrix = pieces ?? Array.from(Array(count));
-		const color =
-			piecesColor === ColorVariant.black ? COLOR_BLACK : COLOR_WHITE;
+		const color = piecesColor === ColorSide.black ? COLOR_BLACK : COLOR_WHITE;
 
 		super(geometry, undefined, piecesMatrix.length);
 		this.instanceMatrix.setUsage(DynamicDrawUsage);

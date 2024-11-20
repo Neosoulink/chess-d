@@ -1,12 +1,12 @@
 import { Intersection, Vector3Like } from "three";
-import { ColorVariant, PieceType } from "../enums";
+import { BoardCoord, ColorSide, PieceType } from "@chess-d/shared";
+
 import {
 	MatrixPieceModel,
 	InstancedPieceModel,
 	InstancedCellModel,
 	MatrixCellModel
 } from "../models";
-import { BoardCoord } from "./board.interface";
 
 export type PieceNotificationPayload = {
 	piecesIntersection?: Intersection<InstancedPieceModel>;
@@ -21,18 +21,18 @@ export type PieceNotificationPayload = {
 	cell?: MatrixCellModel;
 };
 
-export type PiecesGroup<Color extends ColorVariant> = {
+export type PiecesGroup<Color extends ColorSide> = {
 	[Type in PieceType]: InstancedPieceModel<Type, Color>;
 };
 
-export type DroppedPiecesGroup<Color extends ColorVariant> = {
+export type DroppedPiecesGroup<Color extends ColorSide> = {
 	[Type in PieceType]: MatrixPieceModel<Type, Color>[] | undefined;
 };
 
 export type PiecesGroups = {
-	[Color in ColorVariant]: Partial<PiecesGroup<Color>>;
+	[Color in ColorSide]: Partial<PiecesGroup<Color>>;
 };
 
 export type DroppedPiecesGroups = {
-	[Color in ColorVariant]: Partial<DroppedPiecesGroup<Color>>;
+	[Color in ColorSide]: Partial<DroppedPiecesGroup<Color>>;
 };

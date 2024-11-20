@@ -1,15 +1,14 @@
 import { InstancedMesh, PlaneGeometry } from "three";
-
 import {
 	BOARD_CELL_SIZE,
 	BOARD_MATRIX_RANGE_SIZE,
 	BOARD_MATRIX_SIZE,
-	COLOR_BLACK,
-	COLOR_WHITE
-} from "../../constants";
+	BoardCoord,
+	ColorSide
+} from "@chess-d/shared";
+
+import { COLOR_BLACK, COLOR_WHITE } from "../../constants";
 import { MatrixCellModel } from "../matrixes/matrix-cell.model";
-import { BoardCoord } from "../../interfaces";
-import { ColorVariant } from "../../enums";
 
 export class InstancedCellModel extends InstancedMesh {
 	public readonly cells: MatrixCellModel[][] = [];
@@ -51,14 +50,12 @@ export class InstancedCellModel extends InstancedMesh {
 		return super.dispose();
 	}
 
-	setSquareColor(index: number, colorVariant: ColorVariant): void {
+	setSquareColor(index: number, side: ColorSide): void {
 		const cell = this.getCellByIndex(index);
 		if (!cell) return;
 
-		const color =
-			colorVariant === ColorVariant.black ? COLOR_BLACK : COLOR_WHITE;
-
-		cell.color = colorVariant;
+		const color = side === ColorSide.black ? COLOR_BLACK : COLOR_WHITE;
+		cell.color = side;
 
 		return this.setColorAt(index, color);
 	}

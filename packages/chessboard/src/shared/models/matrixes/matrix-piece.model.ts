@@ -1,14 +1,13 @@
 import { InstancedMesh, Matrix4, Object3D, Vector3, Vector3Like } from "three";
 import { Subject } from "rxjs";
 import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
+import { BoardCoord, ColorSide, PieceType } from "@chess-d/shared";
 
-import { BoardCoord } from "../../interfaces";
-import { ColorVariant, PieceType } from "../../enums";
 import { MATRIX, QUATERNION, SCALE, VECTOR } from "../../constants";
 
 export class MatrixPieceModel<
 	T extends PieceType = PieceType,
-	C extends ColorVariant = ColorVariant
+	C extends ColorSide = ColorSide
 > extends Matrix4 {
 	public readonly updated$$ = new Subject<typeof this>();
 	public readonly coord: BoardCoord = { col: 0, row: 0 };

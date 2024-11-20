@@ -8,21 +8,18 @@ import { ExposedAppModule } from "@quick-threejs/reactive/worker";
 
 import { AiModule } from "./ai.module";
 
-const setupAiModule = () => {
-	const game = new Chess(
-		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"
-	);
+const game = new Chess(
+	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"
+);
 
-	container.register(Chess, { useValue: game });
-	container.register(AiModel, {
-		useValue: register(SupportedAiModel.zeyu, game)
-	});
+container.register(Chess, { useValue: game });
+container.register(AiModel, {
+	useValue: register(SupportedAiModel.zeyu, game)
+});
 
-	return container.resolve(AiModule);
-};
-
-const aiModule = setupAiModule();
+const aiModule = container.resolve(AiModule);
 aiModule.init();
+aiModule.lifecycle$().subscribe({ complete: () => container.dispose() });
 
 const exposedAiModule = {
 	movePerformed$: aiModule.controller.movePerformed$$.pipe.bind(

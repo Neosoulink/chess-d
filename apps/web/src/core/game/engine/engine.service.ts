@@ -2,12 +2,14 @@ import { Chess } from "chess.js";
 import { inject, singleton } from "tsyringe";
 import {
 	CoreModule as ChessboardModule,
-	getOppositeColor,
-	MatrixPieceModel,
+	MatrixPieceModel
+} from "@chess-d/chessboard";
+import {
+	getOppositeSide,
 	MoveFlags,
 	ObservablePayload,
 	PieceType
-} from "@chess-d/chessboard";
+} from "@chess-d/shared";
 
 import { EngineController } from "./engine.controller";
 
@@ -31,7 +33,7 @@ export class EngineService {
 	) {
 		const { piece, startCoord, endCoord, nextMoveIndex, nextMove } = payload;
 		const flags = nextMove?.flags as MoveFlags;
-		const oppositeColor = getOppositeColor(piece.color);
+		const oppositeColor = getOppositeSide(piece.color);
 
 		let pieceToDrop: MatrixPieceModel | undefined = undefined;
 

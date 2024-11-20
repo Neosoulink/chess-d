@@ -2,18 +2,15 @@ import { inject, singleton } from "tsyringe";
 import { Vector3, Vector3Like } from "three";
 import { AppModule } from "@quick-threejs/reactive";
 import { copyProperties } from "@quick-threejs/utils";
+import { BoardCoord, ColorSide, fenToCoords, PieceType } from "@chess-d/shared";
 import { Physics } from "@chess-d/rapier-physics";
 
 import {
 	InstancedPieceModel,
 	PiecesGroups,
-	PieceType,
-	ColorVariant,
 	MatrixPieceModel,
-	BoardCoord,
 	DroppedPiecesGroups,
 	INITIAL_FEN_TOKEN,
-	fenToCoords,
 	PieceNotificationPayload,
 	VECTOR
 } from "../../shared";
@@ -23,12 +20,12 @@ import { ResourceComponent } from "../resource/resource.component";
 @singleton()
 export class PiecesComponent {
 	public readonly groups: PiecesGroups = {
-		[ColorVariant.white]: {},
-		[ColorVariant.black]: {}
+		[ColorSide.white]: {},
+		[ColorSide.black]: {}
 	};
 	public readonly droppedGroups: DroppedPiecesGroups = {
-		[ColorVariant.white]: {},
-		[ColorVariant.black]: {}
+		[ColorSide.white]: {},
+		[ColorSide.black]: {}
 	};
 
 	constructor(
@@ -40,7 +37,7 @@ export class PiecesComponent {
 		private readonly resourceComponent: ResourceComponent
 	) {}
 
-	public createGroup<Type extends PieceType, Color extends ColorVariant>(
+	public createGroup<Type extends PieceType, Color extends ColorSide>(
 		type: Type,
 		color: Color,
 		coords: BoardCoord[],
@@ -63,7 +60,7 @@ export class PiecesComponent {
 		return group;
 	}
 
-	public setGroup<Type extends PieceType, Color extends ColorVariant>(
+	public setGroup<Type extends PieceType, Color extends ColorSide>(
 		newGroup: InstancedPieceModel<Type, Color>
 	): InstancedPieceModel<Type, Color> | undefined {
 		// @ts-ignore <unsupported never type>
@@ -78,7 +75,7 @@ export class PiecesComponent {
 		const fenCoords = fenToCoords(this.initialFen);
 
 		if (fenCoords)
-			[ColorVariant.black, ColorVariant.white].forEach((color) => {
+			[ColorSide.black, ColorSide.white].forEach((color) => {
 				const pieceCoords = fenCoords[color];
 				Object.keys(pieceCoords).forEach((_pieceType) => {
 					const coords = pieceCoords[_pieceType];
@@ -92,17 +89,17 @@ export class PiecesComponent {
 			});
 
 		if (this.groups)
-			[...Object.keys(this.groups[ColorVariant.black])].forEach((key) => {
-				const blackGroup = this.groups?.[ColorVariant.black][key as PieceType];
+			[...Object.keys(this.groups[ColorSide.black])].forEach((key) => {
+				const blackGroup = this.groups?.[ColorSide.black][key as PieceType];
 
-				const whiteGroup = this.groups?.[ColorVariant.white][key as PieceType];
+				const whiteGroup = this.groups?.[ColorSide.white][key as PieceType];
 
 				if (blackGroup) this.app.world.scene().add(blackGroup);
 				if (whiteGroup) this.app.world.scene().add(whiteGroup);
 			});
 	}
 
-	public getPieceByCoord<Type extends PieceType, Color extends ColorVariant>(
+	public getPieceByCoord<Type extends PieceType, Color extends ColorSide>(
 		pieceGroup: Type,
 		pieceColor: Color,
 		coord: BoardCoord
@@ -125,17 +122,17 @@ export class PiecesComponent {
 		return piece as unknown as MatrixPieceModel<Type, Color>;
 	}
 
-	public movePieceByPosition<
-		Type extends PieceType,
-		Color extends ColorVariant
-	>(piece: MatrixPieceModel<Type, Color>, position: Vector3Like) {
+	public movePieceByPosition<Type extends PieceType, Color extends ColorSide>(
+		piece: MatrixPieceModel<Type, Color>,
+		position: Vector3Like
+	) {
 		this.groups?.[piece.color]?.[piece.type]?.setPiecePosition(
 			piece.instanceId,
 			position
 		);
 	}
 
-	public movePieceByCoord<Type extends PieceType, Color extends ColorVariant>(
+	public movePieceByCoord<Type extends PieceType, Color extends ColorSide>(
 		piece: MatrixPieceModel<Type, Color>,
 		coord: BoardCoord
 	) {
@@ -146,7 +143,7 @@ export class PiecesComponent {
 		);
 	}
 
-	public dropPiece<Type extends PieceType, Color extends ColorVariant>(
+	public dropPiece<Type extends PieceType, Color extends ColorSide>(
 		piece: MatrixPieceModel<Type, Color>
 	): MatrixPieceModel<Type, Color> | undefined {
 		const droppedPiecesGroup = this.droppedGroups?.[piece.color]?.[piece.type];
@@ -174,7 +171,7 @@ export class PiecesComponent {
 		return piece;
 	}
 
-	public promotePiece<Color extends ColorVariant, ToType extends PieceType>(
+	public promotePiece<Color extends ColorSide, ToType extends PieceType>(
 		piece: MatrixPieceModel<PieceType.pawn, Color>,
 		toPiece: ToType
 	): void {

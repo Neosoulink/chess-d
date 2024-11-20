@@ -1,10 +1,10 @@
 import { PieceSymbol, Square, validateFen } from "chess.js";
 
 import {
-	ENGINE_SQUARE_KEY_NUMBERS,
-	ENGINE_SQUARE_NUMBER_KEYS
+	CHESS_SQUARE_KEY_NUMBERS,
+	CHESS_SQUARE_NUMBER_KEYS
 } from "../constants";
-import { ColorVariant } from "../enums";
+import { ColorSide } from "../enums";
 import { BoardCoord } from "../interfaces";
 
 /**
@@ -13,7 +13,7 @@ import { BoardCoord } from "../interfaces";
  * @see [PGN MoveText](https://en.wikipedia.org/wiki/Portable_Game_Notation)
  */
 export const coordToSquare = ({ col, row }: BoardCoord): Square => {
-	return `${ENGINE_SQUARE_NUMBER_KEYS[col]}${row + 1}` as Square;
+	return `${CHESS_SQUARE_NUMBER_KEYS[col]}${row + 1}` as Square;
 };
 
 /** @description convert the engine {@link Square} to a valid {@link BoardCoord}. */
@@ -22,7 +22,7 @@ export const squareToCoord = (square: Square): BoardCoord => {
 		throw new Error("Invalid square type");
 
 	return {
-		col: ENGINE_SQUARE_KEY_NUMBERS[square[0]],
+		col: CHESS_SQUARE_KEY_NUMBERS[square[0]],
 		row: parseInt(square[1]) - 1
 	};
 };
@@ -35,9 +35,9 @@ export const squareToCoord = (square: Square): BoardCoord => {
 export const getPieceSymbolColor = (
 	piece: PieceSymbol | Capitalize<PieceSymbol>
 ) => {
-	if (piece === piece.toLowerCase()) return ColorVariant.black;
+	if (piece === piece.toLowerCase()) return ColorSide.black;
 
-	return ColorVariant.white;
+	return ColorSide.white;
 };
 
 /**
@@ -56,11 +56,11 @@ export const fenToCoords = (rawFen: string) => {
 	const fen = rawFen.replace(/ .+$/, "");
 	const rows = fen.split("/");
 	const positions: Record<
-		ColorVariant,
+		ColorSide,
 		Partial<Record<PieceSymbol | Capitalize<PieceSymbol>, BoardCoord[]>>
 	> = {
-		[ColorVariant.white]: {},
-		[ColorVariant.black]: {}
+		[ColorSide.white]: {},
+		[ColorSide.black]: {}
 	};
 
 	let currentRow = 8;
@@ -86,7 +86,7 @@ export const fenToCoords = (rawFen: string) => {
 
 				positions[color][piece].push(
 					squareToCoord(
-						`${ENGINE_SQUARE_NUMBER_KEYS[colIdx]}${currentRow}` as Square
+						`${CHESS_SQUARE_NUMBER_KEYS[colIdx]}${currentRow}` as Square
 					)
 				);
 				colIdx = colIdx + 1;

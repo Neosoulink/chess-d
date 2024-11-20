@@ -3,8 +3,9 @@ import { validateFen } from "chess.js";
 import { isObject } from "@quick-threejs/utils";
 import { AppModule } from "@quick-threejs/reactive";
 import { Physics, RapierPhysics } from "@chess-d/rapier-physics";
+import { DEFAULT_FEN } from "@chess-d/shared";
 
-import { DEFAULT_FEN, INITIAL_FEN_TOKEN } from "../shared";
+import { INITIAL_FEN_TOKEN } from "../shared";
 import { CoreModule } from "./core.module";
 
 /**
