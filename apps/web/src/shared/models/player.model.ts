@@ -1,5 +1,5 @@
 import { PieceSymbol, type Color, type Square } from "chess.js";
-import type { PlayerEntity } from "@chess-d/api";
+import type { PlayerEntity } from "@chess-d/shared";
 import { filter, Subject } from "rxjs";
 import { MoveLike } from "../types";
 

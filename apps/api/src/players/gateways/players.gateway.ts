@@ -6,80 +6,70 @@ import {
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
-	WsException
+	WsException,
+	WsResponse
 } from "@nestjs/websockets";
-import { Namespace, Server, Socket } from "socket.io";
-import { PlayerEntity } from "@chess-d/api";
+import { PlayerEntity } from "@chess-d/shared";
+import { Server, Socket } from "socket.io";
 
-@WebSocketGateway()
+@WebSocketGateway({
+	cors: {
+		origin: "*",
+		credentials: true
+	}
+})
 export class PlayersGateway
 	implements OnGatewayConnection, OnGatewayDisconnect
 {
 	@WebSocketServer()
 	private readonly server: Server;
+	private readonly rooms: Record<string, PlayerEntity[]> = {};
 
-	// @ts-ignore
-	@WebSocketServer({ namespace: "namespace" })
-	private readonly namespace: Namespace;
-
-	readonly players: Record<string, PlayerEntity> = {};
-
-	constructor() {
-		console.log("PlayersGateway created", this.server, this.namespace);
-	}
-
-	handleConnection(@ConnectedSocket() player: Socket, ...args: any[]) {
-		console.log("Client connected", player.id, args);
-
+	handleConnection(@ConnectedSocket() socket: Socket) {
 		const newPlayer: PlayerEntity = {
-			id: player.id,
+			id: socket.id,
 			color: "b",
-			isOpponent: false,
-			connectedAt: new Date()
+			connectedAt: new Date(),
+			isOpponent: false
 		};
 
-		/** Send to the new player himself's info */
-		this.server.to(player.id).emit("player_info", newPlayer);
+		this.server.to(socket.id).emit("player_info", newPlayer);
+		this.server.to(socket.id).emit("players_info", this.rooms);
 
-		/** Send to the new player other players info */
-		this.server.to(player.id).emit("players_info", this.players);
+		this.rooms[socket.id] = [newPlayer];
 
-		/** Add the new player info into the peers list */
-		this.players[player.id] = newPlayer;
-
-		/** Send to other players the new player info */
-		this.server.except(player.id).emit("player_joined", newPlayer);
+		this.server.except(socket.id).emit("player_joined", newPlayer);
 
 		console.log(
-			`New player joined.\nID: ${player.id}.\nTotal players: ${this.server.engine.clientsCount}`
+			`New player joined.\nID: ${socket.id}.\nTotal rooms: ${this.server.engine.clientsCount}`
 		);
 	}
 
-	handleDisconnect(client: Socket) {
-		if (this.players[client.id]) delete this.players[client.id];
-		this.server.emit("player_left", client.id);
+	handleDisconnect(socket: Socket) {
+		if (this.rooms[socket.id]) delete this.rooms[socket.id];
+		this.server.emit("player_left", socket.id);
 
 		console.log(
-			`Player left.\nID: ${this.server.engine.clientsCount}\nTotal players: ${this.server.engine.clientsCount}`
+			`Player left.\nID: ${this.server.engine.clientsCount}\nTotal rooms: ${this.server.engine.clientsCount}`
 		);
 	}
 
 	@SubscribeMessage("player_moved")
 	async move(
 		@MessageBody() playerBody: PlayerEntity,
-		@ConnectedSocket() player: Socket
-	) {
-		if (!this.players[player.id])
+		@ConnectedSocket() socket: Socket
+	): Promise<WsResponse<PlayerEntity[]>> {
+		if (!this.rooms[socket.id])
 			throw new WsException("Invalid Player Socket ID");
 
-		this.players[player.id] = {
-			...this.players[player.id],
+		this.rooms[socket.id] = {
+			...this.rooms[socket.id],
 			...playerBody
 		};
 
-		this.server
-			.except(player.id)
-			.emit("player_updated", this.players[player.id]);
-		this.server.except(player.id).emit("players_updated", this.players);
+		this.server.except(socket.id).emit("player_updated", this.rooms[socket.id]);
+		this.server.except(socket.id).emit("players_updated", this.rooms);
+
+		return { event: "player_moved", data: this.rooms[socket.id] };
 	}
 }

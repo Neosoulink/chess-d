@@ -1,8 +1,7 @@
 {
-	"extends": "@chess-d/configs/typescript/nestjs.json",
+	"extends": "@chess-d/configs/typescript/server.json",
 	"compilerOptions": {
 		"baseUrl": "./",
 		"outDir": "./dist"
-	},
-	"exclude": ["*.config.cjs", "*.config.js", "*.config.ts"]
+	}
 }

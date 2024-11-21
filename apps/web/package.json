@@ -12,10 +12,9 @@
 	},
 	"dependencies": {
 		"@chess-d/ai": "workspace:*",
-		"@chess-d/api": "workspace:*",
 		"@chess-d/chessboard": "workspace:*",
-		"@quick-threejs/reactive": "^0.1.16",
 		"@chess-d/shared": "workspace:*",
+		"@quick-threejs/reactive": "^0.1.16",
 		"@quick-threejs/utils": "^0.1.11",
 		"chess.js": "1.0.0-beta.8",
 		"react": "^18.3.1",

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Chess, Color } from "chess.js";
 import { register, RegisterModule } from "@quick-threejs/reactive";
+
 import { MessageEventPayload, MoveLike } from "../types";
 import { GAME_UPDATED_TOKEN, PIECE_WILL_MOVE_TOKEN } from "../tokens";
 
@@ -58,23 +59,23 @@ export const useGame = () => {
 		[app]
 	);
 
-	const setup = useCallback(
-		() =>
-			register({
-				location: workerLocation,
-				enableDebug: !!import.meta.env?.DEV,
-				axesSizes: 5,
-				gridSizes: 10,
-				withMiniCamera: true,
-				onReady: (_app) => {
-					setApp(_app);
-					setIsAppReady(true);
+	const setup = useCallback(() => {
+		if (app) return;
 
-					_app.worker()?.addEventListener("message", handleMessages);
-				}
-			}),
-		[handleMessages]
-	);
+		register({
+			location: workerLocation,
+			enableDebug: !!import.meta.env?.DEV,
+			axesSizes: 5,
+			gridSizes: 10,
+			withMiniCamera: true,
+			onReady: (_app) => {
+				setApp(_app);
+				setIsAppReady(true);
+
+				_app.worker()?.addEventListener("message", handleMessages);
+			}
+		});
+	}, [app, handleMessages]);
 
 	const dispose = useCallback(() => {
 		app?.dispose();

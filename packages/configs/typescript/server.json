@@ -1,22 +1,15 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
-	"display": "NestJS",
+	"display": "Server Config",
 	"extends": "./base.json",
 	"compilerOptions": {
 		"target": "ES2021",
 		"allowSyntheticDefaultImports": true,
-		"emitDecoratorMetadata": true,
-		"experimentalDecorators": true,
-		"forceConsistentCasingInFileNames": false,
 		"incremental": true,
-		"declaration": true,
 
 		"module": "Node16",
 		"esModuleInterop": true,
 		"moduleResolution": "Node16",
-		"noFallthroughCasesInSwitch": false,
-		"noImplicitAny": false,
-		"skipLibCheck": true,
 
 		"sourceMap": true,
 

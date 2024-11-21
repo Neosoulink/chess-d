@@ -1,12 +1,14 @@
 import "reflect-metadata";
 
-import { container } from "tsyringe";
 import { AppModule } from "@quick-threejs/reactive";
 import { launchApp } from "@quick-threejs/reactive/worker";
 import { isObject } from "@quick-threejs/utils";
-import { CoreModule as ChessboardModule } from "@chess-d/chessboard/dist/core/core.module";
-import { setup as setupChessboard } from "@chess-d/chessboard";
+import {
+	CoreModule as ChessboardModule,
+	setup as setupChessboard
+} from "@chess-d/chessboard";
 import { Chess } from "chess.js";
+import { container } from "tsyringe";
 
 import { GameModule } from "./game.module";
 

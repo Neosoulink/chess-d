@@ -76,7 +76,7 @@ export class PiecesComponent {
 
 		if (fenCoords)
 			[ColorSide.black, ColorSide.white].forEach((color) => {
-				const pieceCoords = fenCoords[color];
+				const pieceCoords = fenCoords[color]!;
 				Object.keys(pieceCoords).forEach((_pieceType) => {
 					const coords = pieceCoords[_pieceType];
 					const pieceType = _pieceType.toLowerCase() as PieceType;

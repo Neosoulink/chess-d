@@ -49,7 +49,7 @@ export const getPieceSymbolColor = (
  * @inspiration_from Chris Oakman <chris@oakmac.com>
  */
 export const fenToCoords = (rawFen: string) => {
-	if (!validateFen(rawFen)) return;
+	if (!validateFen(rawFen)) return undefined;
 
 	// cut off any move, castling, etc info from the end
 	// we're only interested in position information

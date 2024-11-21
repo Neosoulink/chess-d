@@ -24,12 +24,9 @@ export const App = () => {
 
 	// Setting up the game.
 	useEffect(() => {
+		console.log("Setting up game...");
 		if (!app) setupGame();
-
-		return () => {
-			disposeApp();
-		};
-	}, [app, setupGame, disposeApp]);
+	}, [app, setupGame]);
 
 	// Setting up the AI player.
 	useEffect(() => {

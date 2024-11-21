@@ -4,7 +4,16 @@
 	"extends": "@quick-threejs/config/typescript",
 	"compilerOptions": {
 		"moduleResolution": "bundler",
+
+		"forceConsistentCasingInFileNames": false,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"declaration": true,
+
+		"noFallthroughCasesInSwitch": false,
+		"noImplicitAny": false,
 		"noUnusedParameters": false,
-		"noUnusedLocals": false
+		"noUnusedLocals": false,
+		"skipLibCheck": true
 	}
 }

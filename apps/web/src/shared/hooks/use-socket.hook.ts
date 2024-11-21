@@ -1,18 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { PlayerEntity } from "@chess-d/api";
+import { PlayerEntity } from "@chess-d/shared";
 
-export interface UseSocketContext {
+export const useSocket = (): {
 	socket: Socket;
 	currentPlayer: PlayerEntity | undefined;
 	playersList: PlayerEntity[];
-}
-
-export const useSocket: () => UseSocketContext = () => {
+} => {
 	const socket = useMemo(
 		() =>
 			io("http://localhost:3000", {
-				autoConnect: false
+				autoConnect: false,
+				query: { hi: "there" }
 			}),
 		[]
 	);
@@ -74,6 +73,8 @@ export const useSocket: () => UseSocketContext = () => {
 		onPlayersUpdated,
 		socket
 	]);
+
+	socket.io.opts.query = { hi: "there" };
 
 	return {
 		socket,
