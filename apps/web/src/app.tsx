@@ -3,6 +3,7 @@ import { useEffect, useMemo } from "react";
 import { merge, Subscription } from "rxjs";
 import { useAi, useGame, useSocket } from "./shared/hooks";
 import { PlayerModel } from "./shared/models";
+import { SOCKET_PERFORM_MOVE_TOKEN } from "@chess-d/shared";
 
 export const App = () => {
 	const {
@@ -24,7 +25,6 @@ export const App = () => {
 
 	// Setting up the game.
 	useEffect(() => {
-		console.log("Setting up game...");
 		if (!app) setupGame();
 	}, [app, setupGame]);
 
@@ -39,7 +39,12 @@ export const App = () => {
 
 	// Setting up the socket player.
 	useEffect(() => {
-		if (app && !socket.connected) socket.connect();
+		if (app && !socket.connected) {
+			socket.connect();
+			socket.on("disconnect", (r, d) => {
+				console.log("disconnect ==>", r, d);
+			});
+		}
 
 		return () => {
 			socket.disconnect();
@@ -68,8 +73,10 @@ export const App = () => {
 				fen: payload?.fen,
 				turn: payload?.turn
 			});
+
+			socket?.emit(SOCKET_PERFORM_MOVE_TOKEN, payload);
 		});
-	}, [opponentPlayer?.notify$$, gameUpdatedCallbackRegister]);
+	}, [opponentPlayer?.notify$$, gameUpdatedCallbackRegister, socket]);
 
 	return <div />;
 };

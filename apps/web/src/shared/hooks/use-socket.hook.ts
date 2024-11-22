@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { PlayerEntity } from "@chess-d/shared";
+import {
+	ColorSide,
+	PlayerEntity,
+	SOCKET_MOVE_PERFORMED_TOKEN
+} from "@chess-d/shared";
 
 export const useSocket = (): {
 	socket: Socket;
@@ -9,9 +13,8 @@ export const useSocket = (): {
 } => {
 	const socket = useMemo(
 		() =>
-			io("http://localhost:3000", {
-				autoConnect: false,
-				query: { hi: "there" }
+			io("http://192.168.1.65:3000", {
+				autoConnect: false
 			}),
 		[]
 	);
@@ -50,6 +53,9 @@ export const useSocket = (): {
 		},
 		[currentPlayer]
 	);
+	const onPlayerPerformedMove = useCallback((payload: unknown) => {
+		console.log("Player performed move", payload);
+	}, []);
 
 	useEffect(() => {
 		socket.on("player_info", onPlayerInfo);
@@ -57,6 +63,7 @@ export const useSocket = (): {
 		socket.on("player_joined", onPlayerJoined);
 		socket.on("player_left", onPlayerLeft);
 		socket.on("players_updated", onPlayersUpdated);
+		socket.on(SOCKET_MOVE_PERFORMED_TOKEN, onPlayerPerformedMove);
 
 		return () => {
 			socket.off("player_info", onPlayerInfo);
@@ -64,6 +71,7 @@ export const useSocket = (): {
 			socket.off("player_joined", onPlayerJoined);
 			socket.off("player_left", onPlayerLeft);
 			socket.off("players_updated", onPlayersUpdated);
+			socket.off(SOCKET_MOVE_PERFORMED_TOKEN, onPlayerPerformedMove);
 		};
 	}, [
 		onPlayerInfo,
@@ -71,10 +79,13 @@ export const useSocket = (): {
 		onPlayerJoined,
 		onPlayerLeft,
 		onPlayersUpdated,
-		socket
+		socket,
+		onPlayerPerformedMove
 	]);
 
-	socket.io.opts.query = { hi: "there" };
+	socket.auth = {
+		roomID: new URLSearchParams(location.search).get("roomID")
+	};
 
 	return {
 		socket,

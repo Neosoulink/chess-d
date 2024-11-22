@@ -5,7 +5,7 @@ import {
 	MatrixPieceModel
 } from "@chess-d/chessboard";
 import {
-	getOppositeSide,
+	getOppositeColorSide,
 	MoveFlags,
 	ObservablePayload,
 	PieceType
@@ -33,7 +33,7 @@ export class EngineService {
 	) {
 		const { piece, startCoord, endCoord, nextMoveIndex, nextMove } = payload;
 		const flags = nextMove?.flags as MoveFlags;
-		const oppositeColor = getOppositeSide(piece.color);
+		const oppositeColor = getOppositeColorSide(piece.color);
 
 		let pieceToDrop: MatrixPieceModel | undefined = undefined;
 

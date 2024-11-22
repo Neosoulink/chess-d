@@ -1,18 +1,99 @@
 import { Injectable } from "@nestjs/common";
-
-import { CreatePlayerDto } from "../dto/";
+import {
+	ColorSide,
+	DEFAULT_FEN,
+	getOppositeColorSide,
+	PlayerEntity
+} from "@chess-d/shared";
+import { randomUUID, UUID } from "crypto";
+import type { Socket } from "socket.io";
+import { Move } from "chess.js";
 
 @Injectable()
 export class PlayersService {
-	constructor() {}
+	private readonly rooms: Record<
+		UUID,
+		{ fen: string; players: PlayerEntity[] }
+	> = {};
 
-	create(createPlayerInput: CreatePlayerDto) {
-		const newPlayer = {
-			...createPlayerInput,
-			id: 0,
-			connectedAt: new Date()
+	register(socket: Socket):
+		| {
+				player: PlayerEntity;
+				roomID: string;
+				room: PlayersService["rooms"][UUID];
+		  }
+		| Error {
+		const { roomID: queryRoomID, side: colorSide } = socket.handshake.auth;
+
+		let roomID: UUID | undefined;
+
+		if (
+			typeof queryRoomID === "string" &&
+			!Array.isArray(this.rooms[queryRoomID]?.players)
+		) {
+			const err = new Error("Invalid room ID.");
+			return err;
+		}
+
+		const player: PlayerEntity = {
+			id: socket.id,
+			color: (colorSide as ColorSide) ?? ColorSide.black,
+			connectedAt: new Date(),
+			isHost: true
 		};
 
-		return newPlayer;
+		if (typeof queryRoomID === "string") {
+			if (this.rooms[queryRoomID]?.players?.length !== 1) return null;
+
+			player.color = getOppositeColorSide(
+				this.rooms[queryRoomID].players[0].color
+			);
+			player.isHost = false;
+
+			roomID = queryRoomID as UUID;
+			this.rooms[roomID].players.push(player);
+		}
+
+		if (!roomID) {
+			roomID = randomUUID();
+			this.rooms[roomID] = { fen: DEFAULT_FEN, players: [player] };
+		}
+
+		socket.data = { roomID };
+		return { player, roomID, room: this.rooms[roomID] };
+	}
+
+	unregister(socket: Socket) {
+		const { roomID } = socket.data;
+		const room = this.rooms[roomID];
+		if (!room) return {};
+
+		let player: PlayerEntity | undefined;
+
+		room.players.splice(
+			room.players.findIndex((_player) => {
+				if (_player.id === socket.id) {
+					player = _player;
+					return true;
+				}
+
+				return false;
+			}),
+			1
+		);
+
+		if (room.players.length === 0) delete this.rooms[roomID];
+		else room.players[0].isHost = true;
+
+		return { roomID, room, player };
+	}
+
+	handleMove(socket: Socket, move: Move) {
+		if (!move) return null;
+
+		const roomID = socket.data?.roomID;
+		this.rooms[roomID].fen = move.after;
+
+		return this.rooms[roomID].fen;
 	}
 }
