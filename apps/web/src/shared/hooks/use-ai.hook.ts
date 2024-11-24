@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { RegisterModule } from "@quick-threejs/reactive";
+import { Move, validateFen } from "chess.js";
 
 import { PlayerModel } from "../models";
-import { MessageEventPayload, MoveLike } from "../types";
-import { validateFen } from "chess.js";
+import { MessageEventPayload } from "../types";
 import { AI_WILL_PERFORM_MOVE_TOKEN } from "../tokens";
 
 /** @description Ai login worker location. */
@@ -36,7 +36,7 @@ export const useAi = () => {
 	useEffect(() => {
 		workerThread?.thread
 			?.movePerformed$()
-			?.subscribe((message: MessageEventPayload<MoveLike>) => {
+			?.subscribe((message: MessageEventPayload<Move>) => {
 				if (!message.value) return;
 
 				player?.pickPiece(message.value?.piece, message.value?.from);
@@ -45,8 +45,13 @@ export const useAi = () => {
 	}, [workerThread, player]);
 
 	useEffect(() => {
-		const subscription = player?.notifyForPlayer$.subscribe((payload) => {
-			if (payload?.fen && validateFen(payload.fen))
+		const subscription = player?.notify$$.subscribe((payload) => {
+			if (
+				payload?.move &&
+				payload?.turn === player.color &&
+				payload?.fen &&
+				validateFen(payload.fen)
+			)
 				workerThread?.worker.postMessage?.({
 					token: AI_WILL_PERFORM_MOVE_TOKEN,
 					value: { fen: payload.fen }
@@ -56,7 +61,7 @@ export const useAi = () => {
 		return () => {
 			subscription?.unsubscribe();
 		};
-	}, [player?.notify$$, player?.notifyForPlayer$, workerThread?.worker]);
+	}, [player, workerThread?.worker]);
 
 	return {
 		setup,

@@ -2,7 +2,6 @@ import { inject, singleton } from "tsyringe";
 import { Subscription } from "rxjs";
 import { Module } from "@quick-threejs/reactive";
 
-import { PIECE_WILL_MOVE_TOKEN } from "../../../shared/tokens";
 import { PiecesService } from "./pieces.service";
 import { PiecesController } from "./pieces.controller";
 
@@ -23,10 +22,7 @@ export class PiecesModule implements Module {
 			this.controller.pieceWillMove$.subscribe((payload) => {
 				const move = payload.data.value;
 
-				console.log("move", move);
-
-				if (payload.data?.token === PIECE_WILL_MOVE_TOKEN && move?.to)
-					this.controller.playerMovedPiece$$.next(move);
+				if (move?.to) this.controller.playerMovedPiece$$.next(move);
 			})
 		);
 	}

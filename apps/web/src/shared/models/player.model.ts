@@ -1,39 +1,27 @@
-import { PieceSymbol, type Color, type Square } from "chess.js";
-import type { PlayerEntity } from "@chess-d/shared";
+import type { Move, PieceSymbol, Color, Square } from "chess.js";
+import type { GameUpdatedPayload, PlayerEntity } from "@chess-d/shared";
 import { filter, Subject } from "rxjs";
-import { MoveLike } from "../types";
 
 export class PlayerModel implements PlayerEntity {
-	public readonly notify$$ = new Subject<
-		| {
-				entity?: PlayerEntity;
-				turn?: Color;
-				fen?: string;
-		  }
-		| undefined
-	>();
 	public readonly piecePicked$$ = new Subject<
 		Exclude<PlayerModel["pickedPiece"], undefined>
 	>();
-	public readonly pieceMoved$$ = new Subject<MoveLike>();
+	public readonly pieceMoved$$ = new Subject<Move>();
+	public readonly notify$$ = new Subject<GameUpdatedPayload | undefined>();
 	public readonly notifyForPlayer$ = this.notify$$.pipe(
-		filter(
-			(payload) =>
-				payload?.entity?.id === this.id || payload?.turn === this.color
-		)
+		filter((payload) => payload?.turn === this.color)
 	);
 
 	public id: string;
-	public isOpponent: boolean;
+	public isHost: boolean;
 	public connectedAt: Date;
 	public color: Color;
-
 	public pickedPiece?: { type: PieceSymbol; square: Square };
 
 	constructor(entityProps: Partial<PlayerEntity> = {}) {
 		this.id = entityProps.id ?? "";
 		this.color = entityProps.color ?? "b";
-		this.isOpponent = entityProps.isOpponent ?? false;
+		this.isHost = entityProps.isHost ?? false;
 		this.connectedAt = entityProps.connectedAt ?? new Date();
 
 		this.piecePicked$$.subscribe((payload) => (this.pickedPiece = payload));
@@ -44,7 +32,7 @@ export class PlayerModel implements PlayerEntity {
 		this.piecePicked$$.next({ type, square });
 	}
 
-	public movePiece(move: MoveLike) {
+	public movePiece(move: Move) {
 		this.pieceMoved$$.next(move);
 	}
 

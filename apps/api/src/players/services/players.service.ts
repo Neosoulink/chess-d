@@ -6,8 +6,8 @@ import {
 	PlayerEntity
 } from "@chess-d/shared";
 import { randomUUID, UUID } from "crypto";
+import { validateFen, type Move } from "chess.js";
 import type { Socket } from "socket.io";
-import { Move } from "chess.js";
 
 @Injectable()
 export class PlayersService {
@@ -30,10 +30,8 @@ export class PlayersService {
 		if (
 			typeof queryRoomID === "string" &&
 			!Array.isArray(this.rooms[queryRoomID]?.players)
-		) {
-			const err = new Error("Invalid room ID.");
-			return err;
-		}
+		)
+			return new Error("Invalid room ID.");
 
 		const player: PlayerEntity = {
 			id: socket.id,
@@ -43,7 +41,8 @@ export class PlayersService {
 		};
 
 		if (typeof queryRoomID === "string") {
-			if (this.rooms[queryRoomID]?.players?.length !== 1) return null;
+			if (this.rooms[queryRoomID]?.players?.length !== 1)
+				return new Error("Unable to join a room without a player or full.");
 
 			player.color = getOppositeColorSide(
 				this.rooms[queryRoomID].players[0].color
@@ -88,8 +87,9 @@ export class PlayersService {
 		return { roomID, room, player };
 	}
 
-	handleMove(socket: Socket, move: Move) {
-		if (!move) return null;
+	handleMove(socket: Socket, move?: Move): string | null {
+		if (typeof move?.after !== "string" || !validateFen(move.after))
+			return null;
 
 		const roomID = socket.data?.roomID;
 		this.rooms[roomID].fen = move.after;

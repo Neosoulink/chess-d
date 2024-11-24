@@ -1,8 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Chess, Color } from "chess.js";
+import { Chess, Color, Move } from "chess.js";
 import { register, RegisterModule } from "@quick-threejs/reactive";
 
-import { MessageEventPayload, MoveLike } from "../types";
+import {
+	EngineGameUpdatedMessageEventPayload,
+	MessageEventPayload
+} from "../types";
 import { GAME_UPDATED_TOKEN, PIECE_WILL_MOVE_TOKEN } from "../tokens";
 
 /** @description Game login worker location. */
@@ -18,43 +21,37 @@ export const useGame = () => {
 	const [app, setApp] = useState<RegisterModule | undefined>();
 	const [isAppReady, setIsAppReady] = useState(false);
 
-	const gameUpdatedCall = useRef<
-		| ((payload?: { turn: Color; fen: string; move?: MoveLike }) => unknown)
+	const gameUpdatedCallback = useRef<
+		| ((payload?: EngineGameUpdatedMessageEventPayload["value"]) => unknown)
 		| null
 	>();
 
 	const gameUpdatedCallbackRegister = useCallback(
 		(
 			callback: (
-				payload: Parameters<NonNullable<(typeof gameUpdatedCall)["current"]>>[0]
+				payload: EngineGameUpdatedMessageEventPayload["value"]
 			) => unknown
 		) => {
-			gameUpdatedCall.current = callback;
+			gameUpdatedCallback.current = callback;
 		},
 		[]
 	);
 	const handleMessages = useCallback(
-		(
-			payload: MessageEvent<
-				MessageEventPayload<
-					Parameters<NonNullable<(typeof gameUpdatedCall)["current"]>>[0]
-				>
-			>
-		) => {
+		(payload: MessageEvent<EngineGameUpdatedMessageEventPayload>) => {
 			if (!payload.data?.token) return;
 
 			if (payload.data.token === GAME_UPDATED_TOKEN && payload.data?.value?.fen)
-				gameUpdatedCall.current?.(payload.data.value);
+				gameUpdatedCallback.current?.(payload.data.value);
 		},
 		[]
 	);
 
 	const movePiece = useCallback(
-		(move: MoveLike) => {
+		(move: Move) => {
 			app?.worker()?.postMessage?.({
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
-			} satisfies MessageEventPayload<MoveLike>);
+			} satisfies MessageEventPayload<Move>);
 		},
 		[app]
 	);

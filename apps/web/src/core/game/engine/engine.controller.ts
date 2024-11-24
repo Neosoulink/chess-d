@@ -1,29 +1,21 @@
 import { inject, singleton } from "tsyringe";
 import { map, Observable } from "rxjs";
-import { Chess, Move } from "chess.js";
+import { Chess } from "chess.js";
 import {
 	CoreModule as ChessboardModule,
 	PieceNotificationPayload
 } from "@chess-d/chessboard";
-import {
-	coordToSquare,
-	ObservablePayload,
-	squareToCoord
-} from "@chess-d/shared";
+import { coordToSquare, squareToCoord } from "@chess-d/shared";
 
-import { EngineNotificationPayload } from "../../../shared/interfaces";
+import {
+	EngineNotificationPayload,
+	EnginePieceMovedNotificationPayload
+} from "../../../shared/types";
 
 @singleton()
 export class EngineController {
 	public readonly pieceSelected$?: Observable<EngineNotificationPayload>;
-	public readonly pieceMoved$?: Observable<
-		EngineNotificationPayload & {
-			nextMoveIndex: number;
-			nextMove?: Move;
-		} & ObservablePayload<
-				ChessboardModule["pieces"]["controller"]["pieceMoved$$"]
-			>
-	>;
+	public readonly pieceMoved$?: Observable<EnginePieceMovedNotificationPayload>;
 
 	constructor(
 		@inject(Chess) private readonly game: Chess,
@@ -48,6 +40,7 @@ export class EngineController {
 				return {
 					...payload,
 					...enginePayload,
+					endCoord,
 					possibleCoords,
 					possibleMoves,
 					nextMoveIndex,

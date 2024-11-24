@@ -5,8 +5,7 @@ import {
 	OnGatewayDisconnect,
 	SubscribeMessage,
 	WebSocketGateway,
-	WebSocketServer,
-	type WsResponse
+	WebSocketServer
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 
@@ -15,9 +14,10 @@ import {
 	SOCKET_ROOM_CREATED_TOKEN,
 	SOCKET_JOINED_ROOM_TOKEN,
 	SOCKET_PERFORM_MOVE_TOKEN,
-	SOCKET_MOVE_PERFORMED_TOKEN
+	SOCKET_MOVE_PERFORMED_TOKEN,
+	type GameUpdatedPayload
 } from "@chess-d/shared";
-import { Move } from "chess.js";
+import { validateFen } from "chess.js";
 
 @WebSocketGateway({
 	cors: {
@@ -71,14 +71,16 @@ export class PlayersGateway
 	}
 
 	@SubscribeMessage(SOCKET_PERFORM_MOVE_TOKEN)
-	handlePerformMove(@ConnectedSocket() socket: Socket, @MessageBody() payload) {
+	handleMove(
+		@ConnectedSocket() socket: Socket,
+		@MessageBody() payload: GameUpdatedPayload
+	): void {
 		console.log("Move performed by", socket.id, payload);
 
-		this.playersService.handleMove(socket, payload.move);
-
-		this.server
-			.in(socket.data?.roomID)
-			.except(socket.id)
-			.emit(SOCKET_MOVE_PERFORMED_TOKEN, payload);
+		if (this.playersService.handleMove(socket, payload.move))
+			this.server
+				.in(socket.data?.roomID)
+				.except(socket.id)
+				.emit(SOCKET_MOVE_PERFORMED_TOKEN, payload);
 	}
 }

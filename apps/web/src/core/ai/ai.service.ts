@@ -14,12 +14,7 @@ export class AiService {
 			return console.warn("AI received invalid FEN string");
 
 		this.game.load(fen);
-		console.log(
-			"AI received FEN string",
-			fen,
-			this.game.fen(),
-			this.game.turn()
-		);
+		console.log("AI received FEN string", this.game.fen(), this.game.turn());
 
 		return this.ai?.getMove(this.game.turn());
 	};

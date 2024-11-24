@@ -10,7 +10,6 @@ export const App = () => {
 		setup: setupGame,
 		app,
 		movePiece,
-		dispose: disposeApp,
 		gameUpdatedCallbackRegister
 	} = useGame();
 	const {
@@ -41,8 +40,8 @@ export const App = () => {
 	useEffect(() => {
 		if (app && !socket.connected) {
 			socket.connect();
-			socket.on("disconnect", (r, d) => {
-				console.log("disconnect ==>", r, d);
+			socket.on("disconnect", (reason, description) => {
+				console.log("disconnect ==>", reason, description);
 			});
 		}
 
@@ -69,14 +68,18 @@ export const App = () => {
 
 	useEffect(() => {
 		gameUpdatedCallbackRegister((payload) => {
-			opponentPlayer?.notify$$?.next({
-				fen: payload?.fen,
-				turn: payload?.turn
-			});
+			console.log("Game updated", payload);
+			opponentPlayer?.notify$$?.next(payload);
+			currentPlayer?.notify$$?.next(payload);
 
 			socket?.emit(SOCKET_PERFORM_MOVE_TOKEN, payload);
 		});
-	}, [opponentPlayer?.notify$$, gameUpdatedCallbackRegister, socket]);
+	}, [
+		currentPlayer?.notify$$,
+		opponentPlayer?.notify$$,
+		gameUpdatedCallbackRegister,
+		socket
+	]);
 
 	return <div />;
 };

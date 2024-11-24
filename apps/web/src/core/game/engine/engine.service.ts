@@ -11,6 +11,8 @@ import {
 	PieceType
 } from "@chess-d/shared";
 
+import { EngineGameUpdatedMessageEventPayload } from "../../../shared/types";
+import { GAME_UPDATED_TOKEN } from "../../../shared/tokens";
 import { EngineController } from "./engine.controller";
 
 @singleton()
@@ -20,12 +22,12 @@ export class EngineService {
 		@inject(ChessboardModule) private readonly chessboard: ChessboardModule
 	) {}
 
-	public getTurn() {
-		return this.game.turn();
-	}
+	public handlePieceSelected(
+		payload: ObservablePayload<EngineController["pieceSelected$"]>
+	) {
+		const { possibleCoords } = payload;
 
-	public getFen() {
-		return this.game.fen();
+		this.chessboard.board.component.setMarkers(possibleCoords);
 	}
 
 	public handlePieceMoved(
@@ -84,7 +86,6 @@ export class EngineService {
 		}
 
 		this.chessboard.pieces.component.movePieceByCoord(piece, endCoord);
-		this.game.move(nextMove);
 
 		if (nextMove.promotion && piece.type === PieceType.pawn) {
 			this.chessboard.pieces.component.promotePiece(
@@ -92,13 +93,22 @@ export class EngineService {
 				nextMove.promotion as PieceType
 			);
 		}
+
+		this.game.move(nextMove);
 	}
 
-	public handlePieceSelected(
-		payload: ObservablePayload<EngineController["pieceSelected$"]>
+	public handlePieceMovedSuccessfully(
+		payload: ObservablePayload<EngineController["pieceMoved$"]>
 	) {
-		const { possibleCoords } = payload;
+		const messagePayload: EngineGameUpdatedMessageEventPayload = {
+			token: GAME_UPDATED_TOKEN,
+			value: {
+				fen: this.game.fen(),
+				turn: this.game.turn(),
+				move: payload.nextMove
+			}
+		};
 
-		this.chessboard.board.component.setMarkers(possibleCoords);
+		self.postMessage(messagePayload);
 	}
 }
