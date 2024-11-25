@@ -17,7 +17,6 @@ import {
 	SOCKET_MOVE_PERFORMED_TOKEN,
 	type GameUpdatedPayload
 } from "@chess-d/shared";
-import { validateFen } from "chess.js";
 
 @WebSocketGateway({
 	cors: {
@@ -33,21 +32,25 @@ export class PlayersGateway
 
 	constructor(private readonly playersService: PlayersService) {}
 
-	handleConnection(@ConnectedSocket() socket: Socket) {
+	private handleError(socket: Socket, error: Error): void {
+		this.handleDisconnect(socket);
+
+		this.server.to(socket.id).emit("error", {
+			message: error.message,
+			cause: error.cause
+		});
+
+		console.warn("Error occurred:", error.message, `<${error.cause}>`);
+	}
+
+	handleConnection(@ConnectedSocket() socket: Socket): void {
 		const data = this.playersService.register(socket);
-		if (data instanceof Error) {
-			this.server
-				.to(socket.id)
-				.emit("error", { message: data.message, cause: data.cause });
-			socket.disconnect();
-			console.log(`Auto player "${socket.id}" disconnection:`, data.message);
-			return;
-		}
+		if (data instanceof Error) return this.handleError(socket, data);
 
 		const { player, roomID, room } = data;
 
 		console.log(
-			"=========/ Player connected /=========\n",
+			"\n=========/ Player connected /=========\n",
 			player,
 			`\n\nRoom "${roomID}" has ${room?.players.length} player(s).`,
 			`\nGame status "${room.fen}".`,
@@ -63,10 +66,16 @@ export class PlayersGateway
 			);
 	}
 
-	handleDisconnect(socket: Socket) {
-		const { player, room } = this.playersService.unregister(socket);
+	handleDisconnect(socket: Socket): void {
+		const unregisterRes = this.playersService.unregister(socket);
+
+		if (unregisterRes instanceof Error) return;
+
+		const { player, roomID, room } = unregisterRes;
+
+		this.server.to(player.id).disconnectSockets();
 		console.log(
-			`\nPlayer left.\nID: ${player?.id}\nTotal in rooms: ${room?.players.length ?? 0}\n`
+			`\nPlayer "${player?.id}" left room "${roomID}".\nTotal in rooms: ${room?.players.length ?? 0}`
 		);
 	}
 
@@ -75,12 +84,14 @@ export class PlayersGateway
 		@ConnectedSocket() socket: Socket,
 		@MessageBody() payload: GameUpdatedPayload
 	): void {
-		console.log("Move performed by", socket.id, payload);
+		const data = this.playersService.handleMove(socket, payload.move);
 
-		if (this.playersService.handleMove(socket, payload.move))
-			this.server
-				.in(socket.data?.roomID)
-				.except(socket.id)
-				.emit(SOCKET_MOVE_PERFORMED_TOKEN, payload);
+		if (data instanceof Error) return this.handleError(socket, data);
+
+		console.log("\nMove performed by", socket.id, payload);
+		this.server
+			.in(socket.data?.roomID)
+			.except(socket.id)
+			.emit(SOCKET_MOVE_PERFORMED_TOKEN, payload);
 	}
 }

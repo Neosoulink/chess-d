@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import {
 	ColorSide,
+	DEFAULT_FEN,
 	PlayerEntity,
-	SOCKET_MOVE_PERFORMED_TOKEN
+	SOCKET_MOVE_PERFORMED_TOKEN,
+	SocketAuthInterface
 } from "@chess-d/shared";
 
 export const useSocket = (): {
@@ -84,8 +86,10 @@ export const useSocket = (): {
 	]);
 
 	socket.auth = {
-		roomID: new URLSearchParams(location.search).get("roomID")
-	};
+		roomID: new URLSearchParams(location.search).get("roomID"),
+		side: ColorSide.black,
+		fen: DEFAULT_FEN
+	} satisfies SocketAuthInterface;
 
 	return {
 		socket,

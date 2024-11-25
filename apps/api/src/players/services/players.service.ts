@@ -3,7 +3,8 @@ import {
 	ColorSide,
 	DEFAULT_FEN,
 	getOppositeColorSide,
-	PlayerEntity
+	PlayerEntity,
+	SocketAuthInterface
 } from "@chess-d/shared";
 import { randomUUID, UUID } from "crypto";
 import { validateFen, type Move } from "chess.js";
@@ -23,7 +24,15 @@ export class PlayersService {
 				room: PlayersService["rooms"][UUID];
 		  }
 		| Error {
-		const { roomID: queryRoomID, side: colorSide } = socket.handshake.auth;
+		const {
+			roomID: queryRoomID,
+			side: colorSide,
+			fen: authFen
+		} = socket.handshake.auth as SocketAuthInterface;
+		const fen =
+			typeof authFen === "string" && validateFen(authFen)
+				? authFen
+				: DEFAULT_FEN;
 
 		let roomID: UUID | undefined;
 
@@ -31,7 +40,7 @@ export class PlayersService {
 			typeof queryRoomID === "string" &&
 			!Array.isArray(this.rooms[queryRoomID]?.players)
 		)
-			return new Error("Invalid room ID.");
+			return new Error("Invalid room ID.", { cause: "ROOM_NOT_FOUND" });
 
 		const player: PlayerEntity = {
 			id: socket.id,
@@ -42,7 +51,13 @@ export class PlayersService {
 
 		if (typeof queryRoomID === "string") {
 			if (this.rooms[queryRoomID]?.players?.length !== 1)
-				return new Error("Unable to join a room without a player or full.");
+				return new Error("Unable to join a room without a player or full.", {
+					cause: this.rooms[queryRoomID]
+						? this.rooms[queryRoomID].players.length > 1
+							? "ROOM_FULL"
+							: "ROOM_EMPTY"
+						: "ROOM_NOT_FOUND"
+				});
 
 			player.color = getOppositeColorSide(
 				this.rooms[queryRoomID].players[0].color
@@ -55,17 +70,24 @@ export class PlayersService {
 
 		if (!roomID) {
 			roomID = randomUUID();
-			this.rooms[roomID] = { fen: DEFAULT_FEN, players: [player] };
+			this.rooms[roomID] = { fen, players: [player] };
 		}
 
 		socket.data = { roomID };
 		return { player, roomID, room: this.rooms[roomID] };
 	}
 
-	unregister(socket: Socket) {
+	unregister(socket: Socket):
+		| {
+				roomID: string;
+				room: PlayersService["rooms"][UUID];
+				player: PlayerEntity;
+		  }
+		| Error {
 		const { roomID } = socket.data;
 		const room = this.rooms[roomID];
-		if (!room) return {};
+
+		if (!room) return new Error("Room not found.", { cause: "ROOM_NOT_FOUND" });
 
 		let player: PlayerEntity | undefined;
 
@@ -87,11 +109,18 @@ export class PlayersService {
 		return { roomID, room, player };
 	}
 
-	handleMove(socket: Socket, move?: Move): string | null {
+	handleMove(socket: Socket, move?: Move): string | Error {
 		if (typeof move?.after !== "string" || !validateFen(move.after))
-			return null;
+			return new Error("Invalid move.", { cause: "INVALID_MOVE" });
 
 		const roomID = socket.data?.roomID;
+		const room = this.rooms[roomID];
+
+		if (!room || room.fen !== move.before)
+			return new Error("Move desynchronized with the room fen.", {
+				cause: "DESYNCHRONIZED"
+			});
+
 		this.rooms[roomID].fen = move.after;
 
 		return this.rooms[roomID].fen;
