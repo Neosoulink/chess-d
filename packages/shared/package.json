@@ -25,7 +25,7 @@
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
-		"@swc/core": "^1.9.2",
+		"@swc/core": "^1.9.3",
 		"tsup": "^8.3.5",
 		"typescript": "^5.5.3"
 	},
