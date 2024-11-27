@@ -32,20 +32,22 @@ export class PlayersGateway
 
 	constructor(private readonly playersService: PlayersService) {}
 
-	private handleError(socket: Socket, error: Error): void {
-		this.handleDisconnect(socket);
+	private handleError(error: Error, socket?: Socket): void {
+		if (socket) {
+			this.handleDisconnect(socket);
 
-		this.server.to(socket.id).emit("error", {
-			message: error.message,
-			cause: error.cause
-		});
+			this.server.to(socket.id).emit("error", {
+				message: error.message,
+				cause: error.cause
+			});
+		}
 
 		console.warn("Error occurred:", error.message, `<${error.cause}>`);
 	}
 
 	handleConnection(@ConnectedSocket() socket: Socket): void {
 		const data = this.playersService.register(socket);
-		if (data instanceof Error) return this.handleError(socket, data);
+		if (data instanceof Error) return this.handleError(data, socket);
 
 		const { player, roomID, room } = data;
 
@@ -67,13 +69,13 @@ export class PlayersGateway
 	}
 
 	handleDisconnect(socket: Socket): void {
+		this.server.to(socket.id).disconnectSockets();
 		const unregisterRes = this.playersService.unregister(socket);
 
-		if (unregisterRes instanceof Error) return;
+		if (unregisterRes instanceof Error) return this.handleError(unregisterRes);
 
 		const { player, roomID, room } = unregisterRes;
 
-		this.server.to(player.id).disconnectSockets();
 		console.log(
 			`\nPlayer "${player?.id}" left room "${roomID}".\nTotal in rooms: ${room?.players.length ?? 0}`
 		);
@@ -86,7 +88,7 @@ export class PlayersGateway
 	): void {
 		const data = this.playersService.handleMove(socket, payload.move);
 
-		if (data instanceof Error) return this.handleError(socket, data);
+		if (data instanceof Error) return this.handleError(data, socket);
 
 		console.log("\nMove performed by", socket.id, payload);
 		this.server

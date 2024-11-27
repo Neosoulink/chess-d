@@ -40,7 +40,7 @@ export class PlayersService {
 			typeof queryRoomID === "string" &&
 			!Array.isArray(this.rooms[queryRoomID]?.players)
 		)
-			return new Error("Invalid room ID.", { cause: "ROOM_NOT_FOUND" });
+			return new Error("Unable to register.", { cause: "ROOM_NOT_FOUND" });
 
 		const player: PlayerEntity = {
 			id: socket.id,
@@ -51,7 +51,7 @@ export class PlayersService {
 
 		if (typeof queryRoomID === "string") {
 			if (this.rooms[queryRoomID]?.players?.length !== 1)
-				return new Error("Unable to join a room without a player or full.", {
+				return new Error("Unable to join an empty or full room.", {
 					cause: this.rooms[queryRoomID]
 						? this.rooms[queryRoomID].players.length > 1
 							? "ROOM_FULL"
@@ -87,7 +87,8 @@ export class PlayersService {
 		const { roomID } = socket.data;
 		const room = this.rooms[roomID];
 
-		if (!room) return new Error("Room not found.", { cause: "ROOM_NOT_FOUND" });
+		if (!room)
+			return new Error("Unable to unregister.", { cause: "ROOM_NOT_FOUND" });
 
 		let player: PlayerEntity | undefined;
 
@@ -111,15 +112,13 @@ export class PlayersService {
 
 	handleMove(socket: Socket, move?: Move): string | Error {
 		if (typeof move?.after !== "string" || !validateFen(move.after))
-			return new Error("Invalid move.", { cause: "INVALID_MOVE" });
+			return new Error("Unable to perform move.", { cause: "INVALID_MOVE" });
 
 		const roomID = socket.data?.roomID;
 		const room = this.rooms[roomID];
 
 		if (!room || room.fen !== move.before)
-			return new Error("Move desynchronized with the room fen.", {
-				cause: "DESYNCHRONIZED"
-			});
+			return new Error("Move desynchronized.", { cause: "DESYNCHRONIZED" });
 
 		this.rooms[roomID].fen = move.after;
 
