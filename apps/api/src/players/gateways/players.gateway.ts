@@ -32,17 +32,14 @@ export class PlayersGateway
 
 	constructor(private readonly playersService: PlayersService) {}
 
-	private handleError(error: Error, socket?: Socket): void {
-		if (socket) {
-			this.handleDisconnect(socket);
-
-			this.server.to(socket.id).emit("error", {
-				message: error.message,
-				cause: error.cause
-			});
-		}
-
+	private handleError(error: Error, socket: Socket): void {
 		console.warn("Error occurred:", error.message, `<${error.cause}>`);
+
+		this.server.to(socket.id).emit("error", {
+			message: error.message,
+			cause: error.cause
+		});
+		this.server.to(socket.id).disconnectSockets();
 	}
 
 	handleConnection(@ConnectedSocket() socket: Socket): void {
@@ -69,15 +66,14 @@ export class PlayersGateway
 	}
 
 	handleDisconnect(socket: Socket): void {
-		this.server.to(socket.id).disconnectSockets();
-		const unregisterRes = this.playersService.unregister(socket);
+		const data = this.playersService.unregister(socket);
 
-		if (unregisterRes instanceof Error) return this.handleError(unregisterRes);
+		if (data instanceof Error) return this.handleError(data, socket);
 
-		const { player, roomID, room } = unregisterRes;
+		const { player, roomID, room } = data;
 
 		console.log(
-			`\nPlayer "${player?.id}" left room "${roomID}".\nTotal in rooms: ${room?.players.length ?? 0}`
+			`\nPlayer "${player?.id}" left room "${roomID}".\nTotal in room: ${room?.players?.length ?? 0}`
 		);
 	}
 
