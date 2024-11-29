@@ -2,13 +2,17 @@
 	"name": "@chess-d/ai",
 	"private": true,
 	"version": "0.1.0",
-	"type": "module",
 	"scripts": {
-		"dev": "tsc --watch",
-		"build": "tsc"
+		"dev": "vite build --watch",
+		"build": "tsc && vite build"
 	},
-	"main": "./dist/main.js",
+	"type": "module",
+	"main": "./dist/main.umd.cjs",
+	"module": "./dist/main.js",
 	"types": "./dist/main.d.ts",
+	"files": [
+		"dist"
+	],
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
 		"reflect-metadata": "^0.2.0",
@@ -17,7 +21,8 @@
 	},
 	"peerDependencies": {
 		"chess.js": "1.0.0-beta.8",
-		"@quick-threejs/utils": "^0.1.11"
+		"threads": "^1.7.0",
+		"@quick-threejs/utils": "^0.1.14"
 	},
 	"keywords": [
 		"ai",

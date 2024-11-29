@@ -1,6 +1,6 @@
 import { InstancedMesh, Matrix4, Object3D, Vector3, Vector3Like } from "three";
 import { Subject } from "rxjs";
-import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
+import { PhysicsProperties } from "@chess-d/rapier-physics";
 import { BoardCoord, ColorSide, PieceType } from "@chess-d/shared";
 
 import { MATRIX, QUATERNION, SCALE, VECTOR } from "../../constants";

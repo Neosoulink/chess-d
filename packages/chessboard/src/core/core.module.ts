@@ -8,7 +8,7 @@ import { WorldModule } from "./world/world.module";
 import { BoardModule } from "./board/board.module";
 import { PiecesModule } from "./pieces/pieces.module";
 import { DebugModule } from "./debug/debug.module";
-import { OrbitControls } from "three/examples/jsm/Addons.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 @singleton()
 export class CoreModule implements Module {

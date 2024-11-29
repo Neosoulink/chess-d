@@ -2,20 +2,24 @@
 	"name": "@chess-d/chessboard",
 	"private": true,
 	"version": "0.1.1",
-	"type": "module",
 	"scripts": {
-		"dev": "tsc --watch",
-		"build": "tsc",
+		"dev": "tsc && vite build --watch",
+		"build": "tsc && vite build",
 		"test": "jest --passWithNoTests"
 	},
-	"main": "./dist/main.js",
+	"type": "module",
+	"main": "./dist/main.umd.cjs",
+	"module": "./dist/main.js",
 	"types": "./dist/main.d.ts",
+	"files": [
+		"dist"
+	],
 	"dependencies": {
-		"chess.js": "1.0.0-beta.8",
 		"@chess-d/rapier-physics": "workspace:*",
 		"@chess-d/shared": "workspace:*",
-		"@quick-threejs/reactive": "^0.1.16",
-		"@quick-threejs/utils": "^0.1.11",
+		"@quick-threejs/reactive": "^0.1.24",
+		"@quick-threejs/utils": "^0.1.14",
+		"chess.js": "1.0.0-beta.8",
 		"rxjs": "^7.8.1",
 		"threads": "^1.7.0",
 		"three": "^0.169.0",

@@ -7,8 +7,7 @@ node_modules
 
 # Local env files
 .env
-*.env
-*.local
+!.env.example
 
 # Testing
 .nyc_output
@@ -25,11 +24,12 @@ playwright-report/
 .vercel
 
 # Build Outputs
-.next/
-out/
+out
 build
 dist
 dist-ssr
+*.tsbuildinfo
+.react-router
 
 # IDE - Editors
 /.idea
@@ -55,3 +55,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+# Others
+.DS_Store

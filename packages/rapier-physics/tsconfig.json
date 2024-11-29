@@ -1,8 +1,7 @@
 {
 	"extends": "@chess-d/configs/typescript/base.json",
 	"compilerOptions": {
-		"outDir": "./dist"
+		"outDir": "dist"
 	},
-	"include": ["src"],
-	"exclude": ["*.config.cjs", "*.config.js", "*.config.ts"]
+	"include": ["src"]
 }

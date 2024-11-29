@@ -456,3 +456,5 @@ export async function RapierPhysics() {
 
 	return new Physics(RAPIER);
 }
+
+export type * from "./types";

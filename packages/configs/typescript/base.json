@@ -8,12 +8,10 @@
 		"forceConsistentCasingInFileNames": false,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
-		"declaration": true,
+		"resolveJsonModule": true,
 
 		"noFallthroughCasesInSwitch": false,
-		"noImplicitAny": false,
 		"noUnusedParameters": false,
-		"noUnusedLocals": false,
-		"skipLibCheck": true
+		"noUnusedLocals": false
 	}
 }

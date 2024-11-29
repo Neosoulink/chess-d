@@ -1,4 +1,4 @@
-import { ColorSide } from "src/enums";
+import { ColorSide } from "../enums";
 
 export interface SocketAuthInterface {
 	roomID?: string | null;

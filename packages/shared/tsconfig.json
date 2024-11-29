@@ -2,8 +2,7 @@
 	"extends": "@chess-d/configs/typescript/base.json",
 	"compilerOptions": {
 		"isolatedModules": false,
-		"baseUrl": "./",
-		"outDir": "./dist"
+		"outDir": "dist"
 	},
-	"exclude": ["node_modules", "test", "dist", "**/*spec.ts", "**/*config.mjs"]
+	"include": ["src"]
 }
