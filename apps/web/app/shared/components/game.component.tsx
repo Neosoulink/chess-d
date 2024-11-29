@@ -1,11 +1,11 @@
-import { useEffect, useMemo } from "react";
-
-import { merge, Subscription } from "rxjs";
-import { useAi, useGame, useSocket } from "./shared/hooks";
-import { PlayerModel } from "./shared/models";
 import { SOCKET_PERFORM_MOVE_TOKEN } from "@chess-d/shared";
+import { FC, useEffect, useMemo } from "react";
+import { merge, Subscription } from "rxjs";
 
-export const App = () => {
+import { useAi, useGame, useSocket } from "../hooks";
+import { PlayerModel } from "../models";
+
+export const GameComponent: FC = () => {
 	const {
 		setup: setupGame,
 		app,
@@ -81,5 +81,5 @@ export const App = () => {
 		socket
 	]);
 
-	return <div />;
+	return null;
 };

@@ -1,7 +1,20 @@
 {
-	"files": [],
-	"references": [
-		{ "path": "./tsconfig.app.json" },
-		{ "path": "./tsconfig.node.json" }
+	"extends": "@chess-d/configs/typescript/base.json",
+	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"forceConsistentCasingInFileNames": true,
+		"jsx": "react-jsx",
+		"rootDirs": [".", "./.react-router/types"],
+		"baseUrl": ".",
+		"paths": {
+			"~/*": ["./app/*"]
+		},
+		"outDir": "dist"
+	},
+	"include": [
+		"**/*",
+		"**/.server/**/*",
+		"**/.client/**/*",
+		".react-router/types/**/*"
 	]
 }

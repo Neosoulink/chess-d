@@ -56,5 +56,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Others
+# Misc
 .DS_Store
+*.pem
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
