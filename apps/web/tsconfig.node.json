@@ -1,0 +1,12 @@
+{
+	"extends": "@chess-d/configs/typescript/base.json",
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["ES2023"],
+		"module": "ESNext",
+
+		"noEmit": true
+	},
+	"include": ["vite.config.ts"],
+	"exclude": ["node_modules"]
+}
