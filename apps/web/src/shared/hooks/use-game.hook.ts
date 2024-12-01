@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import { Chess, Color, Move } from "chess.js";
+import { useCallback, useRef } from "react";
+import { Move } from "chess.js";
 import { register, RegisterModule } from "@quick-threejs/reactive";
 
 import {
@@ -16,48 +16,46 @@ const workerLocation = new URL(
 
 /** @description Provide resources about the chess game and the application logic. */
 export const useGame = () => {
-	const game = useMemo(() => new Chess(), []);
+	const state = useRef<{
+		app?: RegisterModule;
+		isPending: boolean;
+		isReady: boolean;
+	}>({ isPending: false, isReady: false });
 
-	const [app, setApp] = useState<RegisterModule | undefined>();
-	const [isAppReady, setIsAppReady] = useState(false);
-
-	const gameUpdatedCallback = useRef<
+	const handleGmeUpdate = useRef<
 		| ((payload?: EngineGameUpdatedMessageEventPayload["value"]) => unknown)
 		| null
 	>();
 
-	const gameUpdatedCallbackRegister = useCallback(
+	const onGameUpdate = useCallback(
 		(
 			callback: (
 				payload: EngineGameUpdatedMessageEventPayload["value"]
 			) => unknown
 		) => {
-			gameUpdatedCallback.current = callback;
+			handleGmeUpdate.current = callback;
 		},
 		[]
 	);
+	const performPieceMove = useCallback((move: Move) => {
+		state.current.app?.worker()?.postMessage?.({
+			token: PIECE_WILL_MOVE_TOKEN,
+			value: move
+		} satisfies MessageEventPayload<Move>);
+	}, []);
 	const handleMessages = useCallback(
 		(payload: MessageEvent<EngineGameUpdatedMessageEventPayload>) => {
 			if (!payload.data?.token) return;
 
 			if (payload.data.token === GAME_UPDATED_TOKEN && payload.data?.value?.fen)
-				gameUpdatedCallback.current?.(payload.data.value);
+				handleGmeUpdate.current?.(payload.data.value);
 		},
 		[]
 	);
 
-	const movePiece = useCallback(
-		(move: Move) => {
-			app?.worker()?.postMessage?.({
-				token: PIECE_WILL_MOVE_TOKEN,
-				value: move
-			} satisfies MessageEventPayload<Move>);
-		},
-		[app]
-	);
-
-	const setup = useCallback(() => {
-		if (app) return;
+	const init = useCallback(() => {
+		if (state.current.isPending || state.current.app) return;
+		state.current.isPending = true;
 
 		register({
 			location: workerLocation,
@@ -66,27 +64,28 @@ export const useGame = () => {
 			gridSizes: 10,
 			withMiniCamera: true,
 			onReady: (_app) => {
-				setApp(_app);
-				setIsAppReady(true);
-
 				_app.worker()?.addEventListener("message", handleMessages);
+
+				state.current.app = _app;
+				state.current.isPending = false;
+				state.current.isReady = true;
 			}
 		});
-	}, [app, handleMessages]);
+	}, [state, handleMessages]);
 
 	const dispose = useCallback(() => {
-		app?.dispose();
-		app?.worker()?.removeEventListener("message", handleMessages);
-	}, [app, handleMessages]);
+		state.current.app?.worker()?.removeEventListener("message", handleMessages);
+		state.current.app?.dispose();
+		state.current.app = undefined;
+		state.current.isReady = false;
+		state.current.isPending = false;
+	}, [state, handleMessages]);
 
 	return {
-		game,
-		app,
-		workerLocation,
-		isAppReady,
-		setup,
-		movePiece,
-		dispose,
-		gameUpdatedCallbackRegister
+		state: state.current,
+		init,
+		performPieceMove,
+		onGameUpdate,
+		dispose
 	};
 };

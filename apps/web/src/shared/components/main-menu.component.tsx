@@ -1,10 +1,31 @@
-import { FC } from "react";
-import { Link, useBeforeUnload } from "react-router";
+import { FC, useCallback, useEffect } from "react";
+import { Link, useLocation } from "react-router";
 
-import { useMainMenuStore } from "../stores";
+import { GameMode } from "../enum";
 import { stopEventPropagation } from "../utils";
+import { useMainMenuStore } from "../stores";
 
 export interface MainMenuComponentProps {}
+
+/** @internal */
+const GameModeOptions: {
+	label: string;
+	title: string;
+	mode: keyof typeof GameMode;
+}[] = [
+	{ label: "AI", mode: "ai", title: "Play against the computer" },
+	{
+		label: "Human",
+		mode: "human",
+		title: "Play against another human player"
+	},
+	{ label: "Free Mode", mode: "free", title: "Play against yourself" },
+	{
+		label: "Simulation",
+		mode: "simulation",
+		title: "Watch the AIs playing against each other"
+	}
+];
 
 /** @internal */
 const MainSection: FC = () => {
@@ -12,6 +33,13 @@ const MainSection: FC = () => {
 
 	return (
 		<nav className="flex flex-col text-2xl">
+			<Link
+				to="/"
+				className="py-4 hover:pl-2 hover:bg-gray-100 border-b border-gray-300 transition-[padding,background-color] duration-300"
+			>
+				Home
+			</Link>
+
 			<button
 				onClick={openNewGameSection}
 				className="py-4 hover:pl-2 hover:bg-gray-100 border-b border-gray-300 text-left transition-[padding,background-color] duration-300"
@@ -29,6 +57,7 @@ const MainSection: FC = () => {
 	);
 };
 
+/** @internal */
 const NewGameSection: FC = () => {
 	const { closeNewGameSection } = useMainMenuStore();
 
@@ -38,49 +67,63 @@ const NewGameSection: FC = () => {
 				<h2 className="text-xl mb-2">Choose your game mode:</h2>
 
 				<div className="flex flex-wrap gap-4 text-xl">
-					<button
-						className="p-5 rounded shadow-md hover:bg-gray-100"
-						title="Play against the computer"
-					>
-						AI
-					</button>
-
-					<button
-						className="p-5 rounded shadow-md hover:bg-gray-100"
-						title="Play against another human player"
-					>
-						Human
-					</button>
-
-					<button
-						className="p-5 rounded shadow-md hover:bg-gray-100"
-						title="Play against yourself"
-					>
-						Free Mode
-					</button>
-
-					<button
-						className="p-5 rounded shadow-md hover:bg-gray-100"
-						title="Watch the computer play against itself"
-					>
-						Simulation
-					</button>
+					{GameModeOptions.map((option) => (
+						<Link
+							key={option.mode}
+							to={`/play?mode=${option.mode}`}
+							title={option.title}
+							viewTransition
+							className="p-5 rounded shadow-md hover:bg-gray-100"
+						>
+							{option.label}
+						</Link>
+					))}
 				</div>
 			</div>
 
-			<button onClick={closeNewGameSection}>Close</button>
+			<button className="shadow-md p-2 rounded" onClick={closeNewGameSection}>
+				Return
+			</button>
 		</section>
 	);
 };
 
 export const MainMenuComponent: FC<MainMenuComponentProps> = () => {
-	const { isMenuOpen, isNewGameSectionOpen, closeMenu } = useMainMenuStore();
+	const location = useLocation();
 
-	useBeforeUnload(closeMenu);
+	const {
+		isMenuOpen,
+		isNewGameSectionOpen,
+		openMenu,
+		closeMenu,
+		closeNewGameSection
+	} = useMainMenuStore();
+
+	const handleEscPress = useCallback(
+		(event: KeyboardEvent) => {
+			if (event.key === "Escape" && isMenuOpen) closeMenu();
+			if (event.key === "Escape" && !isMenuOpen) openMenu();
+		},
+		[isMenuOpen, closeMenu, openMenu]
+	);
+
+	useEffect(() => {
+		closeMenu();
+		closeNewGameSection();
+	}, [closeMenu, closeNewGameSection, location]);
+
+	useEffect(() => {
+		document.addEventListener("keydown", handleEscPress);
+		return () => document.removeEventListener("keydown", handleEscPress);
+	}, [handleEscPress]);
+
+	useEffect(() => {
+		if (isMenuOpen) closeNewGameSection();
+	}, [closeNewGameSection, isMenuOpen]);
 
 	return (
 		<div
-			className={`fixed h-dvh w-dvw flex justify-center items-center z-50 top-0 left-0 p-4 bg-gradient-to-b from-gray-900/40 via-gray-950/80 to-gray-900/40 transition-opacity duration-300 overflow-hidden ${isMenuOpen ? "opacity-100" : "pointer-events-none opacity-0 delay-100"}`}
+			className={`fixed h-dvh w-dvw flex justify-center items-center z-50 top-0 left-0 p-4 bg-gradient-to-b from-gray-900/40 via-gray-950/80 to-gray-900/40 transition-opacity duration-300 overflow-hidden ${isMenuOpen ? "opacity-100" : "pointer-events-none opacity-0"}`}
 			onClick={closeMenu}
 		>
 			<section

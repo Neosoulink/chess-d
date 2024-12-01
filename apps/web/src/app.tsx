@@ -1,15 +1,17 @@
-import { FC } from "react";
-import { Routes as NativeRoutes, Route } from "react-router";
+import { FC, Fragment } from "react";
+import { Routes, Route } from "react-router";
 
-import { MainMenuComponent } from "./shared/components";
+import { MainLayout } from "./shared/layouts";
 import { HomeRoute } from "./routes/home.route";
+import { PlayRoute } from "./routes/play.route";
 
 export const App: FC = () => (
-	<>
-		<NativeRoutes>
-			<Route index element={<HomeRoute />} />
-		</NativeRoutes>
-
-		<MainMenuComponent />
-	</>
+	<Fragment>
+		<Routes>
+			<Route path="/" element={<MainLayout />}>
+				<Route index element={<HomeRoute />} />
+				<Route path="/play" element={<PlayRoute />} />
+			</Route>
+		</Routes>
+	</Fragment>
 );
