@@ -1,7 +1,8 @@
+import { MainMenuSection } from "../shared/enum";
 import { useMainMenuStore } from "../shared/stores";
 
 export const HomeRoute = () => {
-	const { openMenu, openNewGameSection } = useMainMenuStore();
+	const { open: openMenu } = useMainMenuStore();
 
 	return (
 		<main className="flex flex-col justify-center items-center h-screen gap-8">
@@ -15,10 +16,7 @@ export const HomeRoute = () => {
 
 			<button
 				className="transition-colors bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-				onClick={() => {
-					openMenu();
-					setTimeout(openNewGameSection, 0);
-				}}
+				onClick={() => openMenu(MainMenuSection.newGame)}
 			>
 				Start a new game
 			</button>
