@@ -9,7 +9,9 @@ import type { MessageEventPayload } from "../../shared/types";
 @singleton()
 export class AiController {
 	public readonly lifecycle$$ = new Subject<RegisterLifecycleState>();
-	public readonly movePerformed$$ = new Subject<MessageEventPayload<Move>>();
+	public readonly movePerformed$$ = new Subject<
+		MessageEventPayload<{ move: Move }>
+	>();
 	public readonly willPerformMove$ = fromEvent<
 		MessageEvent<MessageEventPayload<{ fen: string }>>
 	>(self, "message").pipe(

@@ -27,7 +27,7 @@ export class AiModule implements Module, WorkerThreadModule {
 
 				this.controller.movePerformed$$.next({
 					token: AI_PERFORMED_MOVE_TOKEN,
-					value: move
+					value: { move }
 				});
 			})
 		);

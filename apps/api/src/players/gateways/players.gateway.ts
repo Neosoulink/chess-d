@@ -60,7 +60,7 @@ export class PlayersGateway
 		this.server
 			.to(socket.id)
 			.emit(
-				player.isHost ? SOCKET_ROOM_CREATED_TOKEN : SOCKET_JOINED_ROOM_TOKEN,
+				player.host ? SOCKET_ROOM_CREATED_TOKEN : SOCKET_JOINED_ROOM_TOKEN,
 				{ roomID, fen: room.fen }
 			);
 	}

@@ -45,8 +45,8 @@ export class PlayersService {
 		const player: PlayerEntity = {
 			id: socket.id,
 			color: (colorSide as ColorSide) ?? ColorSide.black,
-			connectedAt: new Date(),
-			isHost: true
+			connectedAt: new Date().getTime(),
+			host: true
 		};
 
 		if (typeof queryRoomID === "string") {
@@ -62,7 +62,7 @@ export class PlayersService {
 			player.color = getOppositeColorSide(
 				this.rooms[queryRoomID].players[0].color
 			);
-			player.isHost = false;
+			player.host = false;
 
 			roomID = queryRoomID as UUID;
 			this.rooms[roomID].players.push(player);
@@ -105,7 +105,7 @@ export class PlayersService {
 		);
 
 		if (room.players.length === 0) delete this.rooms[roomID];
-		else room.players[0].isHost = true;
+		else room.players[0].host = true;
 
 		return { roomID, room, player };
 	}

@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Move } from "chess.js";
 import { register, RegisterModule } from "@quick-threejs/reactive";
 
@@ -7,6 +7,7 @@ import {
 	MessageEventPayload
 } from "../types";
 import { GAME_UPDATED_TOKEN, PIECE_WILL_MOVE_TOKEN } from "../tokens";
+import { PlayerModel } from "../models";
 
 /** @description Game login worker location. */
 const workerLocation = new URL(
@@ -16,11 +17,15 @@ const workerLocation = new URL(
 
 /** @description Provide resources about the chess game and the application logic. */
 export const useGame = () => {
+	const [app, setApp] = useState<RegisterModule | undefined>();
+
 	const state = useRef<{
 		app?: RegisterModule;
 		isPending: boolean;
 		isReady: boolean;
 	}>({ isPending: false, isReady: false });
+
+	const [players, setPlayers] = useState<PlayerModel[]>([]);
 
 	const handleGmeUpdate = useRef<
 		| ((payload?: EngineGameUpdatedMessageEventPayload["value"]) => unknown)
@@ -37,12 +42,14 @@ export const useGame = () => {
 		},
 		[]
 	);
+
 	const performPieceMove = useCallback((move: Move) => {
 		state.current.app?.worker()?.postMessage?.({
 			token: PIECE_WILL_MOVE_TOKEN,
 			value: move
 		} satisfies MessageEventPayload<Move>);
 	}, []);
+
 	const handleMessages = useCallback(
 		(payload: MessageEvent<EngineGameUpdatedMessageEventPayload>) => {
 			if (!payload.data?.token) return;
@@ -54,7 +61,7 @@ export const useGame = () => {
 	);
 
 	const init = useCallback(() => {
-		if (state.current.isPending || state.current.app) return;
+		if (state.current.isPending || state.current.isReady) return;
 		state.current.isPending = true;
 
 		register({
@@ -69,21 +76,52 @@ export const useGame = () => {
 				state.current.app = _app;
 				state.current.isPending = false;
 				state.current.isReady = true;
+
+				setApp(_app);
 			}
 		});
 	}, [state, handleMessages]);
 
+	const createPlayer = useCallback(() => {
+		const player = new PlayerModel();
+		setPlayers((prev) => [...prev, player]);
+
+		return player;
+	}, []);
+
+	const removePlayer = useCallback(
+		(player: PlayerModel) =>
+			setPlayers((prev) =>
+				prev.filter((_player) => {
+					if (_player !== player) return true;
+
+					_player.unsubscribe();
+					_player.complete();
+
+					return false;
+				})
+			),
+		[]
+	);
+
 	const dispose = useCallback(() => {
-		state.current.app?.worker()?.removeEventListener("message", handleMessages);
-		state.current.app?.dispose();
+		app?.worker()?.removeEventListener("message", handleMessages);
+		app?.dispose();
+
 		state.current.app = undefined;
 		state.current.isReady = false;
 		state.current.isPending = false;
-	}, [state, handleMessages]);
+
+		setApp(undefined);
+	}, [app, handleMessages]);
 
 	return {
+		app,
 		state: state.current,
 		init,
+		players,
+		createPlayer,
+		removePlayer,
 		performPieceMove,
 		onGameUpdate,
 		dispose
