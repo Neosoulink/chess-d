@@ -1,18 +1,39 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { io, Socket } from "socket.io-client";
 import {
 	ColorSide,
 	DEFAULT_FEN,
+	GameUpdatedPayload,
 	PlayerEntity,
+	SOCKET_JOINED_ROOM_TOKEN,
 	SOCKET_MOVE_PERFORMED_TOKEN,
+	SOCKET_ROOM_CREATED_TOKEN,
 	SocketAuthInterface
 } from "@chess-d/shared";
+import { validateFen } from "chess.js";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
+import { merge } from "rxjs";
+import { io, Socket } from "socket.io-client";
 
-export const useSocket = (): {
+import { PlayerModel } from "../models";
+
+/** @internal */
+interface UseSocketReturnType {
 	socket: Socket;
-	currentPlayer: PlayerEntity | undefined;
-	playersList: PlayerEntity[];
-} => {
+	currentPlayer?: PlayerModel;
+	opponentPlayer?: PlayerModel;
+	init: (props?: { roomID?: string; side?: ColorSide; fen?: string }) => void;
+}
+
+/** @internal */
+interface RoomJoinedPayload {
+	room: { fen: string; players: PlayerEntity[] };
+	player: PlayerEntity;
+	roomID: string;
+}
+
+export const useSocket = (): UseSocketReturnType => {
+	const [searchParams, setSearchParams] = useSearchParams();
+
 	const socket = useMemo(
 		() =>
 			io("http://192.168.1.65:3000", {
@@ -21,79 +42,141 @@ export const useSocket = (): {
 		[]
 	);
 
-	const [currentPlayer, setCurrentPlayer] = useState<
-		PlayerEntity | undefined
+	const [currentPlayer, setCurrentPlayer] = useState<PlayerModel | undefined>();
+	const [opponentPlayer, setOpponentPlayer] = useState<
+		PlayerModel | undefined
 	>();
-	const [playersList, setPlayersList] = useState<PlayerEntity[]>([]);
 
-	const onPlayerInfo = useCallback((player: PlayerEntity) => {
-		setCurrentPlayer(player);
-	}, []);
-	const onPlayersInfo = useCallback((players: Record<string, PlayerEntity>) => {
-		setPlayersList(
-			Object.keys(players).map((id) => players[id] as PlayerEntity)
-		);
-	}, []);
-	const onPlayerJoined = useCallback(async (newPlayer: PlayerEntity) => {
-		setPlayersList((prev) => [...prev, newPlayer]);
-	}, []);
-	const onPlayerLeft = useCallback(
-		(playerId: string) => {
-			setPlayersList(playersList.filter((player) => player.id !== playerId));
+	const init: UseSocketReturnType["init"] = useCallback(
+		(props) => {
+			socket.auth = {
+				roomID: props?.roomID ?? searchParams.get("roomID"),
+				side: props?.side ?? ColorSide.black,
+				fen: props?.fen ?? DEFAULT_FEN
+			} satisfies SocketAuthInterface;
+
+			socket.connect();
 		},
-		[playersList]
-	);
-	const onPlayersUpdated = useCallback(
-		(players: Record<string, PlayerEntity>) => {
-			if (!currentPlayer?.id) return;
 
-			setPlayersList(
-				Object.keys(players)
-					.map((id) => players[id] as PlayerEntity)
-					.filter((oldPlayer) => oldPlayer.id !== currentPlayer.id)
-			);
+		[searchParams, socket]
+	);
+
+	const onRoomCreated = useCallback(
+		(data: RoomJoinedPayload) => {
+			console.log("Room created:", data);
+
+			const player = new PlayerModel();
+			player.setIdentity(data.player);
+
+			setCurrentPlayer(player);
+			setSearchParams((prev) => [...prev, ["roomID", data.roomID]]);
+		},
+		[setSearchParams]
+	);
+
+	const onJoinedRoom = useCallback(
+		(data: RoomJoinedPayload) => {
+			const player = new PlayerModel();
+			player.setIdentity(data.player);
+
+			if (!currentPlayer) {
+				const [opponentEntity] = data.room.players;
+
+				if (opponentEntity) {
+					const opponent = new PlayerModel();
+					opponent.setIdentity(opponentEntity);
+
+					setOpponentPlayer(opponent);
+				}
+
+				setCurrentPlayer(player);
+			} else {
+				currentPlayer.host = true;
+				setOpponentPlayer(player);
+			}
+
+			console.log("Joined room:", data);
 		},
 		[currentPlayer]
 	);
-	const onPlayerPerformedMove = useCallback((payload: unknown) => {
-		console.log("Player performed move", payload);
+
+	const onDisconnect = useCallback(() => {
+		console.log("Disconnected from server.");
 	}, []);
 
+	const onError = useCallback(
+		(error: Error) => {
+			console.warn("Socket error:", error);
+
+			if (error.cause === "ROOM_NOT_FOUND") {
+				setSearchParams((prev) =>
+					[...prev].filter(([key]) => key !== "roomID")
+				);
+				socket.auth = { ...socket.auth, roomID: undefined };
+			}
+
+			setTimeout(() => socket.connect(), 1000);
+		},
+		[setSearchParams, socket]
+	);
+
+	const onMovePerformed = useCallback(
+		(data: GameUpdatedPayload) => {
+			opponentPlayer?.next({ token: "PLACED_PIECE", value: data });
+			console.log("Opponent performed move:", data);
+		},
+		[opponentPlayer]
+	);
+
 	useEffect(() => {
-		socket.on("player_info", onPlayerInfo);
-		socket.on("players_info", onPlayersInfo);
-		socket.on("player_joined", onPlayerJoined);
-		socket.on("player_left", onPlayerLeft);
-		socket.on("players_updated", onPlayersUpdated);
-		socket.on(SOCKET_MOVE_PERFORMED_TOKEN, onPlayerPerformedMove);
+		socket.on(SOCKET_ROOM_CREATED_TOKEN, onRoomCreated);
+		socket.on(SOCKET_JOINED_ROOM_TOKEN, onJoinedRoom);
+		socket.on(SOCKET_MOVE_PERFORMED_TOKEN, onMovePerformed);
+		socket.on("disconnect", onDisconnect);
+		socket.on("error", onError);
 
 		return () => {
-			socket.off("player_info", onPlayerInfo);
-			socket.off("players_info", onPlayersInfo);
-			socket.off("player_joined", onPlayerJoined);
-			socket.off("player_left", onPlayerLeft);
-			socket.off("players_updated", onPlayersUpdated);
-			socket.off(SOCKET_MOVE_PERFORMED_TOKEN, onPlayerPerformedMove);
+			socket.off(SOCKET_ROOM_CREATED_TOKEN, onRoomCreated);
+			socket.off(SOCKET_JOINED_ROOM_TOKEN, onJoinedRoom);
+			socket.off(SOCKET_MOVE_PERFORMED_TOKEN, onMovePerformed);
+			socket.off("disconnect", onDisconnect);
+			socket.off("error", onError);
 		};
 	}, [
-		onPlayerInfo,
-		onPlayersInfo,
-		onPlayerJoined,
-		onPlayerLeft,
-		onPlayersUpdated,
-		socket,
-		onPlayerPerformedMove
+		onDisconnect,
+		onError,
+		onJoinedRoom,
+		onMovePerformed,
+		onRoomCreated,
+		socket
 	]);
 
-	socket.auth = {
-		roomID: new URLSearchParams(location.search).get("roomID"),
-		side: ColorSide.black,
-		fen: DEFAULT_FEN
-	} satisfies SocketAuthInterface;
+	useEffect(() => {
+		const players: PlayerModel[] = [];
+
+		if (currentPlayer) players.push(currentPlayer);
+		// if (opponentPlayer) players.push(opponentPlayer);
+
+		const subscription = merge(...players).subscribe((payload) => {
+			const { token, value } = payload;
+			const { fen = "", turn } = value || {};
+			const fenValidation = validateFen(fen);
+
+			if (
+				token === "NOTIFIED" &&
+				fenValidation.ok &&
+				turn === currentPlayer?.color
+			)
+				socket.emit(SOCKET_MOVE_PERFORMED_TOKEN, value);
+		});
+
+		return () => subscription?.unsubscribe();
+	}, [currentPlayer, socket]);
 
 	return {
 		socket,
+		init,
 		currentPlayer,
-		playersList
+		opponentPlayer
 	};
 };

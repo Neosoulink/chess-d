@@ -13,7 +13,7 @@ import { PlayersService } from "../services/players.service";
 import {
 	SOCKET_ROOM_CREATED_TOKEN,
 	SOCKET_JOINED_ROOM_TOKEN,
-	SOCKET_PERFORM_MOVE_TOKEN,
+	SOCKET_LEFT_ROOM_TOKEN,
 	SOCKET_MOVE_PERFORMED_TOKEN,
 	type GameUpdatedPayload
 } from "@chess-d/shared";
@@ -58,10 +58,14 @@ export class PlayersGateway
 
 		this.server.to(socket.id).socketsJoin(roomID);
 		this.server
-			.to(socket.id)
+			.to(roomID)
 			.emit(
 				player.host ? SOCKET_ROOM_CREATED_TOKEN : SOCKET_JOINED_ROOM_TOKEN,
-				{ roomID, fen: room.fen }
+				{
+					room,
+					player,
+					roomID
+				}
 			);
 	}
 
@@ -72,12 +76,14 @@ export class PlayersGateway
 
 		const { player, roomID, room } = data;
 
+		this.server.in(roomID).emit(SOCKET_LEFT_ROOM_TOKEN, player.id);
+
 		console.log(
 			`\nPlayer "${player?.id}" left room "${roomID}".\nTotal in room: ${room?.players?.length ?? 0}`
 		);
 	}
 
-	@SubscribeMessage(SOCKET_PERFORM_MOVE_TOKEN)
+	@SubscribeMessage(SOCKET_MOVE_PERFORMED_TOKEN)
 	handleMove(
 		@ConnectedSocket() socket: Socket,
 		@MessageBody() payload: GameUpdatedPayload
@@ -86,10 +92,11 @@ export class PlayersGateway
 
 		if (data instanceof Error) return this.handleError(data, socket);
 
-		console.log("\nMove performed by", socket.id, payload);
 		this.server
 			.in(socket.data?.roomID)
 			.except(socket.id)
 			.emit(SOCKET_MOVE_PERFORMED_TOKEN, payload);
+
+		console.log("\nMove performed", socket.id, payload);
 	}
 }

@@ -4,12 +4,12 @@
 	"extends": "./base.json",
 	"compilerOptions": {
 		"target": "ES2021",
-		"allowSyntheticDefaultImports": true,
-		"incremental": true,
-
 		"module": "Node16",
 		"esModuleInterop": true,
 		"moduleResolution": "Node16",
+		"allowSyntheticDefaultImports": true,
+		"incremental": true,
+		"noEmit": false,
 
 		"sourceMap": true,
 

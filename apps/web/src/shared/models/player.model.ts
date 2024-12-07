@@ -8,4 +8,15 @@ export class PlayerModel
 	implements PlayerEntity
 {
 	color = ColorSide.black;
+
+	id?: string | undefined;
+	host?: boolean | undefined;
+	connectedAt?: number | undefined;
+
+	setIdentity(player: PlayerEntity): void {
+		this.color = player.color as ColorSide;
+		this.id = player.id;
+		this.host = player.host;
+		this.connectedAt = player.connectedAt;
+	}
 }

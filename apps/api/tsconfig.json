@@ -1,7 +1,7 @@
 {
 	"extends": "@chess-d/configs/typescript/server.json",
 	"compilerOptions": {
-		"baseUrl": "./",
+		"baseUrl": "./src",
 		"outDir": "./dist"
 	}
 }

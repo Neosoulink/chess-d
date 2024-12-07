@@ -2,7 +2,7 @@ import { FC, useEffect } from "react";
 import { useLocation } from "react-router";
 import { merge, Subscription } from "rxjs";
 
-import { useAi, useGame } from "../shared/hooks";
+import { useAi, useGame, useSocket } from "../shared/hooks";
 import { getGameModeFromUrl } from "../shared/utils";
 
 export const PlayRoute: FC = () => {
@@ -14,6 +14,7 @@ export const PlayRoute: FC = () => {
 		init: initGame,
 		players: freePlayers,
 		createPlayer: createFreePlayer,
+		removePlayer: removeFreePlayer,
 		dispose: disposeGame,
 		performPieceMove,
 		onGameUpdate
@@ -24,7 +25,11 @@ export const PlayRoute: FC = () => {
 		createPlayer: createAIPlayer,
 		dispose: disposeAi
 	} = useAi();
-	// const {} = useSocket();
+	const {
+		init: initSocket,
+		currentPlayer: currentSocketPlayer,
+		opponentPlayer: opponentSocketPlayer
+	} = useSocket();
 
 	useEffect(() => {
 		if (gameState.app || gameState.isPending || gameState.isReady) {
@@ -37,21 +42,38 @@ export const PlayRoute: FC = () => {
 			if (gameState.app && !gameState.isPending && gameState.isReady)
 				disposeGame();
 		};
-	}, [disposeGame, gameApp, gameState, initAI, initGame]);
+	}, [createFreePlayer, disposeGame, gameState, initGame]);
+
+	useEffect(() => {
+		if (!gameApp) return;
+
+		const player = createFreePlayer();
+
+		return () => removeFreePlayer(player);
+	}, [createFreePlayer, gameApp, removeFreePlayer]);
 
 	useEffect(() => {
 		if (!gameApp) return;
 
 		initAI(gameApp);
-
-		createFreePlayer();
 		createAIPlayer();
 
 		return () => {};
-	}, [createAIPlayer, createFreePlayer, gameApp, initAI]);
+	}, [createAIPlayer, gameApp, initAI]);
+
+	useEffect(() => {
+		if (!gameApp) return;
+
+		initSocket();
+
+		return () => {};
+	}, [gameApp, initSocket]);
 
 	useEffect(() => {
 		const players = [...aiPlayers, ...freePlayers];
+
+		if (currentSocketPlayer) players.push(currentSocketPlayer);
+		if (opponentSocketPlayer) players.push(opponentSocketPlayer);
 
 		const playersSubscription: Subscription = merge(...players).subscribe(
 			(payload) => {
@@ -64,7 +86,7 @@ export const PlayRoute: FC = () => {
 			console.log("Game updated", payload);
 
 			players.forEach((player) => {
-				player.next({
+				player?.next({
 					token: "NOTIFIED",
 					value: payload
 				});
@@ -72,7 +94,14 @@ export const PlayRoute: FC = () => {
 		});
 
 		return () => playersSubscription.unsubscribe();
-	}, [aiPlayers, freePlayers, onGameUpdate, performPieceMove]);
+	}, [
+		aiPlayers,
+		currentSocketPlayer,
+		freePlayers,
+		onGameUpdate,
+		opponentSocketPlayer,
+		performPieceMove
+	]);
 
 	return null;
 };

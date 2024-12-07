@@ -76,7 +76,7 @@ export const useAi = () => {
 
 				const { move } = value;
 
-				if (!move || !validateFen(move?.after)) return;
+				if (!move || !validateFen(move?.after).ok) return;
 
 				console.log("AI move", move, players);
 

@@ -18,8 +18,11 @@ export const setup = async (app: AppModule, fen = DEFAULT_FEN) => {
 	if (!isObject(app) || !(app instanceof AppModule))
 		throw new Error("Unable to retrieve the application context.");
 
-	if (!validateFen(fen))
-		throw new Error("Invalid pieces positions FEN notation.");
+	const fenValidation = validateFen(fen);
+	if (!fenValidation.ok)
+		throw new Error("Invalid pieces positions FEN notation.", {
+			cause: fenValidation.error
+		});
 
 	container.register(AppModule, { useValue: app });
 	container.register(Physics, { useValue: await RapierPhysics() });

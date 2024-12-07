@@ -111,7 +111,7 @@ export class PlayersService {
 	}
 
 	handleMove(socket: Socket, move?: Move): string | Error {
-		if (typeof move?.after !== "string" || !validateFen(move.after))
+		if (typeof move?.after !== "string" || !validateFen(move.after).ok)
 			return new Error("Unable to perform move.", { cause: "INVALID_MOVE" });
 
 		const roomID = socket.data?.roomID;

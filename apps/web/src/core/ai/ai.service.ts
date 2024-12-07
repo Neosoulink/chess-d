@@ -10,7 +10,7 @@ export class AiService {
 	) {}
 
 	public handleWillPerformMove = (fen?: string) => {
-		if (!fen || !validateFen(fen))
+		if (!fen || !validateFen(fen).ok)
 			return console.warn("AI received invalid FEN string");
 
 		this.game.load(fen);
