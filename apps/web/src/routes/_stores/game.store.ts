@@ -4,12 +4,14 @@ import { Properties } from "@quick-threejs/utils";
 
 export interface GameStore {
 	app?: RegisterModule;
-	setApp: (app?: RegisterModule) => void;
+	reset: () => void;
+	setApp: (app: RegisterModule | undefined) => void;
 }
 
-export const gameInitialState: Properties<GameStore> = {};
+export const gameInitialState: Properties<GameStore> = { app: undefined };
 
 export const useGameStore = create<GameStore>((set) => ({
 	...gameInitialState,
+	reset: () => set(() => ({ ...gameInitialState })),
 	setApp: (app?: RegisterModule) => set(() => ({ app }))
 }));

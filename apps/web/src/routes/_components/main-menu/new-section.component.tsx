@@ -1,17 +1,20 @@
 import { FC } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { GameMode, MainMenuSection } from "../../../shared/enum";
-import { useMainMenuStore } from "../../_stores";
+import { useGameStore, useMainMenuStore } from "../../_stores";
 
 export const NewGameSection: FC = () => {
+	const navigate = useNavigate();
+
+	const { reset: resetGame } = useGameStore();
 	const { setSection } = useMainMenuStore();
 
 	const GameModeOptions: {
 		label: string;
 		title: string;
 		mode: keyof typeof GameMode;
-		action?: () => void;
+		action: () => void;
 	}[] = [
 		{
 			label: "AI",
@@ -25,7 +28,15 @@ export const NewGameSection: FC = () => {
 			title: "Play against another human player",
 			action: () => setSection(MainMenuSection.newGameHuman)
 		},
-		{ label: "Free Mode", mode: "free", title: "Play against yourself" },
+		{
+			label: "Free Mode",
+			mode: "free",
+			title: "Play against yourself",
+			action: () => {
+				navigate("/play?mode=free");
+				resetGame();
+			}
+		},
 		{
 			label: "Simulation",
 			mode: "simulation",
@@ -40,24 +51,18 @@ export const NewGameSection: FC = () => {
 				<h2 className="text-xl mb-2">Choose your game mode:</h2>
 
 				<div className="flex flex-wrap gap-4 text-xl">
-					{GameModeOptions.map((option) => {
-						const Component = option.action ? "button" : Link;
-
-						return (
-							<Component
-								key={option.mode}
-								{...{
-									...(option.action ? {} : { viewTransition: true }),
-									to: `/play?mode=${option.mode}`,
-									title: option.title,
-									onClick: option.action,
-									className: "p-5 rounded shadow-md hover:bg-gray-100"
-								}}
-							>
-								{option.label}
-							</Component>
-						);
-					})}
+					{GameModeOptions.map((option) => (
+						<button
+							key={option.mode}
+							{...{
+								title: option.title,
+								onClick: option.action,
+								className: "p-5 rounded shadow-md hover:bg-gray-100"
+							}}
+						>
+							{option.label}
+						</button>
+					))}
 				</div>
 			</div>
 
