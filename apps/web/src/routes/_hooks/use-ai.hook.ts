@@ -3,9 +3,13 @@ import { RegisterModule } from "@quick-threejs/reactive";
 import { Move, validateFen } from "chess.js";
 import { merge } from "rxjs";
 
-import { PlayerModel } from "../models";
-import { MessageEventPayload } from "../types";
-import { AI_PERFORMED_MOVE_TOKEN, AI_WILL_PERFORM_MOVE_TOKEN } from "../tokens";
+import { PlayerModel } from "../../shared/models";
+import { MessageEventPayload } from "../../shared/types";
+import {
+	AI_PERFORMED_MOVE_TOKEN,
+	AI_WILL_PERFORM_MOVE_TOKEN
+} from "../../shared/tokens";
+import { WorkerPool } from "@quick-threejs/utils";
 
 /** @description Ai login worker location. */
 const workerLocation = new URL(
@@ -22,8 +26,8 @@ export const useAi = () => {
 		| undefined
 	>();
 
-	const init = useCallback(async (app: RegisterModule) => {
-		const _workerThread = await app.workerPool().run({
+	const init = useCallback(async (workerPool: WorkerPool) => {
+		const _workerThread = await workerPool.run({
 			payload: {
 				path: workerLocation,
 				subject: {}

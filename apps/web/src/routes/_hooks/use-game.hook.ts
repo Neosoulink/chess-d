@@ -5,9 +5,9 @@ import { register, RegisterModule } from "@quick-threejs/reactive";
 import {
 	EngineGameUpdatedMessageEventPayload,
 	MessageEventPayload
-} from "../types";
-import { GAME_UPDATED_TOKEN, PIECE_WILL_MOVE_TOKEN } from "../tokens";
-import { PlayerModel } from "../models";
+} from "../../shared/types";
+import { GAME_UPDATED_TOKEN, PIECE_WILL_MOVE_TOKEN } from "../../shared/tokens";
+import { PlayerModel } from "../../shared/models";
 
 /** @description Game login worker location. */
 const workerLocation = new URL(

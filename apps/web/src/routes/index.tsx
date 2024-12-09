@@ -1,11 +1,11 @@
 import { FC, Fragment } from "react";
 import { Routes, Route, Outlet } from "react-router";
 
-import { HomeRoute } from "./routes/home.route";
-import { PlayRoute } from "./routes/play.route";
-import { MainMenuComponent } from "./shared/components";
+import { HomeRoute } from "./home.route";
+import { PlayRoute } from "./play";
+import { MainMenuComponent } from "./_components/main-menu";
 
-export const App: FC = () => (
+export const Router: FC = () => (
 	<Fragment>
 		<Routes>
 			<Route

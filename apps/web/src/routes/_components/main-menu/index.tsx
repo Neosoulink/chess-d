@@ -1,9 +1,9 @@
 import { FC, useCallback, useEffect } from "react";
 import { useLocation } from "react-router";
 
-import { MainMenuSection } from "../../enum";
-import { stopEventPropagation } from "../../utils";
-import { useMainMenuStore } from "../../stores";
+import { MainMenuSection } from "../../../shared/enum";
+import { stopEventPropagation } from "../../../shared/utils";
+import { useMainMenuStore } from "../../_stores";
 import { NewGameSection } from "./new-section.component";
 import { MainSection } from "./main-section.component";
 import { NewGameSimulationSection } from "./new-section-simulation.component";

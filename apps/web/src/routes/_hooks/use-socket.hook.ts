@@ -14,7 +14,7 @@ import { useSearchParams } from "react-router";
 import { merge } from "rxjs";
 import { io, Socket } from "socket.io-client";
 
-import { PlayerModel } from "../models";
+import { PlayerModel } from "../../shared/models";
 
 /** @internal */
 interface UseSocketReturnType {

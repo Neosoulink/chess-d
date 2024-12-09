@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { MainMenuSection } from "../enum";
 import { Properties } from "@quick-threejs/utils";
+
+import { MainMenuSection } from "../../shared/enum";
 
 export interface MainMenuStore {
 	isOpen: boolean;

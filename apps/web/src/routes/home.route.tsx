@@ -1,5 +1,5 @@
 import { MainMenuSection } from "../shared/enum";
-import { useMainMenuStore } from "../shared/stores";
+import { useMainMenuStore } from "./_stores";
 
 export const HomeRoute = () => {
 	const { open: openMenu } = useMainMenuStore();

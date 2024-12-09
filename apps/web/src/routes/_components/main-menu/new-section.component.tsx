@@ -1,8 +1,8 @@
 import { FC } from "react";
 import { Link } from "react-router";
 
-import { GameMode, MainMenuSection } from "../../enum";
-import { useMainMenuStore } from "../../stores";
+import { GameMode, MainMenuSection } from "../../../shared/enum";
+import { useMainMenuStore } from "../../_stores";
 
 export const NewGameSection: FC = () => {
 	const { setSection } = useMainMenuStore();

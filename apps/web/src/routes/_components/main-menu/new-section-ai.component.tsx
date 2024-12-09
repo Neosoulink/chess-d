@@ -2,8 +2,8 @@ import { SupportedAiModel } from "@chess-d/ai";
 import { FC } from "react";
 import { useNavigate } from "react-router";
 
-import { MainMenuSection } from "../../enum";
-import { useMainMenuStore } from "../../stores";
+import { MainMenuSection } from "../../../shared/enum";
+import { useMainMenuStore } from "../../_stores";
 
 export const NewGameAISection: FC = () => {
 	const navigate = useNavigate();
