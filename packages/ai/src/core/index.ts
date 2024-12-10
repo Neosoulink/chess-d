@@ -1,26 +1,34 @@
 import { isObject } from "@quick-threejs/utils";
 import { Chess } from "chess.js";
-import { container } from "tsyringe";
+import { container as parentContainer, DependencyContainer } from "tsyringe";
 
 import { AiModel, SupportedAiModel } from "../shared";
 import { ZeyuModule } from "./zeyu/zeyu.module";
 
-/**
- * @description
- */
-export const register = (
-	model: SupportedAiModel,
-	app: Chess
-): AiModel | undefined => {
-	if (!isObject(app))
-		throw new Error("Unable to retrieve the application context.");
+export interface RegisterReturn {
+	container: DependencyContainer;
+	model: AiModel | undefined;
+}
 
+/** @description Registers the AI model to be used in the game. */
+export const register = (
+	aiModel: SupportedAiModel,
+	game: Chess
+): RegisterReturn => {
+	if (!isObject(game)) throw new Error("Unable to retrieve the game context.");
+
+	const container = parentContainer.createChildContainer();
 	container.register(Chess, {
-		useValue: app
+		useValue: game
 	});
 
-	if (model === SupportedAiModel.zeyu)
-		return container.resolve<AiModel>(ZeyuModule);
+	let model: AiModel | undefined = undefined;
 
-	return undefined;
+	if (aiModel === SupportedAiModel.zeyu)
+		model = container.resolve<AiModel>(ZeyuModule);
+
+	return {
+		container,
+		model
+	};
 };

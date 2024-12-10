@@ -1,3 +1,3 @@
 export enum SupportedAiModel {
-	zeyu
+	zeyu = "AI_MODEL_ZEYU"
 }
