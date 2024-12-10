@@ -20,6 +20,7 @@ export class AiModule implements Module, WorkerThreadModule {
 		this._subscriptions.push(
 			this.controller.willPerformMove$.subscribe((payload) => {
 				const move = this.service.handleWillPerformMove(
+					payload.data.value?.ai,
 					payload.data.value?.fen
 				);
 

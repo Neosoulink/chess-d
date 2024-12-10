@@ -3,7 +3,6 @@ import "reflect-metadata";
 import { container } from "tsyringe";
 import { expose } from "threads/worker";
 import { Chess } from "chess.js";
-import { AiModel, register, SupportedAiModel } from "@chess-d/ai";
 import { ExposedAppModule } from "@quick-threejs/reactive/worker";
 
 import { AiModule } from "./ai.module";
@@ -13,9 +12,6 @@ const game = new Chess(
 );
 
 container.register(Chess, { useValue: game });
-container.register(AiModel, {
-	useValue: register(SupportedAiModel.zeyu, game)
-});
 
 const aiModule = container.resolve(AiModule);
 aiModule.init();

@@ -3,11 +3,13 @@ import { FC } from "react";
 import { useNavigate } from "react-router";
 
 import { MainMenuSection } from "../../../shared/enum";
-import { useMainMenuStore } from "../../_stores";
+import { useGameStore, useMainMenuStore } from "../../_stores";
 
 export const NewGameAISection: FC = () => {
 	const navigate = useNavigate();
+
 	const { setSection } = useMainMenuStore();
+	const { reset: resetGame } = useGameStore();
 
 	const renderSupportedAiModels = () => {
 		return Object.keys(SupportedAiModel)
@@ -24,12 +26,13 @@ export const NewGameAISection: FC = () => {
 		const formData = new FormData(event.currentTarget);
 
 		const aiOpponent = formData.get("select-ai") as
-			| keyof SupportedAiModel
+			| keyof typeof SupportedAiModel
 			| null;
 
 		if (!aiOpponent || SupportedAiModel[aiOpponent] === undefined) return;
 
 		navigate(`/play?mode=ai&ai=${aiOpponent}`);
+		resetGame();
 	};
 
 	return (

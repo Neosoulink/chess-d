@@ -1,8 +1,12 @@
 import { register, RegisterModule } from "@quick-threejs/reactive";
-import { FC, useCallback, useEffect, useRef } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useGameStore } from "../_stores";
 import { FreeModeComponent } from "./_components/free-mode.component";
+import { getGameModeFromUrl } from "../../shared/utils";
+import { useSearchParams } from "react-router";
+import { GameMode } from "../../shared/enum";
+import { WithAIComponent } from "./_components/with-ai.component";
 
 /** @internal */
 const workerLocation = new URL(
@@ -12,6 +16,11 @@ const workerLocation = new URL(
 
 export const PlayRoute: FC = () => {
 	const { app, setApp } = useGameStore();
+	const [searchParams] = useSearchParams();
+	const gameMode = useMemo(
+		() => getGameModeFromUrl(searchParams),
+		[searchParams]
+	);
 
 	const state = useRef<{
 		isPending: boolean;
@@ -52,6 +61,16 @@ export const PlayRoute: FC = () => {
 		setApp(undefined);
 	}, [app, setApp]);
 
+	const renderGameMode = useCallback(() => {
+		switch (gameMode) {
+			case GameMode.ai:
+				return <WithAIComponent />;
+
+			default:
+				return <FreeModeComponent />;
+		}
+	}, [gameMode]);
+
 	useEffect(() => {
 		if (!app) init().then(setApp);
 
@@ -62,5 +81,5 @@ export const PlayRoute: FC = () => {
 
 	if (!app) return null;
 
-	return <FreeModeComponent />;
+	return renderGameMode();
 };

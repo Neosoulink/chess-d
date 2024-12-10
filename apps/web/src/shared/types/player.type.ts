@@ -1,5 +1,3 @@
-import { Move } from "chess.js";
-
 import { MessageEventPayload } from "./events.type";
 import { EngineGameUpdatedMessageEventPayload } from "./engine.type";
 

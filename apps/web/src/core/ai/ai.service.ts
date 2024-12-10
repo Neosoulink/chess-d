@@ -1,20 +1,23 @@
+import { register, SupportedAiModel } from "@chess-d/ai";
 import { inject, singleton } from "tsyringe";
 import { Chess, validateFen } from "chess.js";
-import { AiModel } from "@chess-d/ai";
 
 @singleton()
 export class AiService {
-	constructor(
-		@inject(Chess) private readonly game: Chess,
-		@inject(AiModel) private readonly ai: AiModel
-	) {}
+	constructor(@inject(Chess) private readonly game: Chess) {}
 
-	public handleWillPerformMove = (fen?: string) => {
+	public handleWillPerformMove = (ai?: SupportedAiModel, fen?: string) => {
+		if (!ai) return console.warn("Received invalid AI model");
+
 		if (!fen || !validateFen(fen).ok)
 			return console.warn("AI received invalid FEN string");
 
 		this.game.load(fen);
+		const { container, model } = register(ai, this.game);
+		const move = model?.getMove(this.game.turn());
 
-		return this.ai?.getMove(this.game.turn());
+		container.clearInstances();
+
+		return move;
 	};
 }
