@@ -13,10 +13,19 @@ export class PlayerModel
 	host?: boolean | undefined;
 	connectedAt?: number | undefined;
 
-	setIdentity(player: PlayerEntity): void {
+	public setEntity(player: PlayerEntity): void {
 		this.color = player.color as ColorSide;
 		this.id = player.id;
 		this.host = player.host;
 		this.connectedAt = player.connectedAt;
+	}
+
+	public getEntity(): PlayerEntity {
+		return {
+			color: this.color,
+			id: this.id,
+			host: this.host,
+			connectedAt: this.connectedAt
+		};
 	}
 }
