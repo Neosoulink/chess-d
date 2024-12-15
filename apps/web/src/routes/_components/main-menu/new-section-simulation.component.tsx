@@ -3,11 +3,12 @@ import { FC } from "react";
 import { useNavigate } from "react-router";
 
 import { MainMenuSection } from "../../../shared/enum";
-import { useMainMenuStore } from "../../_stores";
+import { useGameStore, useMainMenuStore } from "../../_stores";
 
 export const NewGameSimulationSection: FC = () => {
 	const navigate = useNavigate();
 	const { setSection } = useMainMenuStore();
+	const { reset } = useGameStore();
 
 	const renderSupportedAiModels = () => {
 		return Object.keys(SupportedAiModel)
@@ -43,8 +44,12 @@ export const NewGameSimulationSection: FC = () => {
 		event.preventDefault();
 		const formData = new FormData(event.currentTarget);
 
-		const ai1 = formData.get("select-ai-1") as keyof SupportedAiModel | null;
-		const ai2 = formData.get("select-ai-2") as keyof SupportedAiModel | null;
+		const ai1 = formData.get("select-ai-1") as
+			| keyof typeof SupportedAiModel
+			| null;
+		const ai2 = formData.get("select-ai-2") as
+			| keyof typeof SupportedAiModel
+			| null;
 
 		if (
 			!ai1 ||
@@ -55,6 +60,7 @@ export const NewGameSimulationSection: FC = () => {
 			return;
 
 		navigate(`/play?mode=simulation&ai1=${ai1}&ai2=${ai2}`);
+		reset();
 	};
 
 	return (

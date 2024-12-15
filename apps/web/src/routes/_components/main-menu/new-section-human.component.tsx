@@ -3,11 +3,12 @@ import { FC, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { MainMenuSection } from "../../../shared/enum";
-import { useMainMenuStore } from "../../_stores";
+import { useGameStore, useMainMenuStore } from "../../_stores";
 
 export const NewGameHumanSection: FC = () => {
 	const navigate = useNavigate();
 	const { setSection } = useMainMenuStore();
+	const { reset: resetGame } = useGameStore();
 
 	const [joinRoom, setJoinRoom] = useState(false);
 
@@ -17,11 +18,14 @@ export const NewGameHumanSection: FC = () => {
 		if (!joinRoom) navigate("/play?mode=human");
 
 		const formData = new FormData(event.currentTarget);
-		const roomId = formData.get("room-id") as keyof SupportedAiModel | null;
+		const roomId = formData.get("room-id") as
+			| keyof typeof SupportedAiModel
+			| null;
 
 		if (!roomId) return;
 
 		navigate(`/play?mode=human&roomID=${roomId}`);
+		resetGame();
 	};
 
 	return (
@@ -65,7 +69,7 @@ export const NewGameHumanSection: FC = () => {
 					</button>
 
 					<Link
-						to="/play?mode=human&random"
+						to="/play?mode=human&random=true"
 						type="submit"
 						className="shadow-md p-2 rounded capitalize flex justify-center items-center"
 					>

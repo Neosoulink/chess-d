@@ -5,7 +5,11 @@ import { useSearchParams } from "react-router";
 import { GameMode } from "../../shared/enum";
 import { getGameModeFromUrl } from "../../shared/utils";
 import { useGameStore } from "../_stores";
-import { FreeModeComponent, WithAIComponent } from "./_components";
+import {
+	FreeModeComponent,
+	WithAIComponent,
+	WithHumanComponent
+} from "./_components";
 
 /** @internal */
 const workerLocation = new URL(
@@ -63,6 +67,8 @@ export const PlayRoute: FC = () => {
 	const renderGameMode = useCallback(() => {
 		if (gameMode === GameMode.ai || gameMode === GameMode.simulation)
 			return <WithAIComponent />;
+
+		if (gameMode === GameMode.human) return <WithHumanComponent />;
 
 		return <FreeModeComponent />;
 	}, [gameMode]);
