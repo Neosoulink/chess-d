@@ -58,10 +58,17 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 			const player = new PlayerModel();
 			player.setEntity(data.player);
 
+			socket.auth = {
+				...socket.auth,
+				roomID: data.roomID,
+				side: player.color,
+				fen: data.room.fen
+			};
+
 			setCurrentPlayer(player);
 			setSearchParams((prev) => [...prev, ["roomID", data.roomID]]);
 		},
-		[setSearchParams]
+		[setSearchParams, socket]
 	);
 
 	const onJoinedRoom = useCallback(
@@ -80,6 +87,12 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 				}
 
 				setCurrentPlayer(player);
+				socket.auth = {
+					...socket.auth,
+					roomID: data.roomID,
+					side: player.color,
+					fen: data.room.fen
+				};
 			} else {
 				currentPlayer.host = true;
 				setOpponentPlayer(player);
@@ -87,7 +100,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 			console.log("Joined room:", data);
 		},
-		[currentPlayer]
+		[currentPlayer, socket]
 	);
 
 	const onDisconnect = useCallback(() => {
@@ -112,7 +125,10 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 	const onMovePerformed = useCallback(
 		(data: GameUpdatedPayload) => {
-			opponentPlayer?.next({ token: "PLACED_PIECE", value: data });
+			opponentPlayer?.next({
+				token: "PLACED_PIECE",
+				value: { ...data, entity: opponentPlayer.getEntity() }
+			});
 			console.log("Opponent performed move:", data);
 		},
 		[opponentPlayer]
@@ -135,13 +151,15 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		socket.on("disconnect", onDisconnect);
 		socket.on("error", onError);
 
-		socket.auth = {
-			roomID: searchParams.get("roomID"),
-			side: ColorSide.black,
-			fen: DEFAULT_FEN
-		} satisfies SocketAuthInterface;
+		if (!socket.connected) {
+			socket.auth = {
+				roomID: searchParams.get("roomID"),
+				side: ColorSide.white,
+				fen: DEFAULT_FEN
+			} satisfies SocketAuthInterface;
 
-		socket.connect();
+			socket.connect();
+		}
 
 		return () => {
 			socket.off(SOCKET_ROOM_CREATED_TOKEN, onRoomCreated);
@@ -170,28 +188,32 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 			const { token, value } = payload;
 			const { turn, fen, move, entity } = value || {};
 
+			if (!move || !fen) return;
+
 			if (
 				token === "NOTIFIED" &&
-				move &&
-				fen &&
+				turn &&
 				fen !== move.before &&
-				entity &&
-				entity.color === turn
+				entity?.color === move.color &&
+				currentPlayer?.color === move.color
 			) {
 				console.log("Player notified:", value);
 				socket.emit(SOCKET_MOVE_PERFORMED_TOKEN, value);
 			}
-			if (payload.token === "PLACED_PIECE" && payload.value?.move)
-				return moveBoardPiece(payload.value?.move);
+
+			if (payload.token === "PLACED_PIECE" && move) return moveBoardPiece(move);
 		});
 
 		const handleMessages = (
 			payload: MessageEvent<EngineGameUpdatedMessageEventPayload>
 		) => {
-			if (!payload.data?.token) return;
+			const { token, value } = payload.data;
+			const { fen } = value || {};
+
+			if (!fen || !token) return;
 
 			console.log("Received message:", payload.data);
-			if (payload.data.token === GAME_UPDATED_TOKEN && payload.data?.value?.fen)
+			if (token === GAME_UPDATED_TOKEN)
 				players.forEach((player) => {
 					player.next({
 						token: "NOTIFIED",
