@@ -1,7 +1,8 @@
 import "reflect-metadata";
 
-import { singleton } from "tsyringe";
-import { AmbientLight, DirectionalLight, Scene } from "three";
+import { inject, singleton } from "tsyringe";
+import { AmbientLight, Color, DirectionalLight, Scene } from "three";
+import { AppModule } from "@quick-threejs/reactive";
 
 @singleton()
 export class WorldComponent {
@@ -10,9 +11,12 @@ export class WorldComponent {
 
 	public scene!: Scene;
 
-	constructor() {}
+	constructor(@inject(AppModule) private readonly appModule: AppModule) {}
 
 	init(scene: Scene) {
 		this.scene = scene;
+
+		this.directionalLight.position.set(0, 0, 1);
+		this.scene.background = new Color("#211d20");
 	}
 }

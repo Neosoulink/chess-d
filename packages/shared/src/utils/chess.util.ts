@@ -5,7 +5,7 @@ import {
 	CHESS_SQUARE_NUMBER_KEYS
 } from "../constants";
 import { ColorSide } from "../enums";
-import { BoardCoord } from "../interfaces";
+import { BoardCoord, ExtendedPieceSymbol } from "../interfaces";
 
 /**
  * @description convert the {@link BoardCoord} to a valid engine {@link Square}.
@@ -32,9 +32,7 @@ export const squareToCoord = (square: Square): BoardCoord => {
  *
  * @param piece Piece square
  */
-export const getPieceSymbolColor = (
-	piece: PieceSymbol | Capitalize<PieceSymbol>
-) => {
+export const getPieceSymbolColor = (piece: ExtendedPieceSymbol) => {
 	if (piece === piece.toLowerCase()) return ColorSide.black;
 
 	return ColorSide.white;
@@ -57,7 +55,7 @@ export const fenToCoords = (rawFen: string) => {
 	const rows = fen.split("/");
 	const positions: Record<
 		ColorSide,
-		Partial<Record<PieceSymbol | Capitalize<PieceSymbol>, BoardCoord[]>>
+		Partial<Record<ExtendedPieceSymbol, BoardCoord[]>>
 	> = {
 		[ColorSide.white]: {},
 		[ColorSide.black]: {}
@@ -65,8 +63,7 @@ export const fenToCoords = (rawFen: string) => {
 
 	let currentRow = 8;
 	for (let i = 0; i < 8; i++) {
-		const row =
-			(rows[i]?.split("") as (PieceSymbol | Capitalize<PieceSymbol>)[]) ?? [];
+		const row = (rows[i]?.split("") as ExtendedPieceSymbol[]) ?? [];
 		let colIdx = 0;
 
 		// loop through each character in the FEN section

@@ -13,7 +13,7 @@ export class PiecesModule implements Module {
 	) {}
 
 	public init() {
-		this.component.initPieces();
+		this.component.initialize();
 
 		this.controller.pieceMoving$?.subscribe(
 			this.component.handlePieceMoving.bind(this.component)

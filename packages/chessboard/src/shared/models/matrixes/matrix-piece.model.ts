@@ -69,4 +69,8 @@ export class MatrixPieceModel<
 
 		this.setPosition(VECTOR);
 	}
+
+	dispose() {
+		this.updated$$.complete();
+	}
 }

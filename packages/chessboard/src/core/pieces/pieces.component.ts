@@ -2,7 +2,13 @@ import { inject, singleton } from "tsyringe";
 import { Vector3, Vector3Like } from "three";
 import { AppModule } from "@quick-threejs/reactive";
 import { copyProperties } from "@quick-threejs/utils";
-import { BoardCoord, ColorSide, fenToCoords, PieceType } from "@chess-d/shared";
+import {
+	BoardCoord,
+	ColorSide,
+	ExtendedPieceSymbol,
+	fenToCoords,
+	PieceType
+} from "@chess-d/shared";
 import { Physics } from "@chess-d/rapier-physics";
 
 import {
@@ -16,6 +22,7 @@ import {
 } from "../../shared";
 import { BoardComponent } from "../board/board.component";
 import { ResourceComponent } from "../resource/resource.component";
+import { WorldComponent } from "../world/world.component";
 
 @singleton()
 export class PiecesComponent {
@@ -32,6 +39,7 @@ export class PiecesComponent {
 		@inject(INITIAL_FEN_TOKEN) private readonly initialFen: string,
 		@inject(AppModule) private readonly app: AppModule,
 		@inject(Physics) private readonly physics: Physics,
+		@inject(WorldComponent) private readonly worldComponent: WorldComponent,
 		@inject(BoardComponent) private readonly boardComponent: BoardComponent,
 		@inject(ResourceComponent)
 		private readonly resourceComponent: ResourceComponent
@@ -71,16 +79,15 @@ export class PiecesComponent {
 		] as unknown as typeof newGroup;
 	}
 
-	public initPieces() {
-		const fenCoords = fenToCoords(this.initialFen);
+	public initialize(fen = this.initialFen) {
+		const fenCoords = fenToCoords(fen);
 
 		if (fenCoords)
 			[ColorSide.black, ColorSide.white].forEach((color) => {
 				const pieceCoords = fenCoords[color]!;
 				Object.keys(pieceCoords).forEach((_pieceType) => {
-					const coords = pieceCoords[_pieceType];
+					const coords = pieceCoords[_pieceType as ExtendedPieceSymbol];
 					const pieceType = _pieceType.toLowerCase() as PieceType;
-
 					const newGroup = this.createGroup(pieceType, color, coords ?? []);
 
 					this.setGroup(newGroup);
@@ -88,15 +95,45 @@ export class PiecesComponent {
 				});
 			});
 
-		if (this.groups)
-			[...Object.keys(this.groups[ColorSide.black])].forEach((key) => {
-				const blackGroup = this.groups?.[ColorSide.black][key as PieceType];
+		[...Object.keys(this.groups[ColorSide.black])].forEach((key) => {
+			const group = this.groups?.[ColorSide.black][key as PieceType];
 
-				const whiteGroup = this.groups?.[ColorSide.white][key as PieceType];
+			if (group instanceof InstancedPieceModel)
+				this.worldComponent.scene.add(group);
+		});
 
-				if (blackGroup) this.app.world.scene().add(blackGroup);
-				if (whiteGroup) this.app.world.scene().add(whiteGroup);
+		[...Object.keys(this.groups[ColorSide.white])].forEach((key) => {
+			const group = this.groups?.[ColorSide.white][key as PieceType];
+
+			if (group instanceof InstancedPieceModel)
+				this.worldComponent.scene.add(group);
+		});
+	}
+
+	public reInitialize(fen = this.initialFen) {
+		[ColorSide.black, ColorSide.white].forEach((color) => {
+			Object.keys(this.groups[color]).forEach((key) => {
+				const group = this.groups[color][key as PieceType];
+
+				if (!(group instanceof InstancedPieceModel)) return;
+
+				group.dispose(this.physics);
+				delete this.groups[color][key as PieceType];
 			});
+			console.log("is Second part of the code???", color);
+
+			Object.keys(this.droppedGroups[color]).forEach((key) => {
+				const group = this.droppedGroups[color][key as PieceType];
+
+				group?.forEach((piece) => {
+					if (piece instanceof MatrixPieceModel) piece.dispose();
+				});
+
+				this.droppedGroups[color][key as PieceType] = [];
+			});
+		});
+
+		this.initialize(fen);
 	}
 
 	public getPieceByCoord<Type extends PieceType, Color extends ColorSide>(

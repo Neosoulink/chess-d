@@ -56,7 +56,6 @@ export class InstancedPieceModel<
 			this.update();
 		});
 
-		this.addEventListener("dispose", this._unsubscribePieces.bind(this));
 		this.pieceMoved$$.subscribe(this.update.bind(this));
 	}
 
@@ -66,10 +65,16 @@ export class InstancedPieceModel<
 		);
 	}
 
-	private _unsubscribePieces(): void {
-		Object.keys(this.pieceUpdateSubscriptions).forEach((id) => {
-			this.pieceUpdateSubscriptions[id].unsubscribe();
-			delete this.pieceUpdateSubscriptions[id];
+	private _disposePieces() {
+		this.pieceUpdateSubscriptions.forEach((sub) => {
+			sub.unsubscribe();
+			this.pieceUpdateSubscriptions.shift();
+		});
+
+		this.pieces.forEach((piece, i) => {
+			piece.dispose();
+
+			delete this.pieces[i];
 		});
 	}
 
@@ -87,8 +92,7 @@ export class InstancedPieceModel<
 		);
 		instance.userData = this.userData;
 
-		physics.removeFromWorld(this);
-		this.dispose();
+		this.dispose(physics);
 		instance.initPhysics(physics);
 		parent?.add(instance);
 
@@ -100,6 +104,7 @@ export class InstancedPieceModel<
 	private _deletePiece(instanceId: number): void {
 		this.pieceUpdateSubscriptions[instanceId]?.unsubscribe();
 		this.pieceUpdateSubscriptions.splice(instanceId, 1);
+		this.pieces[instanceId]?.dispose();
 		this.pieces.splice(instanceId, 1);
 
 		this.update();
@@ -211,12 +216,12 @@ export class InstancedPieceModel<
 		this.updated$$.next(this);
 	}
 
-	public dispose(): this {
-		super.dispose();
-		this._unsubscribePieces();
-		this.updated$$.complete();
+	public dispose(physics?: Physics): this {
+		physics?.removeFromWorld(this);
+		this._disposePieces();
 		this.removeFromParent();
-		this.removeEventListener("dispose", this.dispose.bind(this));
+		this.updated$$.complete();
+		super.dispose();
 
 		return this;
 	}
