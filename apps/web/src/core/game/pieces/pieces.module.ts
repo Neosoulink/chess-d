@@ -16,14 +16,14 @@ export class PiecesModule implements Module {
 
 	public init(): void {
 		this._subscriptions.push(
-			this.controller.playerMovedPiece$$.subscribe(
-				this.service.handlePlayerMovedPiece.bind(this.service)
-			),
 			this.controller.pieceWillMove$.subscribe((payload) => {
 				const move = payload.data.value;
 
 				if (move?.to) this.controller.playerMovedPiece$$.next(move);
-			})
+			}),
+			this.controller.playerMovedPiece$$.subscribe(
+				this.service.handlePlayerMovedPiece.bind(this.service)
+			)
 		);
 	}
 

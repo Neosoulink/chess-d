@@ -17,6 +17,7 @@ import { io } from "socket.io-client";
 import { PlayerModel } from "../../../shared/models";
 import {
 	GAME_UPDATED_TOKEN,
+	GAME_WILL_RESET_TOKEN,
 	PIECE_WILL_MOVE_TOKEN
 } from "../../../shared/tokens";
 import {
@@ -51,6 +52,28 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		PlayerModel | undefined
 	>();
 
+	const moveBoardPiece = useCallback(
+		(move: Move) => {
+			app?.worker()?.postMessage?.({
+				token: PIECE_WILL_MOVE_TOKEN,
+				value: move
+			} satisfies MessageEventPayload<Move>);
+		},
+		[app]
+	);
+
+	const resetBoardPieces = useCallback(
+		(fen?: string) => {
+			setTimeout(() => {
+				app?.worker()?.postMessage?.({
+					token: GAME_WILL_RESET_TOKEN,
+					value: { fen }
+				} satisfies MessageEventPayload<{ fen }>);
+			}, 100);
+		},
+		[app]
+	);
+
 	const onRoomCreated = useCallback(
 		(data: RoomJoinedPayload) => {
 			console.log("Room created:", data);
@@ -67,8 +90,9 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 			setCurrentPlayer(player);
 			setSearchParams((prev) => [...prev, ["roomID", data.roomID]]);
+			resetBoardPieces(data.room.fen);
 		},
-		[setSearchParams, socket]
+		[resetBoardPieces, setSearchParams, socket]
 	);
 
 	const onJoinedRoom = useCallback(
@@ -98,13 +122,17 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 				setOpponentPlayer(player);
 			}
 
+			resetBoardPieces(data.room.fen);
 			console.log("Joined room:", data);
 		},
-		[currentPlayer, socket]
+		[currentPlayer, resetBoardPieces, socket]
 	);
 
 	const onDisconnect = useCallback(() => {
 		console.log("Disconnected from server.");
+
+		setCurrentPlayer(undefined);
+		setOpponentPlayer(undefined);
 	}, []);
 
 	const onError = useCallback(
@@ -132,16 +160,6 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 			console.log("Opponent performed move:", data);
 		},
 		[opponentPlayer]
-	);
-
-	const moveBoardPiece = useCallback(
-		(move: Move) => {
-			app?.worker()?.postMessage?.({
-				token: PIECE_WILL_MOVE_TOKEN,
-				value: move
-			} satisfies MessageEventPayload<Move>);
-		},
-		[app]
 	);
 
 	useEffect(() => {
@@ -229,6 +247,12 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 			app?.worker?.().removeEventListener("message", handleMessages);
 		};
 	}, [app, currentPlayer, opponentPlayer, moveBoardPiece, socket]);
+
+	useEffect(() => {
+		return () => {
+			socket.disconnect();
+		};
+	}, [socket]);
 
 	return null;
 };

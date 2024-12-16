@@ -95,20 +95,14 @@ export class EngineService {
 		}
 
 		this.game.move(nextMove);
-	}
 
-	public handlePieceMovedSuccessfully(
-		payload: ObservablePayload<EngineController["pieceMoved$"]>
-	) {
-		const messagePayload: EngineGameUpdatedMessageEventPayload = {
+		self.postMessage({
 			token: GAME_UPDATED_TOKEN,
 			value: {
 				fen: this.game.fen(),
 				turn: this.game.turn(),
 				move: payload.nextMove
 			}
-		};
-
-		self.postMessage(messagePayload);
+		} satisfies EngineGameUpdatedMessageEventPayload);
 	}
 }

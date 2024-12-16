@@ -1,0 +1,3 @@
+export const GAME_WILL_RESET_TOKEN = "PIECES_WILL_RESET";
+
+export const GAME_UPDATED_TOKEN = "GAME_UPDATED";

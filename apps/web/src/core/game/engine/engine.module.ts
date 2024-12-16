@@ -19,10 +19,9 @@ export class EngineModule implements Module {
 			this.controller.pieceSelected$?.subscribe(
 				this.service.handlePieceSelected.bind(this.service)
 			),
-			this.controller.pieceMoved$?.subscribe((payload) => {
-				this.service.handlePieceMoved(payload);
-				this.service.handlePieceMovedSuccessfully(payload);
-			})
+			this.controller.pieceMoved$?.subscribe(
+				this.service.handlePieceMoved.bind(this.service)
+			)
 		);
 	}
 

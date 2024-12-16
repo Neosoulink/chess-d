@@ -1,5 +1,10 @@
 import { CoreModule as ChessCoreModule } from "@chess-d/chessboard";
-import { ColorSide, PieceType, squareToCoord } from "@chess-d/shared";
+import {
+	ColorSide,
+	DEFAULT_FEN,
+	PieceType,
+	squareToCoord
+} from "@chess-d/shared";
 import { Move } from "chess.js";
 import { inject, singleton } from "tsyringe";
 
@@ -9,7 +14,12 @@ export class PiecesService {
 		@inject(ChessCoreModule) private readonly chessboard: ChessCoreModule
 	) {}
 
-	handlePlayerMovedPiece(move: Move) {
+	public reset(fen = DEFAULT_FEN) {
+		console.log("resetPieces", fen);
+		this.chessboard.pieces.component.reInitialize(fen);
+	}
+
+	public handlePlayerMovedPiece(move: Move) {
 		const piece = this.chessboard.pieces.component.getPieceByCoord(
 			move.piece as PieceType,
 			move.color as ColorSide,
