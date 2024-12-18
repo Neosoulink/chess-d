@@ -1,7 +1,7 @@
-import { Color } from "chess.js";
+import { ColorSide } from "../enums";
 
 export declare class PlayerEntity {
-	color: Color;
+	color: ColorSide;
 
 	// Online oriented
 	id?: string;

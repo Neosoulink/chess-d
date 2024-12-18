@@ -29,7 +29,7 @@ export const FreeModeComponent: FC = () => {
 
 	const createPlayer = useCallback((identity: PlayerEntity) => {
 		const player = new PlayerModel();
-		player.color = identity.color as ColorSide;
+		player.color = identity.color;
 
 		return player;
 	}, []);

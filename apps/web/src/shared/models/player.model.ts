@@ -14,7 +14,7 @@ export class PlayerModel
 	connectedAt?: number | undefined;
 
 	public setEntity(player: PlayerEntity): void {
-		this.color = player.color as ColorSide;
+		this.color = player.color;
 		this.id = player.id;
 		this.host = player.host;
 		this.connectedAt = player.connectedAt;

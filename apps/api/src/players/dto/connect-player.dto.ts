@@ -1,9 +1,8 @@
-import { Color } from "chess.js";
-import { PlayerEntity } from "@chess-d/shared";
+import { ColorSide, PlayerEntity } from "@chess-d/shared";
 
 export class ConnectPlayerDto implements PlayerEntity {
 	id: string;
-	color: Color;
+	color: ColorSide;
 	connectedAt: number;
 	isOpponent: boolean;
 }

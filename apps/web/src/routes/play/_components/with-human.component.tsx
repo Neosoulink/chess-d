@@ -27,7 +27,7 @@ import {
 import { useGameStore } from "../../_stores";
 
 /** @internal */
-interface RoomJoinedPayload {
+interface SocketPayload {
 	room: { fen: string; players: PlayerEntity[] };
 	player: PlayerEntity;
 	roomID: string;
@@ -75,7 +75,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 	);
 
 	const onRoomCreated = useCallback(
-		(data: RoomJoinedPayload) => {
+		(data: SocketPayload) => {
 			console.log("Room created:", data);
 
 			const player = new PlayerModel();
@@ -96,7 +96,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 	);
 
 	const onJoinedRoom = useCallback(
-		(data: RoomJoinedPayload) => {
+		(data: SocketPayload) => {
 			const player = new PlayerModel();
 			player.setEntity(data.player);
 
@@ -173,7 +173,8 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 			socket.auth = {
 				roomID: searchParams.get("roomID"),
 				side: ColorSide.white,
-				fen: DEFAULT_FEN
+				fen: DEFAULT_FEN,
+				random: searchParams.get("random")
 			} satisfies SocketAuthInterface;
 
 			socket.connect();

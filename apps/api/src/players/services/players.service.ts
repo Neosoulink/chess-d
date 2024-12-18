@@ -16,6 +16,7 @@ export class PlayersService {
 		UUID,
 		{ fen: string; players: PlayerEntity[] }
 	> = {};
+	private readonly randomGameRoomsPool: UUID[] = [];
 
 	register(socket: Socket):
 		| {
@@ -25,52 +26,79 @@ export class PlayersService {
 		  }
 		| Error {
 		const {
-			roomID: queryRoomID,
-			side: colorSide,
-			fen: authFen
+			roomID: playerRoomID,
+			side: playerColor,
+			fen: initialFen,
+			random: randomGame
 		} = socket.handshake.auth as SocketAuthInterface;
 		const fen =
-			typeof authFen === "string" && validateFen(authFen)
-				? authFen
+			typeof initialFen === "string" && validateFen(initialFen)
+				? initialFen
 				: DEFAULT_FEN;
 
 		let roomID: UUID | undefined;
 
 		if (
-			typeof queryRoomID === "string" &&
-			!Array.isArray(this.rooms[queryRoomID]?.players)
+			typeof playerRoomID === "string" &&
+			!Array.isArray(this.rooms[playerRoomID]?.players)
 		)
 			return new Error("Unable to register.", { cause: "ROOM_NOT_FOUND" });
 
 		const player: PlayerEntity = {
 			id: socket.id,
-			color: (colorSide as ColorSide) ?? ColorSide.black,
+			color: playerColor ?? ColorSide.black,
 			connectedAt: new Date().getTime(),
 			host: true
 		};
 
-		if (typeof queryRoomID === "string") {
-			if (this.rooms[queryRoomID]?.players?.length !== 1)
+		if (typeof playerRoomID === "string") {
+			if (this.rooms[playerRoomID]?.players?.length !== 1)
 				return new Error("Unable to join an empty or full room.", {
-					cause: this.rooms[queryRoomID]
-						? this.rooms[queryRoomID].players.length > 1
+					cause: this.rooms[playerRoomID]
+						? this.rooms[playerRoomID].players.length > 1
 							? "ROOM_FULL"
 							: "ROOM_EMPTY"
 						: "ROOM_NOT_FOUND"
 				});
 
+			const waitingRoomID = this.randomGameRoomsPool.find(
+				(roomID) => this.rooms[roomID].players.length === 1
+			);
+
 			player.color = getOppositeColorSide(
-				this.rooms[queryRoomID].players[0].color
+				this.rooms[playerRoomID].players[0].color
 			);
 			player.host = false;
 
-			roomID = queryRoomID as UUID;
+			roomID = playerRoomID as UUID;
+			this.rooms[roomID].players.push(player);
+
+			if (waitingRoomID)
+				this.randomGameRoomsPool.splice(
+					this.randomGameRoomsPool.indexOf(waitingRoomID),
+					1
+				);
+		}
+
+		if (
+			!roomID &&
+			randomGame === "true" &&
+			this.randomGameRoomsPool.length > 0
+		) {
+			roomID = this.randomGameRoomsPool.pop() as UUID;
+			const room = this.rooms[roomID];
+
+			player.color = getOppositeColorSide(room.players[0].color);
+			player.host = false;
+
 			this.rooms[roomID].players.push(player);
 		}
 
 		if (!roomID) {
 			roomID = randomUUID();
 			this.rooms[roomID] = { fen, players: [player] };
+
+			if (randomGame === "true") this.randomGameRoomsPool.push(roomID);
 		}
 
 		socket.data = { roomID };

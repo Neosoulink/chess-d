@@ -120,7 +120,6 @@ export class PiecesComponent {
 				group.dispose(this.physics);
 				delete this.groups[color][key as PieceType];
 			});
-			console.log("is Second part of the code???", color);
 
 			Object.keys(this.droppedGroups[color]).forEach((key) => {
 				const group = this.droppedGroups[color][key as PieceType];
