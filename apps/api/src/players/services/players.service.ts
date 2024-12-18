@@ -62,7 +62,7 @@ export class PlayersService {
 				});
 
 			const waitingRoomID = this.randomGameRoomsPool.find(
-				(roomID) => this.rooms[roomID].players.length === 1
+				(roomID) => this.rooms[roomID]?.players?.length === 1
 			);
 
 			player.color = getOppositeColorSide(
@@ -85,13 +85,17 @@ export class PlayersService {
 			randomGame === "true" &&
 			this.randomGameRoomsPool.length > 0
 		) {
-			roomID = this.randomGameRoomsPool.pop() as UUID;
-			const room = this.rooms[roomID];
+			const _roomID = this.randomGameRoomsPool.pop() as UUID;
+			const room = this.rooms[_roomID];
 
-			player.color = getOppositeColorSide(room.players[0].color);
-			player.host = false;
+			if (room) {
+				roomID = _roomID;
 
-			this.rooms[roomID].players.push(player);
+				player.color = getOppositeColorSide(room.players[0].color);
+				player.host = false;
+
+				this.rooms[roomID].players.push(player);
+			}
 		}
 
 		if (!roomID) {

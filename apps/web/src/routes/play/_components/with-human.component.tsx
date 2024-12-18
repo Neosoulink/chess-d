@@ -123,9 +123,10 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 			}
 
 			resetBoardPieces(data.room.fen);
+			setSearchParams((prev) => [...prev, ["roomID", data.roomID]]);
 			console.log("Joined room:", data);
 		},
-		[currentPlayer, resetBoardPieces, socket]
+		[currentPlayer, resetBoardPieces, setSearchParams, socket]
 	);
 
 	const onDisconnect = useCallback(() => {

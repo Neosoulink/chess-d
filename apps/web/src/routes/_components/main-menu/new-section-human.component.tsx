@@ -72,6 +72,7 @@ export const NewGameHumanSection: FC = () => {
 						to="/play?mode=human&random=true"
 						type="submit"
 						className="shadow-md p-2 rounded capitalize flex justify-center items-center"
+						onClick={() => resetGame()}
 					>
 						Random Match
 					</Link>
