@@ -26,7 +26,7 @@
 		"socket.io-client": "^4.8.1",
 		"threads": "^1.7.0",
 		"three": "^0.171.0",
-		"zustand": "^5.0.1"
+		"zustand": "^5.0.2"
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
