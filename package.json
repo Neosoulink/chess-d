@@ -16,7 +16,7 @@
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
-		"@commitlint/cli": "^19.3.0",
+		"@commitlint/cli": "^19.6.1",
 		"@commitlint/config-conventional": "^19.2.2",
 		"@eslint/eslintrc": "^3.1.0",
 		"@eslint/js": "^9.17.0",
