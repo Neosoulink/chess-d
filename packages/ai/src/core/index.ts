@@ -1,4 +1,3 @@
-import { isObject } from "@quick-threejs/utils";
 import { Chess } from "chess.js";
 import { container as parentContainer, DependencyContainer } from "tsyringe";
 
@@ -15,7 +14,8 @@ export const register = (
 	aiModel: SupportedAiModel,
 	game: Chess
 ): RegisterReturn => {
-	if (!isObject(game)) throw new Error("Unable to retrieve the game context.");
+	if (typeof game !== "object")
+		throw new Error("Unable to retrieve the game context.");
 
 	const container = parentContainer.createChildContainer();
 	container.register(Chess, {

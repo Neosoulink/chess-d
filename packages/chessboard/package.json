@@ -17,8 +17,8 @@
 	"dependencies": {
 		"@chess-d/rapier-physics": "workspace:*",
 		"@chess-d/shared": "workspace:*",
-		"@quick-threejs/reactive": "^0.1.24",
-		"@quick-threejs/utils": "^0.1.14",
+		"@quick-threejs/reactive": "^0.1.25",
+		"@quick-threejs/utils": "^0.1.15",
 		"chess.js": "1.0.0-beta.8",
 		"rxjs": "^7.8.1",
 		"threads": "^1.7.0",

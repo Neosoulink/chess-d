@@ -13,14 +13,15 @@ import { container } from "tsyringe";
 import { GameModule } from "./game.module";
 
 launchApp({
-	onReady: async (app: AppModule) => {
-		const chessboard = await setupChessboard(app);
+	onReady: async (app) => {
+		const { module } = app;
+		const chessboard = await setupChessboard(module);
 
-		if (!isObject(app) || !app.camera)
+		if (!isObject(app) || !module.camera)
 			throw new Error("Unable to retrieve the application context.");
 
 		container.register(Chess, { useValue: new Chess() });
-		container.register(AppModule, { useValue: app });
+		container.register(AppModule, { useValue: module });
 		container.register(ChessboardModule, { useValue: chessboard });
 
 		const game = container.resolve<GameModule>(GameModule);

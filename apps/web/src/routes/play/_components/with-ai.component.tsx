@@ -31,6 +31,7 @@ const workerLocation = new URL(
 
 export const WithAIComponent: FC<WithAIComponentProps> = () => {
 	const { app } = useGameStore();
+	const { module: appModule } = app ?? {};
 	const [searchParams] = useSearchParams();
 
 	const state = useRef<{
@@ -46,7 +47,7 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 	const init = useCallback(async () => {
 		state.current.isPending = true;
 
-		const _workerThread = await app?.workerPool()?.run?.({
+		const _workerThread = await appModule?.workerPool()?.run?.({
 			payload: {
 				path: workerLocation,
 				subject: {}
@@ -57,11 +58,11 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 		state.current.isReady = !!_workerThread;
 
 		setWorkerThread(_workerThread);
-	}, [app]);
+	}, [appModule]);
 
 	const dispose = useCallback(() => {
-		workerThread?.worker?.terminate();
-		workerThread?.thread?.lifecycle$?.();
+		workerThread?.[0]?.worker?.terminate();
+		workerThread?.[0]?.thread?.lifecycle$?.();
 		setWorkerThread(undefined);
 
 		state.current.isPending = false;
@@ -70,12 +71,12 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 
 	const performPieceMove = useCallback(
 		(move: Move) => {
-			app?.worker()?.postMessage?.({
+			appModule?.worker()?.postMessage?.({
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
 			} satisfies MessageEventPayload<Move>);
 		},
-		[app]
+		[appModule]
 	);
 
 	useEffect(() => {
@@ -89,8 +90,6 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 	}, [app, dispose, init, workerThread]);
 
 	useEffect(() => {
-		const appGui = app?.gui();
-		const aiGui = appGui.addFolder("AI Controls");
 		const gameMode = getGameModeFromUrl(searchParams);
 		const players: PlayerModel[] = [];
 
@@ -121,12 +120,12 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 
 			if (
 				app &&
-				workerThread?.thread?.movePerformed$ &&
+				workerThread?.[0]?.thread?.movePerformed$ &&
 				!state.current.isPending &&
 				state.current.isReady
 			)
 				setTimeout(() => {
-					workerThread?.worker?.postMessage?.({
+					workerThread?.[0]?.worker?.postMessage?.({
 						token: AI_WILL_PERFORM_MOVE_TOKEN,
 						value: { fen: DEFAULT_FEN, ai: aiPlayer1.id as SupportedAiModel }
 					} satisfies MessageEventPayload<{
@@ -134,34 +133,6 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 						ai: SupportedAiModel;
 					}>);
 				}, 0);
-
-			if (import.meta.env?.DEV) {
-				const player1Options = { ai: ai1Model };
-				aiGui
-					.add(
-						player1Options,
-						"ai",
-						Object.keys(SupportedAiModel).filter((key) => isNaN(Number(key)))
-					)
-					.onChange((value) => {
-						const aiModel = SupportedAiModel[value];
-						aiPlayer1.id = aiModel;
-					})
-					.name("AI 1 Model");
-
-				const player2Options = { ai: ai2Model };
-				aiGui
-					.add(
-						player2Options,
-						"ai",
-						Object.keys(SupportedAiModel).filter((key) => isNaN(Number(key)))
-					)
-					.onChange((value) => {
-						const aiModel = SupportedAiModel[value];
-						aiPlayer1.id = aiModel;
-					})
-					.name("AI 2 Model");
-			}
 		} else {
 			const searchedAIParam = searchParams.get("ai");
 			const aiModel =
@@ -171,21 +142,6 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 			const aiPlayer = new PlayerModel();
 			aiPlayer.id = SupportedAiModel[aiModel];
 			aiPlayer.color = ColorSide.black;
-
-			if (import.meta.env?.DEV) {
-				const options = { ai: aiModel };
-				aiGui
-					.add(
-						options,
-						"ai",
-						Object.keys(SupportedAiModel).filter((key) => isNaN(Number(key)))
-					)
-					.onChange((value) => {
-						const aiModel = SupportedAiModel[value];
-						aiPlayer.id = aiModel;
-					})
-					.name("AI Model");
-			}
 
 			players.push(aiPlayer);
 		}
@@ -205,7 +161,7 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 		};
 
 		const aimPerformedMoveSubscription: Subscription | undefined =
-			workerThread?.thread
+			workerThread?.[0]?.thread
 				?.movePerformed$()
 				?.subscribe((message: MessageEventPayload<{ move: Move }>) => {
 					const { token, value } = message;
@@ -235,7 +191,7 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 				entity &&
 				entity.color === turn
 			)
-				workerThread?.worker?.postMessage?.({
+				workerThread?.[0]?.worker?.postMessage?.({
 					token: AI_WILL_PERFORM_MOVE_TOKEN,
 					value: { fen, ai: entity.id as SupportedAiModel }
 				} satisfies MessageEventPayload<{ fen: string; ai: SupportedAiModel }>);
@@ -244,15 +200,14 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 				return performPieceMove(payload.value.move);
 		});
 
-		app?.worker()?.addEventListener("message", handleMessages);
+		appModule?.worker()?.addEventListener("message", handleMessages);
 
 		return () => {
-			app?.worker()?.removeEventListener?.("message", handleMessages);
+			appModule?.worker()?.removeEventListener?.("message", handleMessages);
 			aimPerformedMoveSubscription?.unsubscribe?.();
 			playersSubscription.unsubscribe();
-			aiGui.destroy();
 		};
-	}, [app, performPieceMove, searchParams, workerThread]);
+	}, [app, appModule, performPieceMove, searchParams, workerThread]);
 
 	return null;
 };

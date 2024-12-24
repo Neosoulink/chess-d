@@ -15,16 +15,18 @@ export const NewGameHumanSection: FC = () => {
 	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
-		if (!joinRoom) navigate("/play?mode=human");
+		let to = "/play?mode=human";
 
-		const formData = new FormData(event.currentTarget);
-		const roomId = formData.get("room-id") as
-			| keyof typeof SupportedAiModel
-			| null;
+		if (joinRoom) {
+			const formData = new FormData(event.currentTarget);
+			const roomId = formData.get("room-id") as
+				| keyof typeof SupportedAiModel
+				| null;
 
-		if (!roomId) return;
+			if (roomId) to = `${to}&roomID=${roomId}`;
+		}
 
-		navigate(`/play?mode=human&roomID=${roomId}`);
+		navigate(to);
 		resetGame();
 	};
 

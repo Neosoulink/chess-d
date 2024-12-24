@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import { RegisterModule } from "@quick-threejs/reactive";
+import { ContainerizedApp, RegisterModule } from "@quick-threejs/reactive";
 import { Properties } from "@quick-threejs/utils";
 
 export interface GameStore {
-	app?: RegisterModule;
+	app?: ContainerizedApp<RegisterModule>;
 	reset: () => void;
-	setApp: (app: RegisterModule | undefined) => void;
+	setApp: (app: ContainerizedApp<RegisterModule> | undefined) => void;
 }
 
 export const gameInitialState: Properties<GameStore> = { app: undefined };
@@ -13,5 +13,5 @@ export const gameInitialState: Properties<GameStore> = { app: undefined };
 export const useGameStore = create<GameStore>((set) => ({
 	...gameInitialState,
 	reset: () => set(() => ({ ...gameInitialState })),
-	setApp: (app?: RegisterModule) => set(() => ({ app }))
+	setApp: (app?: ContainerizedApp<RegisterModule>) => set(() => ({ app }))
 }));

@@ -1,5 +1,9 @@
-import { register, RegisterModule } from "@quick-threejs/reactive";
-import { FC, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+	ContainerizedApp,
+	register,
+	RegisterModule
+} from "@quick-threejs/reactive";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
 import { GameMode } from "../../shared/enum";
@@ -19,6 +23,7 @@ const workerLocation = new URL(
 
 export const PlayRoute: FC = () => {
 	const { app, setApp } = useGameStore();
+	const [localApp, setLocalApp] = useState<ContainerizedApp<RegisterModule>>();
 	const [searchParams] = useSearchParams();
 	const gameMode = useMemo(
 		() => getGameModeFromUrl(searchParams),
@@ -30,39 +35,40 @@ export const PlayRoute: FC = () => {
 		isReady: boolean;
 	}>({ isPending: false, isReady: false });
 
-	const init = useCallback(
-		() =>
-			new Promise<RegisterModule>((resolve) => {
-				if (state.current.isPending || state.current.isReady) return;
-				state.current.isPending = true;
+	const init = useCallback(async () => {
+		if (state.current.isPending || state.current.isReady) return;
+		state.current.isPending = true;
 
-				register({
-					location: workerLocation,
-					enableDebug: !!import.meta.env?.DEV,
-					axesSizes: 5,
-					gridSizes: 10,
-					withMiniCamera: true,
-					onReady: (_app) => {
-						state.current.isPending = false;
-						state.current.isReady = true;
+		console.log("Initializing game...");
 
-						resolve(_app);
-					}
-				});
-			}),
-		[]
-	);
+		register({
+			location: workerLocation,
+			enableDebug: !!import.meta.env?.DEV,
+			axesSizes: 5,
+			gridSizes: 10,
+			withMiniCamera: true,
+			onReady: (_app) => {
+				state.current.isPending = false;
+				state.current.isReady = true;
 
-	const dispose = useCallback(() => {
+				setApp(_app);
+				setLocalApp(_app);
+			}
+		});
+	}, [setApp]);
+
+	const dispose = useCallback(async () => {
 		if (state.current.isPending || !state.current.isReady) return;
+
+		await localApp?.container?.dispose();
 
 		state.current.isPending = false;
 		state.current.isReady = false;
 
-		app?.dispose();
+		setLocalApp(undefined);
 
-		setApp(undefined);
-	}, [app, setApp]);
+		console.log("Game disposed...");
+	}, [localApp]);
 
 	const renderGameMode = useCallback(() => {
 		if (gameMode === GameMode.ai || gameMode === GameMode.simulation)
@@ -74,12 +80,12 @@ export const PlayRoute: FC = () => {
 	}, [gameMode]);
 
 	useEffect(() => {
-		if (!app) init().then(setApp);
+		if (!localApp) init();
 
 		return () => {
-			if (app) dispose();
+			if (app && localApp) dispose();
 		};
-	}, [app, init, dispose, setApp]);
+	}, [app, init, dispose, localApp]);
 
 	if (!app) return null;
 

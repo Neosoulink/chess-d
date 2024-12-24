@@ -37,6 +37,7 @@ export interface WithHumanComponentProps {}
 
 export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 	const { app } = useGameStore();
+	const { module: appModule } = app ?? {};
 	const socket = useMemo(
 		() =>
 			io("http://localhost:3000", {
@@ -54,24 +55,24 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 	const moveBoardPiece = useCallback(
 		(move: Move) => {
-			app?.worker()?.postMessage?.({
+			appModule?.worker()?.postMessage?.({
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
 			} satisfies MessageEventPayload<Move>);
 		},
-		[app]
+		[appModule]
 	);
 
 	const resetBoardPieces = useCallback(
 		(fen?: string) => {
 			setTimeout(() => {
-				app?.worker()?.postMessage?.({
+				appModule?.worker()?.postMessage?.({
 					token: GAME_WILL_RESET_TOKEN,
 					value: { fen }
 				} satisfies MessageEventPayload<{ fen }>);
 			}, 100);
 		},
-		[app]
+		[appModule]
 	);
 
 	const onRoomCreated = useCallback(
@@ -242,13 +243,13 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 				});
 		};
 
-		app?.worker()?.addEventListener("message", handleMessages);
+		appModule?.worker()?.addEventListener("message", handleMessages);
 
 		return () => {
 			subscription.unsubscribe();
-			app?.worker?.().removeEventListener("message", handleMessages);
+			appModule?.worker?.().removeEventListener("message", handleMessages);
 		};
-	}, [app, currentPlayer, opponentPlayer, moveBoardPiece, socket]);
+	}, [app, currentPlayer, opponentPlayer, moveBoardPiece, socket, appModule]);
 
 	useEffect(() => {
 		return () => {

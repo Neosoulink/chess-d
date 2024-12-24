@@ -10,13 +10,11 @@ export default defineConfig({
 			fileName: "main"
 		},
 		rollupOptions: {
-			external: ["three", "rxjs", "threads", "@dimforge/rapier3d-compat"],
+			external: ["chess.js", "threads"],
 			output: {
 				globals: {
-					three: "THREE",
-					rxjs: "Rxjs",
-					threads: "Threads",
-					"@dimforge/rapier3d-compat": "RAPIER"
+					"chess.js": "Chess",
+					threads: "threads"
 				}
 			}
 		}
