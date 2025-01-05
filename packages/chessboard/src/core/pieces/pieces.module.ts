@@ -3,9 +3,12 @@ import { Module } from "@quick-threejs/reactive";
 
 import { PiecesComponent } from "./pieces.component";
 import { PiecesController } from "./pieces.controller";
+import { Subscription } from "rxjs";
 
 @singleton()
 export class PiecesModule implements Module {
+	private _subscriptions: (Subscription | undefined)[] = [];
+
 	constructor(
 		@inject(PiecesComponent) public readonly component: PiecesComponent,
 		@inject(PiecesController)
@@ -13,17 +16,20 @@ export class PiecesModule implements Module {
 	) {}
 
 	public init() {
-		this.component.initialize();
+		this.component.init();
 
-		this.controller.pieceMoving$?.subscribe(
-			this.component.handlePieceMoving.bind(this.component)
+		this._subscriptions.push(
+			this.controller.pieceMoving$?.subscribe(
+				this.component.handlePieceMoving.bind(this.component)
+			),
+			this.controller.pieceDeselected$?.subscribe(
+				this.component.handlePieceDeselected.bind(this.component)
+			)
 		);
-
-		this.controller.pieceDeselected$?.subscribe((payload) => {
-			this.component.handlePieceDeselected(payload);
-			this.controller.pieceMoved$$.next(payload);
-		});
 	}
 
-	dispose() {}
+	dispose() {
+		this._subscriptions.forEach((sub) => sub?.unsubscribe());
+		this._subscriptions = [];
+	}
 }

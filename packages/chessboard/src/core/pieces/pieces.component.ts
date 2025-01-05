@@ -42,7 +42,7 @@ export class PiecesComponent {
 		@inject(WorldComponent) private readonly worldComponent: WorldComponent,
 		@inject(BoardComponent) private readonly boardComponent: BoardComponent,
 		@inject(ResourceComponent)
-		private readonly resourceComponent: ResourceComponent
+		private readonly _resourceComponent: ResourceComponent
 	) {}
 
 	public createGroup<Type extends PieceType, Color extends ColorSide>(
@@ -51,11 +51,15 @@ export class PiecesComponent {
 		coords: BoardCoord[],
 		pieces?: InstancedPieceModel<Type, Color>["pieces"]
 	) {
+		const geometry = this._resourceComponent.getGeometryByType(type);
+
+		if (!geometry) throw new Error("Invalid geometry.");
+
 		const group = new InstancedPieceModel(
 			type,
 			color,
 			coords.length,
-			this.resourceComponent.getGeometryByPieceType(type),
+			geometry,
 			pieces
 		);
 
@@ -79,7 +83,7 @@ export class PiecesComponent {
 		] as unknown as typeof newGroup;
 	}
 
-	public initialize(fen = this.initialFen) {
+	public init(fen = this.initialFen) {
 		const fenCoords = fenToCoords(fen);
 
 		if (fenCoords)
@@ -110,7 +114,7 @@ export class PiecesComponent {
 		});
 	}
 
-	public reInitialize(fen = this.initialFen) {
+	public reInit(fen = this.initialFen) {
 		[ColorSide.black, ColorSide.white].forEach((color) => {
 			Object.keys(this.groups[color]).forEach((key) => {
 				const group = this.groups[color][key as PieceType];
@@ -132,7 +136,7 @@ export class PiecesComponent {
 			});
 		});
 
-		this.initialize(fen);
+		this.init(fen);
 	}
 
 	public getPieceByCoord<Type extends PieceType, Color extends ColorSide>(
@@ -235,16 +239,20 @@ export class PiecesComponent {
 	}
 
 	public handlePieceMoving(payload: PieceNotificationPayload) {
-		const { cellsIntersection, piece, lastPosition } = payload;
+		const { cellsIntersection, instancedPiece, piece, lastPosition } = payload;
+		const cellPosition = copyProperties(
+			cellsIntersection?.point instanceof Vector3
+				? cellsIntersection.point
+				: (lastPosition ?? VECTOR),
+			["x", "z"]
+		);
 
 		this.movePieceByPosition(piece, {
-			...copyProperties(
-				cellsIntersection?.point instanceof Vector3
-					? cellsIntersection.point
-					: (lastPosition ?? VECTOR),
-				["x", "z"]
-			),
-			y: 0.8
+			...cellPosition,
+			y:
+				(instancedPiece?.geometry.boundingBox?.max.y ||
+					cellsIntersection?.point.y ||
+					0.5) + 0.5
 		});
 	}
 

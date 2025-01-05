@@ -1,9 +1,7 @@
+import { AppModule, Module } from "@quick-threejs/reactive";
 import { inject, singleton } from "tsyringe";
 
-import { AppModule, Module } from "@quick-threejs/reactive";
-
 import { BoardComponent } from "./board.component";
-import { BoardController } from "./board.controller";
 import { PiecesController } from "../pieces/pieces.controller";
 
 @singleton()
@@ -12,8 +10,6 @@ export class BoardModule implements Module {
 		@inject(AppModule) private readonly appModule: AppModule,
 		@inject(BoardComponent)
 		public readonly component: BoardComponent,
-		@inject(BoardController)
-		public readonly controller: BoardController,
 		@inject(PiecesController)
 		private readonly piecesController: PiecesController
 	) {

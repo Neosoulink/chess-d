@@ -1,5 +1,3 @@
-import "reflect-metadata";
-
 import { inject, singleton } from "tsyringe";
 import { DynamicDrawUsage, Euler } from "three";
 import {

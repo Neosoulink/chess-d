@@ -4,6 +4,7 @@ import {
 	map,
 	merge,
 	Observable,
+	share,
 	Subject,
 	switchMap,
 	take,
@@ -26,9 +27,6 @@ import { CoreComponent } from "../core.component";
 @singleton()
 export class PiecesController {
 	public readonly pieceDeselected$$ = new Subject<PieceNotificationPayload>();
-	public readonly pieceMoved$$ = new Subject<
-		ObservablePayload<PiecesController["pieceDeselected$$"]>
-	>();
 
 	public readonly pieceSelected$?: Observable<PieceNotificationPayload>;
 	public readonly pieceMoving$?: Observable<PieceNotificationPayload>;
@@ -70,6 +68,7 @@ export class PiecesController {
 
 				return {
 					piecesIntersection,
+					instancedPiece,
 					piece,
 					startPosition,
 					startSquare,
@@ -81,7 +80,8 @@ export class PiecesController {
 				(payload) =>
 					payload?.piece instanceof MatrixPieceModel &&
 					payload?.piecesIntersection?.object instanceof InstancedPieceModel
-			)
+			),
+			share()
 		);
 
 		this.pieceMoving$ = this.pieceSelected$?.pipe(
@@ -110,7 +110,8 @@ export class PiecesController {
 					}),
 					takeUntil(this.appModule.mouseup$?.() as Observable<Event>)
 				)
-			)
+			),
+			share()
 		);
 
 		this.pieceDeselected$ = merge(
@@ -140,6 +141,6 @@ export class PiecesController {
 				)
 			),
 			this.pieceDeselected$$.pipe()
-		);
+		).pipe(share());
 	}
 }

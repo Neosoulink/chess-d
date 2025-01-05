@@ -1,5 +1,5 @@
 import { inject, singleton } from "tsyringe";
-import { filter, map, Observable, Subject } from "rxjs";
+import { filter, map, Observable, share, Subject } from "rxjs";
 import { AppModule } from "@quick-threejs/reactive";
 import { Physics } from "@chess-d/rapier-physics";
 
@@ -19,7 +19,8 @@ export class DebugController {
 	) {
 		this.physicsDebugRendered$ = this.appModule.timer.step$().pipe(
 			filter(() => !!this.appModule?.debug?.enabled),
-			map(() => this._physics.world.debugRender())
+			map(() => this._physics.world.debugRender()),
+			share()
 		);
 	}
 }

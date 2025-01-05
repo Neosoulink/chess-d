@@ -11,6 +11,7 @@ import {
 export type PieceNotificationPayload = {
 	piecesIntersection?: Intersection<InstancedPieceModel>;
 	cellsIntersection?: Intersection<InstancedCellModel>;
+	instancedPiece: InstancedPieceModel<PieceType, ColorSide>;
 	piece: MatrixPieceModel;
 	startPosition: Vector3Like;
 	lastPosition?: Vector3Like;
