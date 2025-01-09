@@ -5,7 +5,7 @@ export enum PieceType {
 	pawn = PAWN,
 	bishop = BISHOP,
 	knight = KNIGHT,
-	rock = ROOK,
+	rook = ROOK,
 	queen = QUEEN,
 	king = KING
 }

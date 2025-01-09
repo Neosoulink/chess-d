@@ -23,6 +23,7 @@ import {
 import { BoardComponent } from "../board/board.component";
 import { ResourceComponent } from "../resource/resource.component";
 import { WorldComponent } from "../world/world.component";
+import { RigidBodyType } from "@dimforge/rapier3d-compat";
 
 @singleton()
 export class PiecesComponent {
@@ -174,12 +175,14 @@ export class PiecesComponent {
 
 	public movePieceByCoord<Type extends PieceType, Color extends ColorSide>(
 		piece: MatrixPieceModel<Type, Color>,
-		coord: BoardCoord
+		coord: BoardCoord,
+		offset?: Vector3Like
 	) {
 		this.groups?.[piece.color]?.[piece.type]?.setPieceCoord(
 			piece.instanceId,
 			this.boardComponent.instancedCell,
-			coord
+			coord,
+			offset
 		);
 	}
 

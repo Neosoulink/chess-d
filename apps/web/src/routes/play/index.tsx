@@ -16,7 +16,7 @@ import { GameMode } from "../../shared/enum";
 import { getGameModeFromUrl } from "../../shared/utils";
 
 import pawnPiece from "../../assets/3D/pieces/pawn.glb?url";
-import rockPiece from "../../assets/3D/pieces/rock.glb?url";
+import rookPiece from "../../assets/3D/pieces/rook.glb?url";
 import knightPiece from "../../assets/3D/pieces/knight.glb?url";
 import bishopPiece from "../../assets/3D/pieces/bishop.glb?url";
 import queenPiece from "../../assets/3D/pieces/queen.glb?url";
@@ -63,8 +63,8 @@ export const PlayRoute: FC = () => {
 					type: "gltfModel"
 				},
 				{
-					name: "rockPiece",
-					path: rockPiece,
+					name: "rookPiece",
+					path: rookPiece,
 					type: "gltfModel"
 				},
 				{

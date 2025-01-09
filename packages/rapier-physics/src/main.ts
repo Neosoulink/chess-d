@@ -12,6 +12,7 @@ import {
 	Vector3
 } from "three";
 import { Object3DWithGeometry, PhysicsProperties } from "./types";
+import { RigidBody, RigidBodyType } from "@dimforge/rapier3d-compat";
 
 let RAPIER: typeof Rapier | null | undefined = null;
 
@@ -34,9 +35,9 @@ export class Physics {
 	/** @description {@link Rapier.World} instance. */
 	public world: Rapier.World;
 	/** @description List of {@link Object3DWithGeometry} with applied physics. */
-	public dynamicObjects: Object3DWithGeometry[] = [];
+	public physicalObjects: Object3DWithGeometry[] = [];
 	/** @description {@link WeakMap} of dynamic objects {@link Rapier.RigidBody} */
-	public dynamicObjectsMap = new WeakMap<
+	public physical3DObjectsMap = new WeakMap<
 		Object3DWithGeometry,
 		PhysicsProperties | PhysicsProperties[]
 	>();
@@ -49,7 +50,7 @@ export class Physics {
 	}
 
 	/**
-	 * @description Add the specified `object` to the physics `dynamicObjects` map.
+	 * @description Add the specified `object` to the physics `physicalObjects` map.
 	 *
 	 * @param object {@link Object3DWithGeometry} based.
 	 * @param mass Physics object mass.
@@ -72,15 +73,13 @@ export class Physics {
 						mass
 					);
 
-		if (mass > 0) {
-			this.dynamicObjects.push(object);
-			object.userData = {
-				...object.userData,
-				dynamicObjectIndex: this.dynamicObjects.length - 1,
-				physicsProperties
-			};
-			this.dynamicObjectsMap.set(object, physicsProperties);
-		}
+		this.physicalObjects.push(object);
+		object.userData = {
+			...object.userData,
+			dynamicObjectIndex: this.physicalObjects.length - 1,
+			physicsProperties
+		};
+		this.physical3DObjectsMap.set(object, physicsProperties);
 
 		return physicsProperties;
 	}
@@ -227,17 +226,17 @@ export class Physics {
 		colliderDesc: Rapier.ColliderDesc,
 		mass?: number
 	) {
-		const array = mesh.instanceMatrix.array;
-		const bodies: PhysicsProperties[] = [];
+		const matrixArray = mesh.instanceMatrix.array;
+		const propsArray: PhysicsProperties[] = [];
 
 		for (let i = 0; i < mesh.count; i++) {
-			const position = this._vector.fromArray(array, i * 16 + 12);
-			bodies.push(
+			const position = this._vector.fromArray(matrixArray, i * 16 + 12);
+			propsArray.push(
 				this.createPhysicsProperties(colliderDesc, position, undefined, mass)
 			);
 		}
 
-		return bodies;
+		return propsArray;
 	}
 
 	/**
@@ -281,7 +280,7 @@ export class Physics {
 		object: Object3DWithGeometry,
 		index = 0
 	) {
-		const _physicsProperties = this.dynamicObjectsMap.get(object);
+		const _physicsProperties = this.physical3DObjectsMap.get(object);
 		let body: PhysicsProperties | undefined;
 
 		if (!_physicsProperties) return undefined;
@@ -354,20 +353,21 @@ export class Physics {
 		if (typeof timestep === "number") this.world.timestep = timestep;
 		this.world.step();
 
-		for (let i = 0, l = this.dynamicObjects.length; i < l; i++) {
-			const object = this.dynamicObjects[i];
+		for (let i = 0, l = this.physicalObjects.length; i < l; i++) {
+			const object = this.physicalObjects[i];
+			if (!object) continue;
 
 			if (!object?.userData.useBoundingBox && object instanceof InstancedMesh) {
-				const instanceMatrix = object.instanceMatrix.array;
-				const bodies = this.dynamicObjectsMap.get(object) as
+				const array = object.instanceMatrix.array;
+				const propsArray = this.physical3DObjectsMap.get(object) as
 					| PhysicsProperties[]
 					| undefined;
 
-				if (!bodies) return;
+				if (!propsArray) return;
 
-				for (let j = 0; j < bodies.length; j++) {
-					const physicsProperties = bodies[j];
-					if (physicsProperties) {
+				for (let j = 0; j < propsArray.length; j++) {
+					const props = propsArray[j];
+					if (props && props.rigidBody.bodyType() !== RigidBodyType.Fixed) {
 						let position = this._position;
 						let quaternion = this._quaternion;
 						let scale = this._scale;
@@ -375,30 +375,31 @@ export class Physics {
 						object.getMatrixAt(j, this._matrix);
 						this._matrix.decompose(position, quaternion, scale);
 
-						position = this._position.copy(
-							physicsProperties.rigidBody.translation()
-						);
-						quaternion = this._quaternion.copy(
-							physicsProperties.rigidBody.rotation()
-						);
+						position = this._position.copy(props.rigidBody.translation());
+						quaternion = this._quaternion.copy(props.rigidBody.rotation());
 						scale = this._scale.copy(scale);
 
 						this._matrix
 							.compose(position, quaternion, scale)
-							.toArray(instanceMatrix, j * 16);
+							.toArray(array, j * 16);
 					}
 				}
 
 				object.instanceMatrix.needsUpdate = true;
 				object.computeBoundingSphere();
-			} else if (object) {
-				const physicsProperties = this.dynamicObjectsMap.get(
-					object
-				) as PhysicsProperties;
-
-				object.position.copy(physicsProperties.rigidBody.translation());
-				object.quaternion.copy(physicsProperties.rigidBody.rotation());
 			}
+
+			const props = this.physical3DObjectsMap.get(object);
+
+			if (
+				!props ||
+				Array.isArray(props) ||
+				props.rigidBody.bodyType() === RigidBodyType.Fixed
+			)
+				continue;
+
+			object.position.copy(props.rigidBody.translation());
+			object.quaternion.copy(props.rigidBody.rotation());
 		}
 	}
 
@@ -408,17 +409,12 @@ export class Physics {
 	 * @param props {@link PhysicsProperties} or `PhysicsProperties[]`.
 	 */
 	public removePropsFromWorld(props?: PhysicsProperties | PhysicsProperties[]) {
-		if (
-			typeof props === "object" &&
-			typeof (props as PhysicsProperties[]).length === "number"
-		)
+		if (Array.isArray(props))
 			(props as PhysicsProperties[]).map((_props) =>
 				this.removePropsFromWorld(_props)
 			);
-		else if ((props as PhysicsProperties).rigidBody) {
+		else if (props?.rigidBody instanceof RigidBody)
 			this.world.removeRigidBody((props as PhysicsProperties).rigidBody);
-			this.world.removeCollider((props as PhysicsProperties).collider, true);
-		}
 	}
 
 	/**
@@ -427,16 +423,16 @@ export class Physics {
 	 * @param object {@link Object3DWithGeometry}.
 	 */
 	public removeFromWorld(object: Object3DWithGeometry) {
-		for (let i = 0; i < this.dynamicObjects.length; i++) {
-			const dynamicObject = this.dynamicObjects[i];
+		for (let i = 0; i < this.physicalObjects.length; i++) {
+			const physicalObject = this.physicalObjects[i];
 
-			if (dynamicObject) {
-				const physicsProps = this.dynamicObjectsMap.get(dynamicObject);
+			if (physicalObject) {
+				const physicsProps = this.physical3DObjectsMap.get(physicalObject);
 
-				if (dynamicObject.id === object.id && physicsProps) {
+				if (physicalObject.id === object.id && physicsProps) {
 					this.removePropsFromWorld(physicsProps);
-					this.dynamicObjectsMap.delete(dynamicObject);
-					this.dynamicObjects.splice(i, 1);
+					this.physical3DObjectsMap.delete(physicalObject);
+					this.physicalObjects.splice(i, 1);
 					return;
 				}
 			}
@@ -445,8 +441,8 @@ export class Physics {
 
 	/** @description remove all the stored physical objects. */
 	public dispose() {
-		this.dynamicObjects = [];
-		this.dynamicObjectsMap = new WeakMap();
+		this.physicalObjects = [];
+		this.physical3DObjectsMap = new WeakMap();
 	}
 }
 

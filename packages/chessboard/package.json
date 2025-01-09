@@ -17,6 +17,7 @@
 	"dependencies": {
 		"@chess-d/rapier-physics": "workspace:*",
 		"@chess-d/shared": "workspace:*",
+		"@dimforge/rapier3d-compat": "^0.14.0",
 		"@quick-threejs/reactive": "^0.1.28",
 		"@quick-threejs/utils": "^0.1.16",
 		"chess.js": "1.0.0-beta.8",

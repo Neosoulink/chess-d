@@ -20,7 +20,8 @@ export default defineConfig({
 				"threads",
 				"three",
 				"typescript-ioc",
-				"tsyringe"
+				"tsyringe",
+				"@dimforge/rapier3d-compat"
 			],
 			output: {
 				globals: {
@@ -33,7 +34,8 @@ export default defineConfig({
 					threads: "threads",
 					three: "THREE",
 					"typescript-ioc": "ioc",
-					tsyringe: "tsyringe"
+					tsyringe: "tsyringe",
+					"@dimforge/rapier3d-compat": "RapierCompat"
 				}
 			}
 		}

@@ -28,11 +28,11 @@ launchApp({
 			if (pawnGeometry instanceof BufferGeometry)
 				chessboardPieces.p = pawnGeometry;
 
-			const rockGeometry = (
-				(loadedResources["rockPiece"] as GLTF)?.scene?.children?.[0] as Mesh
+			const rookGeometry = (
+				(loadedResources["rookPiece"] as GLTF)?.scene?.children?.[0] as Mesh
 			)?.geometry;
-			if (rockGeometry instanceof BufferGeometry)
-				chessboardPieces.r = rockGeometry;
+			if (rookGeometry instanceof BufferGeometry)
+				chessboardPieces.r = rookGeometry;
 
 			const knightGeometry = (
 				(loadedResources["knightPiece"] as GLTF)?.scene?.children?.[0] as Mesh

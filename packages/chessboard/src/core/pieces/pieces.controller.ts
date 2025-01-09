@@ -13,7 +13,7 @@ import {
 import { Intersection, Vector3, Vector3Like } from "three";
 import { AppModule } from "@quick-threejs/reactive";
 import { copyProperties } from "@quick-threejs/utils";
-import { BoardCoord, coordToSquare, ObservablePayload } from "@chess-d/shared";
+import { BoardCoord, coordToSquare } from "@chess-d/shared";
 
 import {
 	InstancedCellModel,
@@ -141,7 +141,8 @@ export class PiecesController {
 								endSquare
 							} satisfies PieceNotificationPayload;
 						}),
-						take(1)
+						take(1),
+						share()
 					)
 				)
 			),

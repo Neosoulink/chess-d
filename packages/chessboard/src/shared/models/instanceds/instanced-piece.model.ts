@@ -126,7 +126,7 @@ export class InstancedPieceModel<
 	public initPhysics(physics: Physics): void {
 		const physicsProperties = physics.addToWorld(
 			this,
-			1
+			0
 		) as PhysicsProperties[];
 
 		physicsProperties.forEach((physicsProps, instanceId) => {
@@ -159,7 +159,8 @@ export class InstancedPieceModel<
 	public setPieceCoord(
 		instanceId: number,
 		boardMesh: InstancedMesh,
-		coord: BoardCoord
+		coord: BoardCoord,
+		offset?: Vector3Like
 	): this["pieces"][number] | undefined {
 		if (this?.geometry.attributes.position) {
 			this.geometry.computeBoundingBox();
@@ -168,13 +169,12 @@ export class InstancedPieceModel<
 
 			if (!boundingBox || !piece) return undefined;
 
-			// const width = boundingBox.max.x - boundingBox.min.x;
-			const height = boundingBox.max.y - boundingBox.min.y;
+			const height = boundingBox.max.y;
 
 			piece.setCoord(boardMesh, coord, {
-				x: boardMesh.position.x,
-				y: boardMesh.position.y + (height / 2 + 0.5),
-				z: boardMesh.position.z
+				x: boardMesh.position.x + (offset?.x || 0),
+				y: boardMesh.position.y + height + (offset?.y || 0),
+				z: boardMesh.position.z + (offset?.z || 0)
 			});
 		}
 
@@ -207,6 +207,7 @@ export class InstancedPieceModel<
 		this.matrixWorldNeedsUpdate = true;
 		this.instanceMatrix.needsUpdate = true;
 
+		this.geometry.computeBoundingBox();
 		this.computeBoundingBox();
 
 		Object.keys(this.pieces).forEach((id) => {
