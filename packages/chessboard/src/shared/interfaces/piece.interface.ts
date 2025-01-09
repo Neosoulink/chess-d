@@ -1,4 +1,4 @@
-import { Intersection, Vector3Like } from "three";
+import { BufferGeometry, Intersection, Vector3Like } from "three";
 import { BoardCoord, ColorSide, PieceType } from "@chess-d/shared";
 
 import {
@@ -9,17 +9,19 @@ import {
 } from "../models";
 
 export type PieceNotificationPayload = {
-	piecesIntersection?: Intersection<InstancedPieceModel>;
-	cellsIntersection?: Intersection<InstancedCellModel>;
-	instancedPiece: InstancedPieceModel<PieceType, ColorSide>;
-	piece: MatrixPieceModel;
-	startPosition: Vector3Like;
-	lastPosition?: Vector3Like;
-	startSquare: string;
-	endSquare?: string;
-	startCoord: BoardCoord;
-	endCoord?: BoardCoord;
 	cell?: MatrixCellModel;
+	cellsIntersection?: Intersection<InstancedCellModel>;
+	colorSide: ColorSide;
+	endCoord?: BoardCoord;
+	endSquare?: string;
+	instancedPiece: InstancedPieceModel<PieceType, ColorSide>;
+	lastPosition?: Vector3Like;
+	piece: MatrixPieceModel;
+	pieceGeometry: BufferGeometry;
+	piecesIntersection?: Intersection<InstancedPieceModel>;
+	startCoord: BoardCoord;
+	startPosition: Vector3Like;
+	startSquare: string;
 };
 
 export type PiecesGroup<Color extends ColorSide> = {

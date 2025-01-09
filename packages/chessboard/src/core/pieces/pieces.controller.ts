@@ -21,8 +21,8 @@ import {
 	InstancedPieceModel,
 	PieceNotificationPayload
 } from "../../shared";
-import { PiecesComponent } from "./pieces.component";
 import { CoreComponent } from "../core.component";
+import { ResourceComponent } from "../resource/resource.component";
 
 @singleton()
 export class PiecesController {
@@ -30,18 +30,17 @@ export class PiecesController {
 
 	public readonly pieceSelected$?: Observable<PieceNotificationPayload>;
 	public readonly pieceMoving$?: Observable<PieceNotificationPayload>;
-	public readonly pieceDeselected$?: Observable<
-		ObservablePayload<PiecesController["pieceDeselected$$"]>
-	>;
+	public readonly pieceDeselected$?: Observable<PieceNotificationPayload>;
 
 	constructor(
-		@inject(PiecesComponent) private readonly component: PiecesComponent,
-		@inject(CoreComponent) private readonly coreComponent: CoreComponent,
-		@inject(AppModule) private readonly appModule: AppModule
+		@inject(CoreComponent) private readonly _coreComponent: CoreComponent,
+		@inject(ResourceComponent)
+		private readonly _resourceComponent: ResourceComponent,
+		@inject(AppModule) private readonly _appModule: AppModule
 	) {
-		this.pieceSelected$ = this.appModule.mousedown$?.().pipe(
+		this.pieceSelected$ = this._appModule.mousedown$?.().pipe(
 			map(() => {
-				const intersections = this.coreComponent.getIntersections();
+				const intersections = this._coreComponent.getIntersections();
 				const piecesIntersection = intersections.find(
 					(inter) => inter.object instanceof InstancedPieceModel
 				) as Intersection<InstancedPieceModel> | undefined;
@@ -65,6 +64,10 @@ export class PiecesController {
 					"row"
 				]) as BoardCoord;
 				const lastPosition = startPosition;
+				const pieceGeometry = this._resourceComponent.getGeometryByType(
+					piece.type
+				);
+				const colorSide = piece.color;
 
 				return {
 					piecesIntersection,
@@ -73,7 +76,9 @@ export class PiecesController {
 					startPosition,
 					startSquare,
 					startCoord,
-					lastPosition
+					lastPosition,
+					pieceGeometry,
+					colorSide
 				} satisfies PieceNotificationPayload;
 			}),
 			filter<PieceNotificationPayload>(
@@ -86,13 +91,13 @@ export class PiecesController {
 
 		this.pieceMoving$ = this.pieceSelected$?.pipe(
 			switchMap((pieceSelectedPayload) =>
-				this.appModule.timer.step$().pipe(
+				this._appModule.timer.step$().pipe(
 					map(() => {
 						const payload = pieceSelectedPayload as NonNullable<
 							typeof pieceSelectedPayload
 						>;
 						const intersections =
-							this.coreComponent.getIntersections<InstancedCellModel>();
+							this._coreComponent.getIntersections<InstancedCellModel>();
 						const cellsIntersection = intersections.find(
 							(inter) => inter.object instanceof InstancedCellModel
 						);
@@ -108,7 +113,7 @@ export class PiecesController {
 							lastPosition: lastPosition ?? payload.lastPosition
 						} satisfies PieceNotificationPayload;
 					}),
-					takeUntil(this.appModule.mouseup$?.() as Observable<Event>)
+					takeUntil(this._appModule.mouseup$?.() as Observable<Event>)
 				)
 			),
 			share()
@@ -117,7 +122,7 @@ export class PiecesController {
 		this.pieceDeselected$ = merge(
 			this.pieceMoving$!.pipe(
 				switchMap((payload) =>
-					(this.appModule.mouseup$?.() as Observable<Event>).pipe(
+					(this._appModule.mouseup$?.() as Observable<Event>).pipe(
 						map(() => {
 							const { cellsIntersection } = payload;
 							const instancedCell = cellsIntersection?.object;

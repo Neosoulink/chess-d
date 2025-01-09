@@ -3,6 +3,7 @@ import { Subscription } from "rxjs";
 import { inject, singleton } from "tsyringe";
 
 import { EngineModule } from "./engine/engine.module";
+import { HandModule } from "./hands/hands.module";
 import { PiecesModule } from "./pieces/pieces.module";
 import { GameController } from "./game.controller";
 import { GameService } from "./game.service";
@@ -13,6 +14,7 @@ export class GameModule implements Module {
 
 	constructor(
 		@inject(EngineModule) public readonly engine: EngineModule,
+		@inject(HandModule) public readonly hands: HandModule,
 		@inject(PiecesModule) public readonly pieces: PiecesModule,
 		@inject(GameController) public readonly controller: GameController,
 		@inject(GameService) public readonly service: GameService
@@ -27,13 +29,15 @@ export class GameModule implements Module {
 	}
 
 	public init(): void {
-		this.engine.init();
+		this.hands.init();
 		this.pieces.init();
+		this.engine.init();
 	}
 
 	public dispose(): void {
 		this._subscriptions.forEach((subscription) => subscription?.unsubscribe());
-		this.engine.dispose();
+		this.hands.dispose();
 		this.pieces.dispose();
+		this.engine.dispose();
 	}
 }

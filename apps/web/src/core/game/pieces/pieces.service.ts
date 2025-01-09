@@ -16,7 +16,7 @@ export class PiecesService {
 
 	public reset(fen = DEFAULT_FEN) {
 		console.log("resetPieces", fen);
-		this.chessboard.pieces.component.reInitialize(fen);
+		this.chessboard.pieces.component.reInit(fen);
 	}
 
 	public handlePlayerMovedPiece(move: Move) {

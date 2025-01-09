@@ -1,5 +1,5 @@
 import { inject, singleton } from "tsyringe";
-import { AppModule, Module } from "@quick-threejs/reactive";
+import { Module } from "@quick-threejs/reactive";
 
 import { ResourceComponent } from "./resource.component";
 import { PieceType } from "@chess-d/shared";
@@ -8,8 +8,7 @@ import { BufferGeometry } from "three";
 @singleton()
 export class ResourceModule implements Module {
 	constructor(
-		@inject(AppModule) private readonly appModule: AppModule,
-		@inject(ResourceComponent) private readonly component: ResourceComponent,
+		@inject(ResourceComponent) public readonly component: ResourceComponent,
 		@inject("PIECE_GEOMETRIES")
 		private readonly _pieceGeometries: Partial<
 			Record<PieceType, BufferGeometry>

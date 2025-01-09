@@ -26,7 +26,7 @@ export class EngineController {
 				map((payload) => this._getEnginePayLoadFromPiece(payload))
 			);
 
-		this.pieceMoved$ = this.chessboard.pieces.controller.pieceMoved$$?.pipe(
+		this.pieceMoved$ = this.chessboard.pieces.controller.pieceDeselected$?.pipe(
 			map((payload) => {
 				const { endCoord, possibleCoords, possibleMoves, ...enginePayload } =
 					this._getEnginePayLoadFromPiece(payload);
