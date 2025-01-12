@@ -21,7 +21,7 @@
 		"eslint-plugin-react-refresh": "^0.4.16",
 		"gsap": "^3.12.5",
 		"react": "^18.3.1",
-		"react-dom": "^18.3.1",
+		"react-dom": "^19.0.0",
 		"react-router": "^7.0.1",
 		"rxjs": "^7.8.1",
 		"socket.io-client": "^4.8.1",
@@ -32,7 +32,7 @@
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
 		"@types/react": "^18.3.11",
-		"@types/react-dom": "^18.3.1",
+		"@types/react-dom": "^19.0.2",
 		"@types/three": "^0.171.0",
 		"@vitejs/plugin-react": "^4.3.2",
 		"autoprefixer": "^10.4.20",
