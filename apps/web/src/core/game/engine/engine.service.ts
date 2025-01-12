@@ -81,14 +81,14 @@ export class EngineService {
 			);
 
 			if (rook) {
-				const newrookCoord = {
+				const newRookCoord = {
 					...endCoord,
 					col: flags === MoveFlags.queenside_castle ? 3 : 5
 				};
 
 				this.chessboard.pieces.component.movePieceByCoord(
 					rook,
-					newrookCoord,
+					newRookCoord,
 					positionOffset
 				);
 			}

@@ -16,10 +16,9 @@ export class InstancedPieceModel<
 	Type extends PieceType = PieceType,
 	Color extends ColorSide = ColorSide
 > extends InstancedMesh {
+	public readonly pieceUpdated$$ = new Subject<MatrixPieceModel<Type, Color>>();
 	public readonly pieces: MatrixPieceModel<Type, Color>[] = [];
 	public readonly pieceUpdateSubscriptions: Subscription[] = [];
-	public readonly pieceMoved$$ = new Subject<MatrixPieceModel<Type, Color>>();
-	public readonly updated$$ = new Subject<InstancedPieceModel<Type, Color>>();
 
 	constructor(
 		public readonly piecesType: Type,
@@ -42,6 +41,8 @@ export class InstancedPieceModel<
 				instanceId
 			);
 
+			this.getMatrixAt(piece.instanceId, piece);
+
 			if (oldPiece instanceof MatrixPieceModel) {
 				piece.coord.col = oldPiece.coord.col;
 				piece.coord.row = oldPiece.coord.row;
@@ -50,22 +51,26 @@ export class InstancedPieceModel<
 			}
 
 			this.pieces.push(piece);
-			this._subscribePiece(piece);
+			this._handlePiecesSubscription(piece);
+
 			this.setMatrixAt(piece.instanceId, piece);
 			this.setColorAt(piece.instanceId, color);
+
 			this.update();
 		});
 
-		this.pieceMoved$$.subscribe(this.update.bind(this));
+		this.pieceUpdated$$.subscribe(this.update.bind(this));
 	}
 
-	private _subscribePiece(piece: MatrixPieceModel<Type, Color>): void {
+	private _handlePiecesSubscription(
+		piece: MatrixPieceModel<Type, Color>
+	): void {
 		this.pieceUpdateSubscriptions.push(
-			piece.updated$$.subscribe(this._onPieceMoved.bind(this))
+			piece.updated$$.subscribe(this._handlePieceUpdate.bind(this))
 		);
 	}
 
-	private _disposePieces() {
+	private _handlePiecesDispose() {
 		this.pieceUpdateSubscriptions.forEach((sub) => {
 			sub.unsubscribe();
 			this.pieceUpdateSubscriptions.shift();
@@ -78,7 +83,7 @@ export class InstancedPieceModel<
 		});
 	}
 
-	private _reConstruct(
+	private _handleConstruct(
 		physics: Physics,
 		pieces: InstancedPieceModel<Type, Color>["pieces"]
 	): InstancedPieceModel<Type, Color> {
@@ -101,7 +106,7 @@ export class InstancedPieceModel<
 		return instance;
 	}
 
-	private _deletePiece(instanceId: number): void {
+	private _handlePieceDelete(instanceId: number): void {
 		this.pieceUpdateSubscriptions[instanceId]?.unsubscribe();
 		this.pieceUpdateSubscriptions.splice(instanceId, 1);
 		this.pieces[instanceId]?.dispose();
@@ -110,11 +115,11 @@ export class InstancedPieceModel<
 		this.update();
 	}
 
-	private _onPieceMoved(piece: MatrixPieceModel<Type, Color>) {
+	private _handlePieceUpdate(piece: MatrixPieceModel<Type, Color>) {
 		if (this.pieces[piece.instanceId] !== piece) return;
 
 		this.setMatrixAt(piece.instanceId, piece);
-		this.pieceMoved$$.next(piece);
+		this.pieceUpdated$$.next(piece);
 	}
 
 	public getPieceByInstanceId(
@@ -129,11 +134,11 @@ export class InstancedPieceModel<
 			0
 		) as PhysicsProperties[];
 
-		physicsProperties.forEach((physicsProps, instanceId) => {
+		physicsProperties.forEach((props, instanceId) => {
 			const piece = this.getPieceByInstanceId(instanceId);
 
-			if (piece instanceof MatrixPieceModel && typeof physicsProps === "object")
-				piece.physics = physicsProps;
+			if (piece instanceof MatrixPieceModel && props?.collider)
+				piece.physics = props;
 		});
 	}
 
@@ -189,7 +194,7 @@ export class InstancedPieceModel<
 
 		this.pieces.push(piece);
 
-		return this._reConstruct(physics, this.pieces);
+		return this._handleConstruct(physics, this.pieces);
 	}
 
 	public dropPiece(
@@ -198,9 +203,9 @@ export class InstancedPieceModel<
 	): InstancedPieceModel<Type, Color> | undefined {
 		if (!this.pieces[instanceId] || !physics) return undefined;
 
-		this._deletePiece(instanceId);
+		this._handlePieceDelete(instanceId);
 
-		return this._reConstruct(physics, this.pieces);
+		return this._handleConstruct(physics, this.pieces);
 	}
 
 	public update(): void {
@@ -208,20 +213,20 @@ export class InstancedPieceModel<
 		this.instanceMatrix.needsUpdate = true;
 
 		this.geometry.computeBoundingBox();
+		this.geometry.computeBoundingSphere();
 		this.computeBoundingBox();
+		this.computeBoundingSphere();
 
-		Object.keys(this.pieces).forEach((id) => {
-			this.getMatrixAt(parseInt(id), this.pieces[id]);
+		Object.values(this.pieces).forEach((piece) => {
+			this.setMatrixAt(piece.instanceId, piece);
 		});
-
-		this.updated$$.next(this);
 	}
 
 	public dispose(physics?: Physics): this {
 		physics?.removeFromWorld(this);
-		this._disposePieces();
+		this._handlePiecesDispose();
 		this.removeFromParent();
-		this.updated$$.complete();
+		this.pieceUpdated$$.complete();
 		super.dispose();
 
 		return this;

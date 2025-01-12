@@ -23,7 +23,6 @@ import {
 import { BoardComponent } from "../board/board.component";
 import { ResourceComponent } from "../resource/resource.component";
 import { WorldComponent } from "../world/world.component";
-import { RigidBodyType } from "@dimforge/rapier3d-compat";
 
 @singleton()
 export class PiecesComponent {

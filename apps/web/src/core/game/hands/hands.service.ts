@@ -1,3 +1,4 @@
+import { CoreModule as Chessboard } from "@chess-d/chessboard";
 import { ColorSide, type ObservablePayload } from "@chess-d/shared";
 import { AppModule } from "@quick-threejs/reactive";
 import { deserializeObject3D, serializeObject3D } from "@quick-threejs/utils";
@@ -7,15 +8,17 @@ import {
 	AnimationMixer,
 	Group,
 	SkinnedMesh,
-	Vector3
+	Vector3,
+	Vector3Like
 } from "three";
 import type { GLTF } from "three/examples/jsm/Addons.js";
 import { inject, singleton } from "tsyringe";
-
-import type { HandController } from "./hands.controller";
+import { PiecesController } from "../pieces/pieces.controller";
 
 @singleton()
 export class HandService {
+	static readonly INITIAL_HAND_POSITION: Vector3Like = { x: 0, y: 3, z: 6 };
+
 	public readonly gltf?: GLTF;
 	public readonly hands = {} as Record<
 		ColorSide,
@@ -62,7 +65,9 @@ export class HandService {
 			this.hands[ColorSide.black].scene.rotation.x = Math.PI / 2;
 			this.hands[ColorSide.black].scene.rotation.y = Math.PI;
 			this.hands[ColorSide.black].scene.scale.setScalar(groupScalar);
-			this.hands[ColorSide.black].scene.position.copy(groupPosition);
+			this.hands[ColorSide.black].scene.position.copy(
+				HandService.INITIAL_HAND_POSITION
+			);
 
 			this.app.world.scene().add(this.hands[ColorSide.black].scene);
 		})();
@@ -86,7 +91,9 @@ export class HandService {
 			this.hands[ColorSide.white].scene.rotation.y = Math.PI;
 			this.hands[ColorSide.white].scene.rotation.z = Math.PI;
 			this.hands[ColorSide.white].scene.scale.setScalar(groupScalar);
-			this.hands[ColorSide.white].scene.position.copy(groupPosition);
+			this.hands[ColorSide.white].scene.position.copy(
+				HandService.INITIAL_HAND_POSITION
+			);
 			this.hands[ColorSide.white].scene.position.z *= -1;
 
 			this.app.world.scene().add(this.hands[ColorSide.white].scene);
@@ -94,7 +101,9 @@ export class HandService {
 	}
 
 	public handlePieceSelected(
-		payload: ObservablePayload<HandController["pieceSelected$"]>
+		payload: ObservablePayload<
+			Chessboard["pieces"]["controller"]["pieceMoving$"]
+		>
 	) {
 		const mesh = this.hands[payload.colorSide].scene.children[0]?.children[0];
 		const params = {
@@ -168,15 +177,22 @@ export class HandService {
 		pinky3.rotation.x = params.pinky;
 	}
 
+	public setHandPosition(colorSide: ColorSide, position: Vector3Like) {
+		this.hands[colorSide]?.scene.position.copy(position);
+	}
+
 	public handlePieceMoving(
-		payload: ObservablePayload<HandController["pieceMoving$"]>
+		payload: ObservablePayload<
+			Chessboard["pieces"]["controller"]["pieceMoving$"]
+		>
 	) {
 		const position = payload.cellsIntersection?.point || payload.lastPosition;
 		const pieceHeight = payload.pieceGeometry.boundingBox
-			? payload.pieceGeometry.boundingBox.getSize(new Vector3()).y
+			? payload.pieceGeometry.boundingBox.max.y -
+				payload.pieceGeometry.boundingBox.min.y
 			: 2;
 
-		this.hands[payload.colorSide]?.scene.position.copy({
+		this.setHandPosition(payload.colorSide, {
 			x: position?.x || 0,
 			y: pieceHeight + 0.8,
 			z:
@@ -185,13 +201,30 @@ export class HandService {
 		});
 	}
 
-	public handlePieceDeselected(
-		payload: ObservablePayload<HandController["pieceDeselected$"]>
+	public handleAnimatedPlayerMovedPiece(
+		payload: ObservablePayload<PiecesController["animatedPlayerMovedPiece$"]>
 	) {
-		const position = payload.initialHandPosition;
+		const { piece, position, pieceHeight } = payload;
 
-		this.hands[payload.colorSide]?.animation.action?.play();
-		this.hands[payload.colorSide]?.scene.position.copy(position);
+		const zOffset = 1.7;
+		this.setHandPosition(piece.color, {
+			...position,
+			y: pieceHeight + 0.8,
+			z: position.z + (piece.color === ColorSide.white ? -zOffset : zOffset)
+		});
+	}
+
+	public handlePieceDeselected(
+		payload: ObservablePayload<
+			Chessboard["pieces"]["controller"]["pieceDeselected$"]
+		>
+	) {
+		const hand = this.hands[payload.colorSide];
+		if (!hand) return;
+
+		hand.animation.action?.play();
+		hand.scene.position.copy(HandService.INITIAL_HAND_POSITION);
+		if (payload.colorSide === ColorSide.white) hand.scene.position.z *= -1;
 	}
 
 	update(delta: number) {

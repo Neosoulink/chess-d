@@ -386,7 +386,12 @@ export class Physics {
 				}
 
 				object.instanceMatrix.needsUpdate = true;
+				object.geometry.computeBoundingBox();
+				object.geometry.computeBoundingSphere();
+				object.computeBoundingBox();
 				object.computeBoundingSphere();
+
+				continue;
 			}
 
 			const props = this.physical3DObjectsMap.get(object);
