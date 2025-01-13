@@ -16,15 +16,15 @@
 	"types": "./dist/main.d.ts",
 	"dependencies": {
 		"@dimforge/rapier3d-compat": "^0.14.0",
-		"three": "^0.171.0"
+		"three": "^0.172.0"
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
-		"@types/three": "^0.171.0",
+		"@types/three": "^0.172.0",
 		"typescript": "^5.5.3"
 	},
 	"peerDependencies": {
 		"@dimforge/rapier3d-compat": "^0.14.0",
-		"three": "^0.171.0"
+		"three": "^0.172.0"
 	}
 }
