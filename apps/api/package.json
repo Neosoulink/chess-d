@@ -27,7 +27,7 @@
 		"reflect-metadata": "^0.2.0",
 		"rxjs": "^7.8.1",
 		"socket.io": "^4.8.1",
-		"ts-morph": "^24.0.0"
+		"ts-morph": "^25.0.0"
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
