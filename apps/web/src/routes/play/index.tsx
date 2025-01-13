@@ -53,8 +53,10 @@ export const PlayRoute: FC = () => {
 		register({
 			location: workerLocation,
 			enableDebug: !!import.meta.env?.DEV,
+			enableControls: true,
 			axesSizes: 5,
 			gridSizes: 10,
+			withCameraHelper: true,
 			withMiniCamera: true,
 			loaderDataSources: [
 				{

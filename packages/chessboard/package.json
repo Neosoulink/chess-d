@@ -18,17 +18,17 @@
 		"@chess-d/rapier-physics": "workspace:*",
 		"@chess-d/shared": "workspace:*",
 		"@dimforge/rapier3d-compat": "^0.14.0",
-		"@quick-threejs/reactive": "^0.1.28",
+		"@quick-threejs/reactive": "^0.1.29",
 		"@quick-threejs/utils": "^0.1.16",
 		"chess.js": "1.0.0-beta.8",
 		"rxjs": "^7.8.1",
 		"threads": "^1.7.0",
-		"three": "^0.171.0",
+		"three": "^0.172.0",
 		"typescript-ioc": "^3.2.2"
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
-		"@types/three": "^0.171.0",
+		"@types/three": "^0.172.0",
 		"reflect-metadata": "^0.2.0",
 		"tsyringe": "^4.8.0",
 		"typescript": "^5.5.3"

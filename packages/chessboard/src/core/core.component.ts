@@ -14,6 +14,4 @@ export class CoreComponent {
 	>() {
 		return this.raycaster.intersectObjects<T>([this.appModule.world.scene()]);
 	}
-
-	public dispose() {}
 }

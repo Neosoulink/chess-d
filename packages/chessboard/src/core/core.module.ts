@@ -8,12 +8,11 @@ import { WorldModule } from "./world/world.module";
 import { BoardModule } from "./board/board.module";
 import { PiecesModule } from "./pieces/pieces.module";
 import { DebugModule } from "./debug/debug.module";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 @singleton()
 export class CoreModule implements Module {
 	constructor(
-		@inject(AppModule) private readonly app: AppModule,
+		@inject(AppModule) private readonly _app: AppModule,
 		@inject(Physics) public readonly physics: Physics,
 		@inject(CoreComponent) public readonly component: CoreComponent,
 		@inject(ResourceModule) public readonly resource: ResourceModule,
@@ -26,33 +25,21 @@ export class CoreModule implements Module {
 	}
 
 	public init() {
-		this.app.camera.instance()?.position.set(0, 5, 5);
-		this.app.camera.miniCamera()?.position.set(6, 2, 0);
-
-		const orbitControls: OrbitControls = this.app.debug.cameraControls();
-		const miniOrbitControls: OrbitControls =
-			this.app.debug.miniCameraControls();
-
-		orbitControls.enableRotate = false;
-		orbitControls.enableZoom = false;
-		orbitControls.enablePan = false;
-		miniOrbitControls.enableRotate = false;
-
 		this.resource.init();
 		this.world.init();
 		this.board.init();
 		this.pieces.init();
 		this.debug.init();
 
-		this.app.timer.step$().subscribe(() => {
-			const camera = this.app.camera.instance();
+		this._app.timer.step$().subscribe(() => {
+			const camera = this._app.camera.instance();
 			this.physics.step();
 
 			if (camera)
 				this.component.raycaster.setFromCamera(this.component.cursor, camera);
 		});
 
-		this.app.mousemove$?.().subscribe(
+		this._app.mousemove$?.().subscribe(
 			(
 				message: MouseEvent & {
 					width: number;
@@ -72,7 +59,6 @@ export class CoreModule implements Module {
 		this.world.dispose();
 		this.board.dispose();
 		this.pieces.dispose();
-		this.app.dispose();
 		this.debug.dispose();
 	}
 }
