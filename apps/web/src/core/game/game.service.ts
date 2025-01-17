@@ -1,11 +1,14 @@
 import { DEFAULT_FEN } from "@chess-d/shared";
 import { Chess } from "chess.js";
+import { Vector2Like } from "three";
 import { inject, singleton } from "tsyringe";
 
 import { PiecesService } from "./pieces/pieces.service";
 
 @singleton()
 export class GameService {
+	public cursor: Vector2Like = { x: 0, y: 0 };
+
 	constructor(
 		@inject(Chess) private readonly chess: Chess,
 		@inject(PiecesService) private readonly pieces: PiecesService

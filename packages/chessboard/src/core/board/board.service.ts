@@ -7,8 +7,8 @@ import {
 	BoardCoord,
 	ColorSide
 } from "@chess-d/shared";
-import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
-import { Physics } from "@chess-d/rapier-physics";
+import { PhysicsProperties } from "@chess-d/rapier/dist/types";
+import { Physics } from "@chess-d/rapier";
 
 import {
 	InstancedCellModel,
@@ -21,7 +21,7 @@ import {
 } from "../../shared";
 
 @singleton()
-export class BoardComponent {
+export class BoardService {
 	public readonly instancedCell = new InstancedCellModel();
 	public markersGroup = new CellsMakerGroupModel(this.instancedCell);
 	public physics!: PhysicsProperties;
@@ -78,7 +78,7 @@ export class BoardComponent {
 	}
 
 	public initPhysics() {
-		this.instancedCell.name = BoardComponent.name;
+		this.instancedCell.name = BoardService.name;
 
 		this.instancedCell.userData = {
 			...this.instancedCell.userData,

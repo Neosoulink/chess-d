@@ -1,4 +1,5 @@
 import type Rapier from "@dimforge/rapier3d-compat";
+import { RigidBody, RigidBodyType } from "@dimforge/rapier3d-compat";
 
 import {
 	Box3,
@@ -12,7 +13,6 @@ import {
 	Vector3
 } from "three";
 import { Object3DWithGeometry, PhysicsProperties } from "./types";
-import { RigidBody, RigidBodyType } from "@dimforge/rapier3d-compat";
 
 let RAPIER: typeof Rapier | null | undefined = null;
 

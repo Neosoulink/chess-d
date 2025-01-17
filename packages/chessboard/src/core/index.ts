@@ -1,2 +1,2 @@
-export * from "./core.module";
-export * from "./core.util";
+export * from "./chessboard.module";
+export * from "./chessboard.util";

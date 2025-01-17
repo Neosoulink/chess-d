@@ -1,4 +1,4 @@
-import { PhysicsProperties } from "@chess-d/rapier-physics";
+import { PhysicsProperties } from "@chess-d/rapier";
 import { BoardCoord, ColorSide, PieceType } from "@chess-d/shared";
 import { Subject } from "rxjs";
 import {

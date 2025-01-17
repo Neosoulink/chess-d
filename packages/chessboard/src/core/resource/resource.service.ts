@@ -1,9 +1,9 @@
 import { singleton } from "tsyringe";
-import { BoxGeometry, BufferGeometry, Mesh } from "three";
+import { BoxGeometry, BufferGeometry } from "three";
 import { PieceType } from "@chess-d/shared";
 
 @singleton()
-export class ResourceComponent {
+export class ResourceService {
 	private readonly pieceGeometries: Record<PieceType, BufferGeometry> = {
 		p: new BoxGeometry(0.2, 1, 0.2),
 		r: new BoxGeometry(0.5, 1, 0.5),

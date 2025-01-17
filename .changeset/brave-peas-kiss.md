@@ -1,5 +1,5 @@
 ---
-"@chess-d/rapier-physics": patch
+"@chess-d/rapier": patch
 ---
 
 # Logs

@@ -1,0 +1,1 @@
+export const CAMERA_TOKEN = "RAYCASTER_CAMERA";

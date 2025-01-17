@@ -1,36 +1,32 @@
-import { inject, singleton } from "tsyringe";
 import { BufferAttribute } from "three";
-import { AppModule, Module } from "@quick-threejs/reactive";
+import { inject, singleton } from "tsyringe";
 
-import { DebugComponent } from "./debug.component";
+import { DebugService } from "./debug.service";
 import { DebugController } from "./debug.controller";
+import { DEBUG_MODE_TOKEN } from "../../shared";
+import { WorldService } from "../world/world.service";
 
 @singleton()
-export class DebugModule implements Module {
+export class DebugModule {
 	constructor(
-		@inject(DebugComponent) private readonly component: DebugComponent,
-		@inject(DebugController) private readonly controller: DebugController,
-		@inject(AppModule) private readonly appModule: AppModule
-	) {
-		self.addEventListener("message", this._onMessage.bind(this));
-	}
-
-	private _onMessage(e: MessageEvent): void {
-		if ((e.data?.type as string)?.startsWith("gui_"))
-			this.controller.gui$$.next(e.data);
-	}
+		@inject(DEBUG_MODE_TOKEN) private readonly _debugMode: boolean,
+		@inject(WorldService) private readonly _worldService: WorldService,
+		@inject(DebugService) private readonly _service: DebugService,
+		@inject(DebugController) private readonly _controller: DebugController
+	) {}
 
 	public init(): void {
-		if (this.appModule.debug.enabled())
-			this.appModule.world.scene().add(this.component.lines);
+		this._service.enabled = !!this._debugMode;
+		if (this._service.enabled)
+			this._worldService.scene.add(this._service.lines);
 
-		this.controller.physicsDebugRendered$.subscribe({
+		this._controller.physicsDebugRendered$.subscribe({
 			next: (buffers) => {
-				this.component.lines.geometry.setAttribute(
+				this._service.lines.geometry.setAttribute(
 					"position",
 					new BufferAttribute(buffers.vertices, 3)
 				);
-				this.component.lines.geometry.setAttribute(
+				this._service.lines.geometry.setAttribute(
 					"color",
 					new BufferAttribute(buffers.colors, 4)
 				);
@@ -38,7 +34,5 @@ export class DebugModule implements Module {
 		});
 	}
 
-	public dispose(): void {
-		self.removeEventListener("message", this._onMessage.bind(this));
-	}
+	public dispose(): void {}
 }

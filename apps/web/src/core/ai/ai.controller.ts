@@ -1,7 +1,6 @@
 import { singleton } from "tsyringe";
 import { filter, fromEvent, Subject } from "rxjs";
 import type { Move } from "chess.js";
-import type { RegisterLifecycleState } from "@quick-threejs/reactive";
 
 import { AI_WILL_PERFORM_MOVE_TOKEN } from "../../shared/tokens";
 import type { MessageEventPayload } from "../../shared/types";
@@ -9,7 +8,6 @@ import { SupportedAiModel } from "@chess-d/ai";
 
 @singleton()
 export class AiController {
-	public readonly lifecycle$$ = new Subject<RegisterLifecycleState>();
 	public readonly movePerformed$$ = new Subject<
 		MessageEventPayload<{ move: Move }>
 	>();

@@ -1,5 +1,5 @@
 import {
-	CoreModule as Chessboard,
+	ChessboardModule,
 	InstancedPieceModel,
 	MatrixPieceModel
 } from "@chess-d/chessboard";
@@ -13,15 +13,7 @@ import {
 import { Move } from "chess.js";
 import { gsap } from "gsap";
 import { Vector3Like } from "three";
-import {
-	filter,
-	fromEvent,
-	map,
-	Observable,
-	share,
-	Subject,
-	switchMap
-} from "rxjs";
+import { filter, fromEvent, map, Observable, share, switchMap } from "rxjs";
 import { inject, singleton } from "tsyringe";
 
 import { MessageEventPayload } from "../../../shared/types";
@@ -47,17 +39,19 @@ export class PiecesController {
 		end?: boolean;
 	}>;
 
-	constructor(@inject(Chessboard) private readonly _chessboard: Chessboard) {
+	constructor(
+		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule
+	) {
 		this.animatedPlayerMovedPiece$ = this.playerMovedPiece$?.pipe(
 			map((move) => {
-				const piece = this._chessboard.pieces.component.getPieceByCoord(
+				const piece = this._chessboard.pieces.getPieceByCoord(
 					move.piece as PieceType,
 					move.color as ColorSide,
 					squareToCoord(move.from)
 				)!;
-				const piecesGroup = this._chessboard.pieces.component.groups[
-					piece.color
-				][piece.type] as InstancedPieceModel;
+				const piecesGroup = this._chessboard.pieces.getGroups()[piece.color][
+					piece.type
+				] as InstancedPieceModel;
 				const pieceHeight =
 					(piecesGroup.geometry.boundingBox?.max.y || 0) -
 						(piecesGroup.geometry.boundingBox?.min.y || 0) || 0.5;
@@ -70,10 +64,9 @@ export class PiecesController {
 					new Observable<
 						ObservablePayload<PiecesController["animatedPlayerMovedPiece$"]>
 					>((subscriber) => {
-						const cell =
-							this._chessboard.board.component.instancedCell.getCellByCoord(
-								squareToCoord(move.to)
-							)!;
+						const cell = this._chessboard.board
+							.getInstancedCell()
+							.getCellByCoord(squareToCoord(move.to))!;
 						const payload: ObservablePayload<
 							PiecesController["animatedPlayerMovedPiece$"]
 						> = {

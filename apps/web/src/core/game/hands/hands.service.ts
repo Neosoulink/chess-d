@@ -1,4 +1,4 @@
-import { CoreModule as Chessboard } from "@chess-d/chessboard";
+import { ChessboardModule } from "@chess-d/chessboard";
 import { ColorSide, type ObservablePayload } from "@chess-d/shared";
 import { AppModule } from "@quick-threejs/reactive";
 import { deserializeObject3D, serializeObject3D } from "@quick-threejs/utils";
@@ -102,7 +102,7 @@ export class HandService {
 
 	public handlePieceSelected(
 		payload: ObservablePayload<
-			Chessboard["pieces"]["controller"]["pieceMoving$"]
+			ReturnType<ChessboardModule["pieces"]["getPieceMoving$"]>
 		>
 	) {
 		const mesh = this.hands[payload.colorSide].scene.children[0]?.children[0];
@@ -183,7 +183,7 @@ export class HandService {
 
 	public handlePieceMoving(
 		payload: ObservablePayload<
-			Chessboard["pieces"]["controller"]["pieceMoving$"]
+			ReturnType<ChessboardModule["pieces"]["getPieceMoving$"]>
 		>
 	) {
 		const position = payload.cellsIntersection?.point || payload.lastPosition;
@@ -216,7 +216,7 @@ export class HandService {
 
 	public handlePieceDeselected(
 		payload: ObservablePayload<
-			Chessboard["pieces"]["controller"]["pieceDeselected$"]
+			ReturnType<ChessboardModule["pieces"]["getPieceDeselected$"]>
 		>
 	) {
 		const hand = this.hands[payload.colorSide];

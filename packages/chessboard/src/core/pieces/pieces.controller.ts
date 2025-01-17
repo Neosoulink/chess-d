@@ -1,6 +1,9 @@
+import { copyProperties } from "@quick-threejs/utils";
+import { BoardCoord, coordToSquare } from "@chess-d/shared";
 import { inject, singleton } from "tsyringe";
 import {
 	filter,
+	fromEvent,
 	map,
 	merge,
 	Observable,
@@ -11,34 +14,39 @@ import {
 	takeUntil
 } from "rxjs";
 import { Intersection, Vector3, Vector3Like } from "three";
-import { AppModule } from "@quick-threejs/reactive";
-import { copyProperties } from "@quick-threejs/utils";
-import { BoardCoord, coordToSquare } from "@chess-d/shared";
 
 import {
 	InstancedCellModel,
 	MatrixPieceModel,
 	InstancedPieceModel,
-	PieceNotificationPayload
+	PieceNotificationPayload,
+	MOUSE_DOWN_OBSERVABLE_TOKEN,
+	MOUSE_UP_OBSERVABLE_TOKEN
 } from "../../shared";
-import { CoreComponent } from "../core.component";
-import { ResourceComponent } from "../resource/resource.component";
+import { ChessboardService } from "../chessboard.service";
+import { ResourceService } from "../resource/resource.service";
+import { ChessboardController } from "../chessboard.controller";
 
 @singleton()
 export class PiecesController {
 	public readonly pieceDeselected$$ = new Subject<PieceNotificationPayload>();
-
 	public readonly pieceSelected$?: Observable<PieceNotificationPayload>;
 	public readonly pieceMoving$?: Observable<PieceNotificationPayload>;
 	public readonly pieceDeselected$?: Observable<PieceNotificationPayload>;
 
 	constructor(
-		@inject(CoreComponent) private readonly _coreComponent: CoreComponent,
-		@inject(ResourceComponent)
-		private readonly _resourceComponent: ResourceComponent,
-		@inject(AppModule) private readonly _appModule: AppModule
+		@inject(MOUSE_DOWN_OBSERVABLE_TOKEN)
+		private readonly _mousedown$: Observable<MouseEvent>,
+		@inject(MOUSE_UP_OBSERVABLE_TOKEN)
+		private readonly _mouseup$: Observable<MouseEvent>,
+		@inject(ChessboardController)
+		private readonly _chessboardController: ChessboardController,
+		@inject(ChessboardService)
+		private readonly _coreComponent: ChessboardService,
+		@inject(ResourceService)
+		private readonly _resourceService: ResourceService
 	) {
-		this.pieceSelected$ = this._appModule.mousedown$?.().pipe(
+		this.pieceSelected$ = this._mousedown$.pipe(
 			map(() => {
 				const intersections = this._coreComponent.getIntersections();
 				const piecesIntersection = intersections.find(
@@ -64,7 +72,7 @@ export class PiecesController {
 					"row"
 				]) as BoardCoord;
 				const lastPosition = startPosition;
-				const pieceGeometry = this._resourceComponent.getGeometryByType(
+				const pieceGeometry = this._resourceService.getGeometryByType(
 					piece.type
 				);
 				const colorSide = piece.color;
@@ -91,7 +99,7 @@ export class PiecesController {
 
 		this.pieceMoving$ = this.pieceSelected$?.pipe(
 			switchMap((pieceSelectedPayload) =>
-				this._appModule.timer.step$().pipe(
+				this._chessboardController.update$$.pipe(
 					map(() => {
 						const payload = pieceSelectedPayload as NonNullable<
 							typeof pieceSelectedPayload
@@ -113,7 +121,7 @@ export class PiecesController {
 							lastPosition: lastPosition ?? payload.lastPosition
 						} satisfies PieceNotificationPayload;
 					}),
-					takeUntil(this._appModule.mouseup$?.() as Observable<Event>)
+					takeUntil(this._mouseup$)
 				)
 			),
 			share()
@@ -122,7 +130,7 @@ export class PiecesController {
 		this.pieceDeselected$ = merge(
 			this.pieceMoving$!.pipe(
 				switchMap((payload) =>
-					(this._appModule.mouseup$?.() as Observable<Event>).pipe(
+					this._mouseup$.pipe(
 						map(() => {
 							const { cellsIntersection } = payload;
 							const instancedCell = cellsIntersection?.object;

@@ -1,10 +1,10 @@
-import { inject, singleton } from "tsyringe";
+import { WorkerThreadModule } from "@quick-threejs/utils";
 import { Module } from "@quick-threejs/reactive";
+import { inject, singleton } from "tsyringe";
+import { Subscription } from "rxjs";
 
 import { AiController } from "./ai.controller";
 import { AiService } from "./ai.service";
-import { Subscription } from "rxjs";
-import { WorkerThreadModule } from "@quick-threejs/utils";
 import { AI_PERFORMED_MOVE_TOKEN } from "../../shared/tokens";
 
 @singleton()
@@ -37,9 +37,5 @@ export class AiModule implements Module, WorkerThreadModule {
 	dispose(): void {
 		this._subscriptions.forEach((subscription) => subscription?.unsubscribe());
 		this._subscriptions = [];
-	}
-
-	lifecycle$() {
-		return this.controller.lifecycle$$;
 	}
 }

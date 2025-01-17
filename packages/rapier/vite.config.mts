@@ -10,7 +10,7 @@ export default defineConfig({
 			fileName: "main"
 		},
 		rollupOptions: {
-			external: ["three", "@dimforge/rapier3d-compat"],
+			external: ["three"],
 			output: {
 				globals: {
 					three: "THREE",

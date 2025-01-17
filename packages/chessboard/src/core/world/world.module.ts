@@ -1,17 +1,15 @@
 import { inject, singleton } from "tsyringe";
-import { AppModule, Module } from "@quick-threejs/reactive";
 
-import { WorldComponent } from "./world.component";
+import { WorldService } from "./world.service";
 
 @singleton()
-export class WorldModule implements Module {
-	constructor(
-		@inject(AppModule) private readonly appModule: AppModule,
-		@inject(WorldComponent) private readonly component: WorldComponent
-	) {}
+export class WorldModule {
+	constructor(@inject(WorldService) private readonly _service: WorldService) {}
 
-	public init() {
-		this.component.init(this.appModule.world.scene());
+	public init() {}
+
+	public getScene() {
+		return this._service.scene;
 	}
 
 	public dispose() {}

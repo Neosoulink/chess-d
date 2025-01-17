@@ -1,5 +1,5 @@
 ---
-"@chess-d/rapier-physics": patch
+"@chess-d/rapier": patch
 "@chess-d/chessboard": patch
 "web": patch
 ---
@@ -8,6 +8,6 @@
 
 ## refactor: handle hands + pieces moves
 
-- Compute bounding box on step (`@chess-d/rapier-physics`)
+- Compute bounding box on step (`@chess-d/rapier`)
 - Correct `@chess-d/chessboard` listen to piece transformations
 - Implement hand moves follow pieces logic

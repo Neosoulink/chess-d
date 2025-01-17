@@ -4,12 +4,20 @@ import { AppModule } from "@quick-threejs/reactive";
 import { launchApp } from "@quick-threejs/reactive/worker";
 import { isObject } from "@quick-threejs/utils";
 import {
-	CoreModule as ChessboardModule,
+	ChessboardModule,
 	setup as setupChessboard
 } from "@chess-d/chessboard";
 import { PieceType } from "@chess-d/shared";
 import { Chess } from "chess.js";
-import { BufferGeometry, Mesh, Object3D } from "three";
+import {
+	BufferGeometry,
+	Camera,
+	CanvasTexture,
+	Mesh,
+	MeshBasicMaterial,
+	Object3D,
+	TorusGeometry
+} from "three";
 import { GLTF } from "three/examples/jsm/Addons.js";
 import { container } from "tsyringe";
 
@@ -18,8 +26,8 @@ import { GameModule } from "./game.module";
 launchApp({
 	onReady: async (app) => {
 		const { module: appModule } = app;
-		appModule.loader.getLoadCompleted$().subscribe(async () => {
-			const loadedResources = appModule.loader.getLoadedResources();
+		appModule.loader.getLoadCompleted$().subscribe(async (payload) => {
+			const loadedResources = payload.loadedResources;
 			const chessboardPieces: Partial<Record<PieceType, BufferGeometry>> = {};
 
 			const pawnGeometry = (
@@ -58,15 +66,32 @@ launchApp({
 			if (kingGeometry instanceof BufferGeometry)
 				chessboardPieces.k = kingGeometry;
 
-			const { module: chessboardModule } = await setupChessboard(
-				appModule,
-				undefined,
-				chessboardPieces
-			);
+			const { module: chessboardModule } = await setupChessboard({
+				camera: appModule.camera.instance() as Camera,
+				piecesGeometries: chessboardPieces,
+				observables: {
+					mousedown$: appModule.mousedown$?.(),
+					mouseup$: appModule.mouseup$?.()
+				},
+				enableDebug: appModule.debug.enabled()
+			});
+			const chessboardScene = chessboardModule.world.getScene();
+			if (chessboardScene instanceof Object3D)
+				appModule.world.scene().add(chessboardScene);
 
 			const chessboardWrapper = loadedResources["chessboardWrapper"] as GLTF;
 			if (chessboardWrapper?.scene instanceof Object3D) {
+				const texture =
+					loadedResources["woodTexture"] &&
+					new CanvasTexture(loadedResources["woodTexture"] as ImageBitmap);
 				chessboardWrapper.scene.scale.set(10, 10, 10);
+				const material = new MeshBasicMaterial({
+					color: 0x999999,
+					lightMap: texture
+				});
+
+				(chessboardWrapper.scene.children[0] as Mesh).material = material;
+
 				appModule.world.scene().add(chessboardWrapper.scene);
 			}
 

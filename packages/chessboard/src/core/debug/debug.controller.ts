@@ -1,24 +1,24 @@
 import { inject, singleton } from "tsyringe";
-import { filter, map, Observable, share, Subject } from "rxjs";
-import { AppModule } from "@quick-threejs/reactive";
-import { Physics } from "@chess-d/rapier-physics";
+import { filter, map, Observable, share } from "rxjs";
+import { Physics } from "@chess-d/rapier";
 
-import { DebugComponent } from "./debug.component";
+import { DebugService } from "./debug.service";
+import { ChessboardController } from "../chessboard.controller";
 
 @singleton()
 export class DebugController {
-	public readonly gui$$ = new Subject<any>();
 	public readonly physicsDebugRendered$: Observable<
 		InstanceType<Physics["rapier"]["DebugRenderBuffers"]>
 	>;
 
 	constructor(
-		@inject(AppModule) private readonly appModule: AppModule,
-		@inject(DebugComponent) private readonly component: DebugComponent,
+		@inject(DebugService) private readonly _service: DebugService,
+		@inject(ChessboardController)
+		private readonly _chessboardController: ChessboardController,
 		@inject(Physics) private readonly _physics: Physics
 	) {
-		this.physicsDebugRendered$ = this.appModule.timer.step$().pipe(
-			filter(() => !!this.appModule?.debug?.enabled),
+		this.physicsDebugRendered$ = this._chessboardController.update$$.pipe(
+			filter(() => !!this._service?.enabled),
 			map(() => this._physics.world.debugRender()),
 			share()
 		);

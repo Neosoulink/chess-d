@@ -1,5 +1,5 @@
 import { AppModule, Module } from "@quick-threejs/reactive";
-import { CoreModule as Chessboard } from "@chess-d/chessboard";
+import { ChessboardModule } from "@chess-d/chessboard";
 import { inject, singleton } from "tsyringe";
 import { Subscription } from "rxjs";
 
@@ -10,7 +10,7 @@ export class HandModule implements Module {
 	private readonly _subscriptions: (Subscription | undefined)[] = [];
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
-		@inject(Chessboard) private readonly _chessboard: Chessboard,
+		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
 		@inject(HandService) private readonly _service: HandService,
 		@inject(PiecesController)
 		private readonly _piecesController: PiecesController
@@ -19,18 +19,18 @@ export class HandModule implements Module {
 			this._app.timer.step$().subscribe(({ deltaTime }) => {
 				this._service.update(deltaTime);
 			}),
-			this._chessboard.pieces.controller.pieceSelected$?.subscribe(
-				this._service.handlePieceSelected.bind(this._service)
-			),
-			this._chessboard.pieces.controller.pieceMoving$?.subscribe(
-				this._service.handlePieceMoving.bind(this._service)
-			),
+			this._chessboard.pieces
+				.getPieceSelected$()
+				?.subscribe(this._service.handlePieceSelected.bind(this._service)),
+			this._chessboard.pieces
+				.getPieceMoving$()
+				?.subscribe(this._service.handlePieceMoving.bind(this._service)),
 			this._piecesController.animatedPlayerMovedPiece$?.subscribe(
 				this._service.handleAnimatedPlayerMovedPiece.bind(this._service)
 			),
-			this._chessboard.pieces.controller.pieceDeselected$?.subscribe(
-				this._service.handlePieceDeselected.bind(this._service)
-			)
+			this._chessboard.pieces
+				.getPieceDeselected$()
+				?.subscribe(this._service.handlePieceDeselected.bind(this._service))
 		);
 	}
 

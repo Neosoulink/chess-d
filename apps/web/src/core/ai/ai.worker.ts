@@ -15,13 +15,11 @@ container.register(Chess, { useValue: game });
 
 const aiModule = container.resolve(AiModule);
 aiModule.init();
-aiModule.lifecycle$().subscribe({ complete: () => container.dispose() });
 
 const exposedAiModule = {
 	movePerformed$: aiModule.controller.movePerformed$$.pipe.bind(
 		aiModule.controller.movePerformed$$
-	),
-	lifecycle$: aiModule.lifecycle$.bind(aiModule)
+	)
 };
 
 expose(exposedAiModule satisfies ExposedAppModule);

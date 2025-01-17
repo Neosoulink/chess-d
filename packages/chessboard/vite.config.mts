@@ -11,21 +11,16 @@ export default defineConfig({
 		},
 		rollupOptions: {
 			external: [
-				"@chess-d/rapier-physics",
 				"@chess-d/shared",
-				"@quick-threejs/reactive",
 				"@quick-threejs/utils",
 				"chess.js",
-				"rxjs",
 				"threads",
 				"three",
-				"typescript-ioc",
-				"tsyringe",
 				"@dimforge/rapier3d-compat"
 			],
 			output: {
 				globals: {
-					"@chess-d/rapier-physics": "ChessDRapierPhysics",
+					"@chess-d/rapier": "ChessDRapierPhysics",
 					"@chess-d/shared": "ChessDShared",
 					"@quick-threejs/reactive": "QuickThreeReactive",
 					"@quick-threejs/utils": "QuickThreeUtils",

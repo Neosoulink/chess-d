@@ -2,7 +2,7 @@ import { inject, singleton } from "tsyringe";
 import { map, Observable } from "rxjs";
 import { Chess } from "chess.js";
 import {
-	CoreModule as ChessboardModule,
+	ChessboardModule,
 	PieceNotificationPayload
 } from "@chess-d/chessboard";
 import { coordToSquare, squareToCoord } from "@chess-d/shared";
@@ -21,12 +21,11 @@ export class EngineController {
 		@inject(Chess) private readonly game: Chess,
 		@inject(ChessboardModule) private readonly chessboard: ChessboardModule
 	) {
-		this.pieceSelected$ =
-			this.chessboard.pieces.controller.pieceSelected$?.pipe(
-				map((payload) => this._getEnginePayLoadFromPiece(payload))
-			);
+		this.pieceSelected$ = this.chessboard.pieces
+			.getPieceSelected$()
+			?.pipe(map((payload) => this._getEnginePayLoadFromPiece(payload)));
 
-		this.pieceMoved$ = this.chessboard.pieces.controller.pieceDeselected$?.pipe(
+		this.pieceMoved$ = this.chessboard.pieces.getPieceDeselected$()?.pipe(
 			map((payload) => {
 				const { endCoord, possibleCoords, possibleMoves, ...enginePayload } =
 					this._getEnginePayLoadFromPiece(payload);

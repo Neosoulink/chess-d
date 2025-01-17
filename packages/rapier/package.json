@@ -1,9 +1,10 @@
 {
-	"name": "@chess-d/rapier-physics",
+	"name": "@chess-d/rapier",
 	"private": true,
 	"version": "0.0.0",
 	"keywords": [
-		"three.js",
+		"chess-d",
+		"three",
 		"rapier",
 		"physics"
 	],

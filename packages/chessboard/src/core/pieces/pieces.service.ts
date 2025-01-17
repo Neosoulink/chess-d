@@ -1,6 +1,5 @@
 import { inject, singleton } from "tsyringe";
 import { Vector3, Vector3Like } from "three";
-import { AppModule } from "@quick-threejs/reactive";
 import { copyProperties } from "@quick-threejs/utils";
 import {
 	BoardCoord,
@@ -9,7 +8,7 @@ import {
 	fenToCoords,
 	PieceType
 } from "@chess-d/shared";
-import { Physics } from "@chess-d/rapier-physics";
+import { Physics } from "@chess-d/rapier";
 
 import {
 	InstancedPieceModel,
@@ -20,12 +19,12 @@ import {
 	PieceNotificationPayload,
 	VECTOR
 } from "../../shared";
-import { BoardComponent } from "../board/board.component";
-import { ResourceComponent } from "../resource/resource.component";
-import { WorldComponent } from "../world/world.component";
+import { BoardService } from "../board/board.service";
+import { ResourceService } from "../resource/resource.service";
+import { WorldService } from "../world/world.service";
 
 @singleton()
-export class PiecesComponent {
+export class PiecesService {
 	public readonly groups: PiecesGroups = {
 		[ColorSide.white]: {},
 		[ColorSide.black]: {}
@@ -36,22 +35,21 @@ export class PiecesComponent {
 	};
 
 	constructor(
-		@inject(INITIAL_FEN_TOKEN) private readonly initialFen: string,
-		@inject(AppModule) private readonly app: AppModule,
-		@inject(Physics) private readonly physics: Physics,
-		@inject(WorldComponent) private readonly worldComponent: WorldComponent,
-		@inject(BoardComponent) private readonly boardComponent: BoardComponent,
-		@inject(ResourceComponent)
-		private readonly _resourceComponent: ResourceComponent
+		@inject(INITIAL_FEN_TOKEN) private readonly _initialFen: string,
+		@inject(Physics) private readonly _physics: Physics,
+		@inject(WorldService) private readonly _worldService: WorldService,
+		@inject(BoardService) private readonly _boardService: BoardService,
+		@inject(ResourceService)
+		private readonly _resourceService: ResourceService
 	) {}
 
-	public createGroup<Type extends PieceType, Color extends ColorSide>(
+	private _createGroup<Type extends PieceType, Color extends ColorSide>(
 		type: Type,
 		color: Color,
 		coords: BoardCoord[],
 		pieces?: InstancedPieceModel<Type, Color>["pieces"]
 	) {
-		const geometry = this._resourceComponent.getGeometryByType(type);
+		const geometry = this._resourceService.getGeometryByType(type);
 
 		if (!geometry) throw new Error("Invalid geometry.");
 
@@ -64,64 +62,29 @@ export class PiecesComponent {
 		);
 
 		coords.forEach((coord, instanceId) => {
-			group.setPieceCoord(instanceId, this.boardComponent.instancedCell, coord);
+			group.setPieceCoord(instanceId, this._boardService.instancedCell, coord);
 		});
 
-		group.initPhysics(this.physics);
+		group.initPhysics(this._physics);
 
 		return group;
 	}
 
-	public setGroup<Type extends PieceType, Color extends ColorSide>(
+	private _setGroup<Type extends PieceType, Color extends ColorSide>(
 		newGroup: InstancedPieceModel<Type, Color>
-	): InstancedPieceModel<Type, Color> | undefined {
+	) {
 		// @ts-ignore <unsupported never type>
 		this.groups[newGroup.piecesColor][newGroup.piecesType] = newGroup;
-
-		return this.groups[newGroup.piecesColor][
-			newGroup.piecesType
-		] as unknown as typeof newGroup;
 	}
 
-	public init(fen = this.initialFen) {
-		const fenCoords = fenToCoords(fen);
-
-		if (fenCoords)
-			[ColorSide.black, ColorSide.white].forEach((color) => {
-				const pieceCoords = fenCoords[color]!;
-				Object.keys(pieceCoords).forEach((_pieceType) => {
-					const coords = pieceCoords[_pieceType as ExtendedPieceSymbol];
-					const pieceType = _pieceType.toLowerCase() as PieceType;
-					const newGroup = this.createGroup(pieceType, color, coords ?? []);
-
-					this.setGroup(newGroup);
-					this.droppedGroups[color][pieceType] = [];
-				});
-			});
-
-		[...Object.keys(this.groups[ColorSide.black])].forEach((key) => {
-			const group = this.groups?.[ColorSide.black][key as PieceType];
-
-			if (group instanceof InstancedPieceModel)
-				this.worldComponent.scene.add(group);
-		});
-
-		[...Object.keys(this.groups[ColorSide.white])].forEach((key) => {
-			const group = this.groups?.[ColorSide.white][key as PieceType];
-
-			if (group instanceof InstancedPieceModel)
-				this.worldComponent.scene.add(group);
-		});
-	}
-
-	public reInit(fen = this.initialFen) {
+	public clear() {
 		[ColorSide.black, ColorSide.white].forEach((color) => {
 			Object.keys(this.groups[color]).forEach((key) => {
 				const group = this.groups[color][key as PieceType];
 
 				if (!(group instanceof InstancedPieceModel)) return;
 
-				group.dispose(this.physics);
+				group.dispose(this._physics);
 				delete this.groups[color][key as PieceType];
 			});
 
@@ -135,8 +98,39 @@ export class PiecesComponent {
 				this.droppedGroups[color][key as PieceType] = [];
 			});
 		});
+	}
 
-		this.init(fen);
+	public reset(fen = this._initialFen) {
+		this.clear();
+
+		const fenCoords = fenToCoords(fen);
+
+		if (fenCoords)
+			[ColorSide.black, ColorSide.white].forEach((color) => {
+				const pieceCoords = fenCoords[color]!;
+				Object.keys(pieceCoords).forEach((_pieceType) => {
+					const coords = pieceCoords[_pieceType as ExtendedPieceSymbol];
+					const pieceType = _pieceType.toLowerCase() as PieceType;
+					const newGroup = this._createGroup(pieceType, color, coords ?? []);
+
+					this._setGroup(newGroup);
+					this.droppedGroups[color][pieceType] = [];
+				});
+			});
+
+		[...Object.keys(this.groups[ColorSide.black])].forEach((key) => {
+			const group = this.groups?.[ColorSide.black][key as PieceType];
+
+			if (group instanceof InstancedPieceModel)
+				this._worldService.scene.add(group);
+		});
+
+		[...Object.keys(this.groups[ColorSide.white])].forEach((key) => {
+			const group = this.groups?.[ColorSide.white][key as PieceType];
+
+			if (group instanceof InstancedPieceModel)
+				this._worldService.scene.add(group);
+		});
 	}
 
 	public getPieceByCoord<Type extends PieceType, Color extends ColorSide>(
@@ -179,7 +173,7 @@ export class PiecesComponent {
 	) {
 		this.groups?.[piece.color]?.[piece.type]?.setPieceCoord(
 			piece.instanceId,
-			this.boardComponent.instancedCell,
+			this._boardService.instancedCell,
 			coord,
 			offset
 		);
@@ -200,12 +194,12 @@ export class PiecesComponent {
 
 		const newGroup = piecesGroup.dropPiece(
 			piece.instanceId,
-			this.physics
+			this._physics
 		) as unknown as InstancedPieceModel<Type, Color> | undefined;
 
 		if (!newGroup) return undefined;
 
-		this.setGroup(newGroup);
+		this._setGroup(newGroup);
 
 		// @ts-ignore <unsupported never type>
 		droppedPiecesGroup?.push(piece);
@@ -234,10 +228,10 @@ export class PiecesComponent {
 		newPiece.coord.col = piece.coord.col;
 		newPiece.coord.row = piece.coord.row;
 
-		const newGroup = promotedPieceGroup.addPiece(newPiece, this.physics);
+		const newGroup = promotedPieceGroup.addPiece(newPiece, this._physics);
 		if (!newGroup) return;
 
-		this.setGroup(newGroup);
+		this._setGroup(newGroup);
 	}
 
 	public handlePieceMoving(payload: PieceNotificationPayload) {
@@ -262,5 +256,19 @@ export class PiecesComponent {
 		const { piece, cell, endCoord, startCoord } = payload;
 
 		this.movePieceByCoord(piece, endCoord ?? cell?.coord ?? startCoord);
+	}
+
+	public updateGeometries() {
+		[ColorSide.black, ColorSide.white].forEach((color) => {
+			Object.keys(this.groups[color]).forEach((key) => {
+				const group = this.groups[color][key as PieceType];
+
+				if (group instanceof InstancedPieceModel) {
+					group.geometry = this._resourceService.getGeometryByType(
+						group.piecesType
+					);
+				}
+			});
+		});
 	}
 }

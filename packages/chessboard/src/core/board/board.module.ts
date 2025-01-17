@@ -1,30 +1,47 @@
-import { AppModule, Module } from "@quick-threejs/reactive";
 import { inject, singleton } from "tsyringe";
 
-import { BoardComponent } from "./board.component";
+import { BoardService } from "./board.service";
 import { PiecesController } from "../pieces/pieces.controller";
+import { WorldService } from "../world/world.service";
 
 @singleton()
-export class BoardModule implements Module {
+export class BoardModule {
 	constructor(
-		@inject(AppModule) private readonly appModule: AppModule,
-		@inject(BoardComponent)
-		public readonly component: BoardComponent,
+		@inject(WorldService) private readonly _worldService: WorldService,
+		@inject(BoardService)
+		public readonly _service: BoardService,
 		@inject(PiecesController)
-		private readonly piecesController: PiecesController
+		private readonly _piecesController: PiecesController
 	) {
-		this.piecesController.pieceDeselected$?.subscribe(() => {
-			this.component.setMarkers([]);
+		this._piecesController.pieceDeselected$?.subscribe(() => {
+			this._service.setMarkers([]);
 		});
 	}
 
-	public init() {
-		this.component.initCells();
-		this.component.initPhysics();
+	public getInstancedCell() {
+		return this._service.instancedCell;
+	}
 
-		this.appModule.world
-			.scene()
-			.add(this.component.instancedCell, this.component.markersGroup);
+	public getMarkersGroup() {
+		return this._service.markersGroup;
+	}
+
+	public getPhysics() {
+		return this._service.physics;
+	}
+
+	public setMarkers(...props: Parameters<BoardService["setMarkers"]>) {
+		this._service.setMarkers(...props);
+	}
+
+	public init() {
+		this._service.initCells();
+		this._service.initPhysics();
+
+		this._worldService.scene.add(
+			this._service.instancedCell,
+			this._service.markersGroup
+		);
 	}
 
 	public dispose() {}

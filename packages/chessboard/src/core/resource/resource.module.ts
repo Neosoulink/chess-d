@@ -1,15 +1,15 @@
 import { inject, singleton } from "tsyringe";
-import { Module } from "@quick-threejs/reactive";
 
-import { ResourceComponent } from "./resource.component";
+import { ResourceService } from "./resource.service";
 import { PieceType } from "@chess-d/shared";
 import { BufferGeometry } from "three";
+import { PIECES_GEOMETRIES_TOKEN } from "../../shared";
 
 @singleton()
-export class ResourceModule implements Module {
+export class ResourceModule {
 	constructor(
-		@inject(ResourceComponent) public readonly component: ResourceComponent,
-		@inject("PIECE_GEOMETRIES")
+		@inject(ResourceService) private readonly _service: ResourceService,
+		@inject(PIECES_GEOMETRIES_TOKEN)
 		private readonly _pieceGeometries: Partial<
 			Record<PieceType, BufferGeometry>
 		>
@@ -17,11 +17,17 @@ export class ResourceModule implements Module {
 
 	public init() {
 		Object.keys(this._pieceGeometries || {}).forEach((key) => {
-			this.component.setGeometryByType(
+			this._service.setGeometryByType(
 				key as PieceType,
 				this._pieceGeometries[key]
 			);
 		});
+	}
+
+	public getGeometryByType(
+		...props: Parameters<ResourceService["getGeometryByType"]>
+	) {
+		return this._service.getGeometryByType(...props);
 	}
 
 	public dispose() {}

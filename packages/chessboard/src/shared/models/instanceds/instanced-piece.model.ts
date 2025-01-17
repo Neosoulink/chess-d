@@ -5,8 +5,7 @@ import {
 	Vector3Like
 } from "three";
 import { Subject, Subscription } from "rxjs";
-import { Physics } from "@chess-d/rapier-physics";
-import { PhysicsProperties } from "@chess-d/rapier-physics/dist/types";
+import { Physics, PhysicsProperties } from "@chess-d/rapier";
 import { BoardCoord, ColorSide, PieceType } from "@chess-d/shared";
 
 import { COLOR_BLACK, COLOR_WHITE } from "../../constants";

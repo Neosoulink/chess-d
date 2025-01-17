@@ -23,6 +23,7 @@ import queenPiece from "../../assets/3D/pieces/queen.glb?url";
 import kingPiece from "../../assets/3D/pieces/king.glb?url";
 import chessboardWrapper from "../../assets/3D/chessboard.glb?url";
 import masterHand from "../../assets/3D/master-hand.glb?url";
+import woodTexture from "../../assets/textures/wood.jpg?url";
 
 /** @internal */
 const workerLocation = new URL(
@@ -62,42 +63,47 @@ export const PlayRoute: FC = () => {
 				{
 					name: "pawnPiece",
 					path: pawnPiece,
-					type: "gltfModel"
+					type: "gltf"
 				},
 				{
 					name: "rookPiece",
 					path: rookPiece,
-					type: "gltfModel"
+					type: "gltf"
 				},
 				{
 					name: "knightPiece",
 					path: knightPiece,
-					type: "gltfModel"
+					type: "gltf"
 				},
 				{
 					name: "bishopPiece",
 					path: bishopPiece,
-					type: "gltfModel"
+					type: "gltf"
 				},
 				{
 					name: "queenPiece",
 					path: queenPiece,
-					type: "gltfModel"
+					type: "gltf"
 				},
 				{
 					name: "kingPiece",
 					path: kingPiece,
-					type: "gltfModel"
+					type: "gltf"
 				},
 				{
 					name: "chessboardWrapper",
 					path: chessboardWrapper,
-					type: "gltfModel"
+					type: "gltf"
 				},
 				{
 					name: "masterHand",
 					path: masterHand,
-					type: "gltfModel"
+					type: "gltf"
+				},
+				{
+					name: "woodTexture",
+					path: woodTexture,
+					type: "image"
 				}
 			],
 			onReady: (_app) => {

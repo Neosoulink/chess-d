@@ -1,9 +1,6 @@
 import { Chess } from "chess.js";
 import { inject, singleton } from "tsyringe";
-import {
-	CoreModule as ChessboardModule,
-	MatrixPieceModel
-} from "@chess-d/chessboard";
+import { ChessboardModule, MatrixPieceModel } from "@chess-d/chessboard";
 import {
 	getOppositeColorSide,
 	MoveFlags,
@@ -34,7 +31,7 @@ export class EngineService {
 		piece.physics?.rigidBody.setBodyType(0, true);
 		piece.physics?.collider.setMass(1);
 
-		this.chessboard.board.component.setMarkers(possibleCoords);
+		this.chessboard.board.setMarkers(possibleCoords);
 	}
 
 	public handlePieceMoved(
@@ -48,14 +45,14 @@ export class EngineService {
 		let pieceToDrop: MatrixPieceModel | undefined = undefined;
 
 		if (!endCoord || !(nextMoveIndex >= 0) || !nextMove)
-			return this.chessboard.pieces.component.movePieceByCoord(
+			return this.chessboard.pieces.movePieceByCoord(
 				piece,
 				startCoord,
 				positionOffset
 			);
 
 		if (nextMove.captured)
-			pieceToDrop = this.chessboard.pieces.component.getPieceByCoord(
+			pieceToDrop = this.chessboard.pieces.getPieceByCoord(
 				nextMove.captured as PieceType,
 				oppositeColor,
 				nextMove.flags === "e"
@@ -74,7 +71,7 @@ export class EngineService {
 				...endCoord,
 				col: flags === MoveFlags.queenside_castle ? 0 : 7
 			};
-			const rook = this.chessboard.pieces.component.getPieceByCoord(
+			const rook = this.chessboard.pieces.getPieceByCoord(
 				PieceType.rook,
 				piece.color,
 				rookCoord
@@ -86,7 +83,7 @@ export class EngineService {
 					col: flags === MoveFlags.queenside_castle ? 3 : 5
 				};
 
-				this.chessboard.pieces.component.movePieceByCoord(
+				this.chessboard.pieces.movePieceByCoord(
 					rook,
 					newRookCoord,
 					positionOffset
@@ -94,16 +91,12 @@ export class EngineService {
 			}
 		}
 
-		if (pieceToDrop) this.chessboard.pieces.component.dropPiece(pieceToDrop);
+		if (pieceToDrop) this.chessboard.pieces.dropPiece(pieceToDrop);
 
-		this.chessboard.pieces.component.movePieceByCoord(
-			piece,
-			endCoord,
-			positionOffset
-		);
+		this.chessboard.pieces.movePieceByCoord(piece, endCoord, positionOffset);
 
 		if (nextMove.promotion && piece.type === PieceType.pawn) {
-			this.chessboard.pieces.component.promotePiece(
+			this.chessboard.pieces.promotePiece(
 				piece as MatrixPieceModel<PieceType.pawn, (typeof piece)["color"]>,
 				nextMove.promotion as PieceType
 			);
