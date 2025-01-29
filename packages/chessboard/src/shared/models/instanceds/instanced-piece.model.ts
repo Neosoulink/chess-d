@@ -168,6 +168,8 @@ export class InstancedPieceModel<
 	): this["pieces"][number] | undefined {
 		if (this?.geometry.attributes.position) {
 			this.geometry.computeBoundingBox();
+			this.geometry.center();
+
 			const boundingBox = this.geometry.boundingBox;
 			const piece = this.getPieceByInstanceId(instanceId);
 

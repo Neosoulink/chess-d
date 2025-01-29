@@ -37,9 +37,9 @@ export class ChessboardModule {
 		this.debug.init();
 
 		this._subscriptions.push(
-			this._controller.update$$.subscribe(({ cursor }) => {
+			this._controller.update$$.subscribe(({ cursor, timestep }) => {
 				this._service.update(cursor);
-				this.physics.step();
+				this.physics.step(timestep);
 			})
 		);
 	}

@@ -1,6 +1,6 @@
 import { inject, singleton } from "tsyringe";
-import { map, Observable } from "rxjs";
-import { Chess } from "chess.js";
+import { map, Observable, Subject } from "rxjs";
+import { Chess, Move } from "chess.js";
 import {
 	ChessboardModule,
 	PieceNotificationPayload
@@ -14,18 +14,20 @@ import {
 
 @singleton()
 export class EngineController {
+	public readonly undoMove$$ = new Subject<Move>();
+	public readonly redoMove$$ = new Subject<Move>();
 	public readonly pieceSelected$?: Observable<EngineNotificationPayload>;
 	public readonly pieceMoved$?: Observable<EnginePieceMovedNotificationPayload>;
 
 	constructor(
-		@inject(Chess) private readonly game: Chess,
-		@inject(ChessboardModule) private readonly chessboard: ChessboardModule
+		@inject(Chess) private readonly _game: Chess,
+		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule
 	) {
-		this.pieceSelected$ = this.chessboard.pieces
+		this.pieceSelected$ = this._chessboard.pieces
 			.getPieceSelected$()
 			?.pipe(map((payload) => this._getEnginePayLoadFromPiece(payload)));
 
-		this.pieceMoved$ = this.chessboard.pieces.getPieceDeselected$()?.pipe(
+		this.pieceMoved$ = this._chessboard.pieces.getPieceDeselected$()?.pipe(
 			map((payload) => {
 				const { endCoord, possibleCoords, possibleMoves, ...enginePayload } =
 					this._getEnginePayLoadFromPiece(payload);
@@ -53,7 +55,7 @@ export class EngineController {
 		PiecePayload extends PieceNotificationPayload
 	>(piecePayload: PiecePayload): EngineNotificationPayload & PiecePayload {
 		const pgnSquare = coordToSquare(piecePayload.startCoord);
-		const possibleMoves = this.game.moves({
+		const possibleMoves = this._game.moves({
 			square: pgnSquare,
 			verbose: true
 		});

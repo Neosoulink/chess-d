@@ -55,7 +55,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 	const moveBoardPiece = useCallback(
 		(move: Move) => {
-			appModule?.worker()?.postMessage?.({
+			appModule?.getWorker()?.postMessage?.({
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
 			} satisfies MessageEventPayload<Move>);
@@ -66,7 +66,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 	const resetBoardPieces = useCallback(
 		(fen?: string) => {
 			setTimeout(() => {
-				appModule?.worker()?.postMessage?.({
+				appModule?.getWorker()?.postMessage?.({
 					token: GAME_WILL_RESET_TOKEN,
 					value: { fen }
 				} satisfies MessageEventPayload<{ fen }>);
@@ -243,11 +243,11 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 				});
 		};
 
-		appModule?.worker()?.addEventListener("message", handleMessages);
+		appModule?.getWorker()?.addEventListener("message", handleMessages);
 
 		return () => {
 			subscription.unsubscribe();
-			appModule?.worker?.().removeEventListener("message", handleMessages);
+			appModule?.getWorker?.().removeEventListener("message", handleMessages);
 		};
 	}, [app, currentPlayer, opponentPlayer, moveBoardPiece, socket, appModule]);
 

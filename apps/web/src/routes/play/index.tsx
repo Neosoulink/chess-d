@@ -1,10 +1,8 @@
-import {
-	ContainerizedApp,
-	register,
-	RegisterModule
-} from "@quick-threejs/reactive";
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { register } from "@quick-threejs/reactive";
+import { FC, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSearchParams } from "react-router";
+import Stats from "stats-gl";
+import { Pane } from "tweakpane";
 
 import { useGameStore } from "../_stores";
 import {
@@ -13,17 +11,14 @@ import {
 	WithHumanComponent
 } from "./_components";
 import { GameMode } from "../../shared/enum";
-import { getGameModeFromUrl } from "../../shared/utils";
-
+import { configureTweakpane, getGameModeFromUrl } from "../../shared/utils";
 import pawnPiece from "../../assets/3D/pieces/pawn.glb?url";
 import rookPiece from "../../assets/3D/pieces/rook.glb?url";
 import knightPiece from "../../assets/3D/pieces/knight.glb?url";
 import bishopPiece from "../../assets/3D/pieces/bishop.glb?url";
 import queenPiece from "../../assets/3D/pieces/queen.glb?url";
 import kingPiece from "../../assets/3D/pieces/king.glb?url";
-import chessboardWrapper from "../../assets/3D/chessboard.glb?url";
 import masterHand from "../../assets/3D/master-hand.glb?url";
-import woodTexture from "../../assets/textures/wood.jpg?url";
 
 /** @internal */
 const workerLocation = new URL(
@@ -32,33 +27,33 @@ const workerLocation = new URL(
 ) as unknown as string;
 
 export const PlayRoute: FC = () => {
-	const { app, setApp } = useGameStore();
-	const [localApp, setLocalApp] = useState<ContainerizedApp<RegisterModule>>();
 	const [searchParams] = useSearchParams();
+	const { app, setApp } = useGameStore();
+
+	const devMode = useMemo(() => import.meta.env?.DEV, []);
 	const gameMode = useMemo(
 		() => getGameModeFromUrl(searchParams),
 		[searchParams]
 	);
+	const rootDom = useMemo(() => document.getElementById("root"), []);
 
-	const state = useRef<{
+	const paneRef = useRef<Pane>(null);
+	const statsRef = useRef<Stats>(null);
+	const stateRef = useRef<{
 		isPending: boolean;
 		isReady: boolean;
 	}>({ isPending: false, isReady: false });
 
 	const init = useCallback(async () => {
-		if (state.current.isPending || state.current.isReady) return;
-		state.current.isPending = true;
-
-		console.log("Initializing game...");
+		if (stateRef.current.isPending || stateRef.current.isReady) return;
+		stateRef.current.isPending = true;
 
 		register({
 			location: workerLocation,
-			enableDebug: !!import.meta.env?.DEV,
+			enableDebug: devMode,
 			enableControls: true,
 			axesSizes: 5,
-			gridSizes: 10,
-			withCameraHelper: true,
-			withMiniCamera: true,
+			withMiniCamera: false,
 			loaderDataSources: [
 				{
 					name: "pawnPiece",
@@ -91,43 +86,57 @@ export const PlayRoute: FC = () => {
 					type: "gltf"
 				},
 				{
-					name: "chessboardWrapper",
-					path: chessboardWrapper,
-					type: "gltf"
-				},
-				{
 					name: "masterHand",
 					path: masterHand,
 					type: "gltf"
-				},
-				{
-					name: "woodTexture",
-					path: woodTexture,
-					type: "image"
 				}
 			],
 			onReady: (_app) => {
-				state.current.isPending = false;
-				state.current.isReady = true;
+				stateRef.current.isPending = false;
+				stateRef.current.isReady = true;
 
 				setApp(_app);
-				setLocalApp(_app);
+
+				if (!devMode || !rootDom) return;
+
+				const appWorker = _app.module.getWorker() as Worker;
+				const appThread = _app.module.getThread();
+
+				paneRef.current = new Pane();
+				statsRef.current = new Stats();
+
+				configureTweakpane(paneRef.current, (type, value) =>
+					appWorker.postMessage({ type: `$tweakpane-${type}`, value })
+				);
+				rootDom.appendChild(statsRef.current.dom);
+
+				appThread.getBeforeRender$().subscribe(() => {
+					statsRef.current?.begin();
+				});
+
+				appThread?.getAfterRender$()?.subscribe(() => {
+					statsRef.current?.end();
+					statsRef.current?.update();
+				});
 			}
 		});
-	}, [setApp]);
+	}, [devMode, rootDom, setApp]);
 
 	const dispose = useCallback(async () => {
-		if (state.current.isPending || !state.current.isReady) return;
+		if (stateRef.current.isPending || !stateRef.current.isReady) return;
 
-		await localApp?.container?.dispose();
+		stateRef.current.isPending = false;
+		stateRef.current.isReady = false;
 
-		state.current.isPending = false;
-		state.current.isReady = false;
+		if (statsRef.current) rootDom?.removeChild(statsRef.current.dom);
+		paneRef.current?.dispose();
 
-		setLocalApp(undefined);
+		app?.container.clearInstances();
+		await app?.container.dispose();
+		setApp(undefined);
 
 		console.log("Game disposed...");
-	}, [localApp]);
+	}, [app, rootDom, setApp]);
 
 	const renderGameMode = useCallback(() => {
 		if (gameMode === GameMode.ai || gameMode === GameMode.simulation)
@@ -139,12 +148,12 @@ export const PlayRoute: FC = () => {
 	}, [gameMode]);
 
 	useEffect(() => {
-		if (!localApp) init();
+		if (!app) init();
 
 		return () => {
-			if (app && localApp) dispose();
+			if (app && app) dispose();
 		};
-	}, [app, init, dispose, localApp]);
+	}, [app, init, dispose]);
 
 	if (!app) return null;
 

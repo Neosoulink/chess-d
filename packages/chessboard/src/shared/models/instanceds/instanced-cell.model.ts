@@ -1,4 +1,4 @@
-import { InstancedMesh, PlaneGeometry } from "three";
+import { BoxGeometry, InstancedMesh } from "three";
 import {
 	BOARD_CELL_SIZE,
 	BOARD_MATRIX_RANGE_SIZE,
@@ -15,7 +15,7 @@ export class InstancedCellModel extends InstancedMesh {
 
 	constructor() {
 		super(
-			new PlaneGeometry(BOARD_CELL_SIZE, BOARD_CELL_SIZE, 6, 6),
+			new BoxGeometry(BOARD_CELL_SIZE, BOARD_CELL_SIZE, 0.1, 6, 6),
 			undefined,
 			BOARD_MATRIX_SIZE
 		);

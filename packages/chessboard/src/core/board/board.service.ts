@@ -90,6 +90,7 @@ export class BoardService {
 		) as PhysicsProperties;
 
 		this.physics.rigidBody.setTranslation({ x: 0, y: 0, z: 0 }, true);
+		this.physics.collider.setRestitution(0.55);
 	}
 
 	public setMarkers(coord: BoardCoord[]) {

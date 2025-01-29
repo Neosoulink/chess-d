@@ -6,6 +6,6 @@ import { singleton } from "tsyringe";
 export class ChessboardController {
 	public readonly update$$ = new Subject<{
 		cursor: Vector2Like;
-		delta: number;
+		timestep: number;
 	}>();
 }

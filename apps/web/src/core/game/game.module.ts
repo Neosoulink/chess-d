@@ -7,8 +7,9 @@ import { HandModule } from "./hands/hands.module";
 import { PiecesModule } from "./pieces/pieces.module";
 import { GameController } from "./game.controller";
 import { GameService } from "./game.service";
-import { PerspectiveCamera } from "three";
 import { ChessboardModule } from "@chess-d/chessboard";
+import { WorldModule } from "./world/world.module";
+import { DebugModule } from "./debug/debug.module";
 
 @singleton()
 export class GameModule implements Module {
@@ -18,8 +19,10 @@ export class GameModule implements Module {
 		@inject(AppModule) private readonly _app: AppModule,
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
 		@inject(EngineModule) public readonly engine: EngineModule,
+		@inject(WorldModule) public readonly world: WorldModule,
 		@inject(HandModule) public readonly hands: HandModule,
 		@inject(PiecesModule) public readonly pieces: PiecesModule,
+		@inject(DebugModule) public readonly debug: DebugModule,
 		@inject(GameController) public readonly controller: GameController,
 		@inject(GameService) public readonly service: GameService
 	) {
@@ -33,42 +36,22 @@ export class GameModule implements Module {
 			this._app.timer.step$().subscribe(({ deltaTime }) => {
 				this._chessboard.update({
 					cursor: this.service.cursor,
-					delta: deltaTime
+					timestep: deltaTime * 0.0011
 				});
 			}),
 			this.controller.piecesWillReset$.subscribe((payload) => {
 				const { fen } = payload.data.value || {};
-
 				this.service.reset(fen);
 			})
 		);
-
-		const camera = this._app.camera.instance() as PerspectiveCamera;
-		camera.position.set(0, 12, -7);
-		camera.fov = 45;
-		camera.near = 0.1;
-		camera.far = 30;
-		camera.lookAt(0, 0, 0);
-
-		const miniCamera = this._app.debug.miniCamera();
-		miniCamera?.position.set(6, 2, 0);
-
-		const orbitControls = this._app.debug.getCameraControls();
-
-		if (orbitControls) {
-			orbitControls.enableRotate = false;
-			orbitControls.enableZoom = false;
-			orbitControls.enablePan = false;
-		}
-
-		const miniOrbitControls = this._app.debug.getMiniCameraControls();
-		if (miniOrbitControls) miniOrbitControls.enableRotate = false;
 	}
 
 	public init(): void {
+		this.engine.init();
 		this.hands.init();
 		this.pieces.init();
-		this.engine.init();
+		this.world.init();
+		this.debug.init();
 	}
 
 	public dispose(): void {
@@ -76,5 +59,6 @@ export class GameModule implements Module {
 		this.hands.dispose();
 		this.pieces.dispose();
 		this.engine.dispose();
+		this.world.dispose();
 	}
 }

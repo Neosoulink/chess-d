@@ -1,4 +1,4 @@
-import { Chess } from "chess.js";
+import { Chess, Move } from "chess.js";
 import { inject, singleton } from "tsyringe";
 import { ChessboardModule, MatrixPieceModel } from "@chess-d/chessboard";
 import {
@@ -15,11 +15,24 @@ import { PiecesService } from "../pieces/pieces.service";
 
 @singleton()
 export class EngineService {
+	public readonly undoHistory: Move[] = [];
+
 	constructor(
 		@inject(Chess) private readonly game: Chess,
 		@inject(ChessboardModule) private readonly chessboard: ChessboardModule,
 		@inject(PiecesService) private readonly _pieceService: PiecesService
 	) {}
+
+	private _postGameState(nextMove?: Move) {
+		self.postMessage({
+			token: GAME_UPDATED_TOKEN,
+			value: {
+				fen: this.game.fen(),
+				turn: this.game.turn(),
+				move: nextMove
+			}
+		} satisfies EngineGameUpdatedMessageEventPayload);
+	}
 
 	public handlePieceSelected(
 		payload: ObservablePayload<EngineController["pieceSelected$"]>
@@ -103,14 +116,22 @@ export class EngineService {
 		}
 
 		this.game.move(nextMove);
+		this._postGameState(payload.nextMove);
+	}
 
-		self.postMessage({
-			token: GAME_UPDATED_TOKEN,
-			value: {
-				fen: this.game.fen(),
-				turn: this.game.turn(),
-				move: payload.nextMove
-			}
-		} satisfies EngineGameUpdatedMessageEventPayload);
+	public undoMove(): Move | null {
+		const move = this.game.undo();
+		if (move) this.undoHistory.push(move);
+
+		this._postGameState();
+		return move;
+	}
+
+	public redoMove(): Move | null {
+		const move = this.undoHistory.pop();
+		if (!move) return null;
+
+		this._postGameState();
+		return this.game.move(move);
 	}
 }

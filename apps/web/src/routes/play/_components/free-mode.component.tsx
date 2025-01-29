@@ -20,7 +20,7 @@ export const FreeModeComponent: FC = () => {
 
 	const performPieceMove = useCallback(
 		(move: Move) => {
-			appModule?.worker()?.postMessage?.({
+			appModule?.getWorker()?.postMessage?.({
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
 			} satisfies MessageEventPayload<Move>);
@@ -64,7 +64,7 @@ export const FreeModeComponent: FC = () => {
 				return performPieceMove(payload.value?.move);
 		});
 
-		appModule?.worker()?.addEventListener("message", handleMessages);
+		appModule?.getWorker()?.addEventListener("message", handleMessages);
 
 		return () => {
 			playersSubscription.unsubscribe();
@@ -73,7 +73,7 @@ export const FreeModeComponent: FC = () => {
 				player.unsubscribe();
 				_players.shift();
 			});
-			appModule?.worker()?.removeEventListener("message", handleMessages);
+			appModule?.getWorker()?.removeEventListener("message", handleMessages);
 		};
 	}, [app, appModule, createPlayer, performPieceMove]);
 

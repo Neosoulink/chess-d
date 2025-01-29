@@ -5,6 +5,7 @@ import { Subscription } from "rxjs";
 
 import { HandService } from "./hands.service";
 import { PiecesController } from "../pieces/pieces.controller";
+
 @singleton()
 export class HandModule implements Module {
 	private readonly _subscriptions: (Subscription | undefined)[] = [];
@@ -35,7 +36,7 @@ export class HandModule implements Module {
 	}
 
 	init(): void {
-		this._service.init();
+		this._service.setup();
 	}
 
 	dispose(): void {

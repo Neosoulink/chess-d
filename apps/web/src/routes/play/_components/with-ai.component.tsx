@@ -40,14 +40,14 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 	}>({ isPending: false, isReady: false });
 
 	const [workerThread, setWorkerThread] = useState<
-		| Awaited<ReturnType<ReturnType<RegisterModule["workerPool"]>["run"]>>
+		| Awaited<ReturnType<ReturnType<RegisterModule["getWorkerPool"]>["run"]>>
 		| undefined
 	>();
 
 	const init = useCallback(async () => {
 		state.current.isPending = true;
 
-		const _workerThread = await appModule?.workerPool()?.run?.({
+		const _workerThread = await appModule?.getWorkerPool()?.run?.({
 			payload: {
 				path: workerLocation,
 				subject: {}
@@ -71,7 +71,7 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 
 	const performPieceMove = useCallback(
 		(move: Move) => {
-			appModule?.worker()?.postMessage?.({
+			appModule?.getWorker()?.postMessage?.({
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
 			} satisfies MessageEventPayload<Move>);
@@ -200,10 +200,10 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 				return performPieceMove(payload.value.move);
 		});
 
-		appModule?.worker()?.addEventListener("message", handleMessages);
+		appModule?.getWorker()?.addEventListener("message", handleMessages);
 
 		return () => {
-			appModule?.worker()?.removeEventListener?.("message", handleMessages);
+			appModule?.getWorker()?.removeEventListener?.("message", handleMessages);
 			aimPerformedMoveSubscription?.unsubscribe?.();
 			playersSubscription.unsubscribe();
 		};

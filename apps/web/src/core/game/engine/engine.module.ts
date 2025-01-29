@@ -10,19 +10,42 @@ export class EngineModule implements Module {
 	private subscriptions: (Subscription | undefined)[] = [];
 
 	constructor(
-		@inject(EngineController) private readonly controller: EngineController,
-		@inject(EngineService) private readonly service: EngineService
+		@inject(EngineController) private readonly _controller: EngineController,
+		@inject(EngineService) private readonly _service: EngineService
 	) {}
 
 	public init() {
 		this.subscriptions.push(
-			this.controller.pieceSelected$?.subscribe(
-				this.service.handlePieceSelected.bind(this.service)
+			this._controller.pieceSelected$?.subscribe(
+				this._service.handlePieceSelected.bind(this._service)
 			),
-			this.controller.pieceMoved$?.subscribe(
-				this.service.handlePieceMoved.bind(this.service)
+			this._controller.pieceMoved$?.subscribe(
+				this._service.handlePieceMoved.bind(this._service)
 			)
 		);
+	}
+
+	public getUndoHistory() {
+		return this._service.undoHistory;
+	}
+
+	public getUndoMove$() {
+		return this._controller.undoMove$$.asObservable();
+	}
+
+	public getRedoMove$() {
+		return this._controller.redoMove$$.asObservable();
+	}
+
+	public undoMove() {
+		const move = this._service.undoMove();
+		console.log("undoMove", move);
+		if (move) this._controller.undoMove$$.next(move);
+	}
+
+	public redoMove() {
+		const move = this._service.redoMove();
+		if (move) this._controller.redoMove$$.next(move);
 	}
 
 	public dispose() {

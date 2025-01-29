@@ -8,7 +8,6 @@ import {
 	AnimationMixer,
 	Group,
 	SkinnedMesh,
-	Vector3,
 	Vector3Like
 } from "three";
 import type { GLTF } from "three/examples/jsm/Addons.js";
@@ -32,72 +31,49 @@ export class HandService {
 		}
 	>;
 
-	constructor(@inject(AppModule) private readonly app: AppModule) {
-		this.gltf = this.app.loader.getLoadedResources()["masterHand"] as GLTF;
+	constructor(@inject(AppModule) private readonly _app: AppModule) {
+		this.gltf = this._app.loader.getLoadedResources()["masterHand"] as GLTF;
 	}
 
-	public init() {
+	private _setupHand(colorSide: ColorSide) {
 		const modelGroup = this.gltf?.scene;
-		const animationClips = this.gltf?.animations;
+		const animationClips = this.gltf?.animations || [];
+		const idleClip = AnimationClip.findByName(animationClips, "idle");
 
 		if (!(modelGroup instanceof Group)) throw new Error("Invalid hand model");
-		if (!animationClips?.length) throw new Error("No animations found");
+		if (!idleClip) throw new Error("Invalid idle clip");
 
-		const idleClip = AnimationClip.findByName(animationClips, "idle");
-		const groupPosition = new Vector3(0, 3, 6);
-		const groupScalar = 0.05;
+		const scene =
+			colorSide === ColorSide.white
+				? modelGroup
+				: (deserializeObject3D(serializeObject3D(modelGroup)) as Group);
+		const mixer = new AnimationMixer(scene);
+		const action = mixer.clipAction(idleClip).play();
 
-		(() => {
-			const scene = modelGroup;
-			const mixer = new AnimationMixer(scene);
-			const action = mixer.clipAction(idleClip).play();
+		scene.name = `master-hand-${colorSide}`;
+		scene.rotation.x = Math.PI / 2;
+		scene.rotation.y = Math.PI;
+		scene.scale.setScalar(0.05);
+		scene.position.copy(HandService.INITIAL_HAND_POSITION);
 
-			this.hands[ColorSide.black] = {
-				scene,
-				animation: {
-					action,
-					clip: idleClip,
-					mixer
-				}
-			};
+		if (colorSide === ColorSide.white) {
+			scene.position.z *= -1;
+			scene.rotation.z = Math.PI;
+		}
 
-			this.hands[ColorSide.black].scene.name = "master-hand-black";
-			this.hands[ColorSide.black].scene.rotation.x = Math.PI / 2;
-			this.hands[ColorSide.black].scene.rotation.y = Math.PI;
-			this.hands[ColorSide.black].scene.scale.setScalar(groupScalar);
-			this.hands[ColorSide.black].scene.position.copy(
-				HandService.INITIAL_HAND_POSITION
-			);
+		this.hands[colorSide] = {
+			scene,
+			animation: {
+				action,
+				clip: idleClip,
+				mixer
+			}
+		};
+	}
 
-			this.app.world.scene().add(this.hands[ColorSide.black].scene);
-		})();
-
-		(() => {
-			const scene = deserializeObject3D(serializeObject3D(modelGroup)) as Group;
-			const mixer = new AnimationMixer(scene);
-			const action = mixer.clipAction(idleClip).play();
-
-			this.hands[ColorSide.white] = {
-				scene,
-				animation: {
-					action,
-					clip: idleClip,
-					mixer
-				}
-			};
-
-			this.hands[ColorSide.white].scene.name = "master-hand-white";
-			this.hands[ColorSide.white].scene.rotation.x = Math.PI / 2;
-			this.hands[ColorSide.white].scene.rotation.y = Math.PI;
-			this.hands[ColorSide.white].scene.rotation.z = Math.PI;
-			this.hands[ColorSide.white].scene.scale.setScalar(groupScalar);
-			this.hands[ColorSide.white].scene.position.copy(
-				HandService.INITIAL_HAND_POSITION
-			);
-			this.hands[ColorSide.white].scene.position.z *= -1;
-
-			this.app.world.scene().add(this.hands[ColorSide.white].scene);
-		})();
+	public setup() {
+		this._setupHand(ColorSide.black);
+		this._setupHand(ColorSide.white);
 	}
 
 	public handlePieceSelected(
