@@ -14,6 +14,7 @@ import {
 	Mesh,
 	MeshPhysicalMaterial,
 	NoToneMapping,
+	Object3DEventMap,
 	PCFSoftShadowMap,
 	PerspectiveCamera,
 	PlaneGeometry,
@@ -29,6 +30,8 @@ import { inject, singleton } from "tsyringe";
 import { InfiniteGridHelper } from "../../../shared/meshes/infinite-grid.mesh";
 import { Sky } from "three/examples/jsm/Addons.js";
 import { HandService } from "../hands/hands.service";
+import { WorldController } from "./world.controller";
+import { ObservablePayload } from "@chess-d/shared";
 
 @singleton()
 export class WorldService {
@@ -44,6 +47,11 @@ export class WorldService {
 		sun: new DirectionalLight("#ffffff", 0.3),
 		sunPropagation: new AmbientLight("#ffffff", 0.05)
 	};
+
+	/** @description The duration of a day in seconds. */
+	public dayDuration = 60;
+	/** @description Whether the current time is night. */
+	public isNight = false;
 
 	public mainMaterial = new MeshPhysicalMaterial({
 		side: DoubleSide,
@@ -103,6 +111,7 @@ export class WorldService {
 		renderer.setClearColor(new Color(0x000000), 0);
 		renderer.outputColorSpace = SRGBColorSpace;
 		renderer.toneMapping = NoToneMapping;
+		renderer.toneMappingExposure = 1;
 	}
 
 	public resetCamera(): void {
@@ -181,6 +190,8 @@ export class WorldService {
 		this.lights.sun.visible = true;
 		this.lights.sun.intensity = 0.5;
 		this.lights.sun.position.set(0, 5, 0);
+		this.lights.sun.shadow.camera.near = 0.1;
+		this.lights.sun.shadow.camera.far = 60;
 	}
 
 	public resetShadow(): void {
@@ -220,13 +231,18 @@ export class WorldService {
 		const infiniteFloor = this.floor.getObjectByName(
 			"infinite-floor"
 		) as InfiniteGridHelper;
-		const floorShadow = this.floor.getObjectByName("floor-shadow") as Mesh;
+		const floorShadow = this.floor.getObjectByName("floor-shadow") as Mesh<
+			PlaneGeometry,
+			ShadowMaterial,
+			Object3DEventMap
+		>;
 
 		infiniteFloor.position.setY(-0.5);
 
 		floorShadow.position.setY(-0.49);
 		floorShadow.rotation.x = -Math.PI / 2;
 		floorShadow.receiveShadow = true;
+		floorShadow.material.opacity = 0.2;
 	}
 
 	public resetHands(): void {
@@ -251,8 +267,8 @@ export class WorldService {
 			this.floor,
 			this._chessboard.world.getScene(),
 			...Object.values(this._handService.hands).map((side) => side.scene),
-			...Object.values(this.lights),
-			this.environment.scene
+			...Object.values(this.lights)
+			// this.environment.scene
 		);
 	}
 
@@ -269,10 +285,49 @@ export class WorldService {
 		this.resetScene();
 	}
 
-	public handleAnimation(elapsedTime: number): void {
+	public update(): void {
 		this.environment.camera?.update(
 			this._app.renderer.instance()!,
 			this.environment.scene
 		);
+	}
+
+	public handleDayCycle({
+		normalizedProgress,
+		progress
+	}: ObservablePayload<WorldController["dayNightCycle$"]>): void {
+		const isMidCycle = normalizedProgress >= 0.5;
+		const sunAngle = progress * Math.PI * 2;
+		const dayFactor = Math.sin(sunAngle);
+		const toneAccent = Math.max(0.4, dayFactor * 0.8);
+		const floorShadow = this.floor.getObjectByName("floor-shadow") as
+			| Mesh<PlaneGeometry, ShadowMaterial, Object3DEventMap>
+			| undefined;
+
+		this.environment.sky.userData.elevation = normalizedProgress * 180 * 2;
+		this.environment.sky.userData.azimuth =
+			(Math.round(progress) % 2) * 50 + 90;
+		this.updateEnvironmentSky();
+
+		this.lights.sun.position.x =
+			this.environment.sky.userData.sunPosition.x * 3 * (isMidCycle ? -1 : 1);
+		this.lights.sun.position.y =
+			this.environment.sky.userData.sunPosition.y * 3 * (isMidCycle ? -1 : 1);
+		this.lights.sun.position.z = this.environment.sky.userData.sunPosition.z;
+
+		this.lights.sun.color.set(
+			new Color(
+				isMidCycle ? toneAccent : 1,
+				Math.max(0.7, dayFactor),
+				isMidCycle ? 1 : toneAccent
+			)
+		);
+		this.lights.sun.intensity = 0.7 * dayFactor * (isMidCycle ? -1 : 1);
+		this.lights.sunPropagation.intensity = Math.max(0.1, 0.2 * (1 - dayFactor));
+
+		if (floorShadow)
+			floorShadow.material.opacity = 0.2 * dayFactor * (isMidCycle ? -1 : 1);
+
+		this._app.world.scene().environmentIntensity = Math.max(0.15, -dayFactor);
 	}
 }

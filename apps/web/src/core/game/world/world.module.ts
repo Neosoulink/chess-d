@@ -3,13 +3,15 @@ import { inject, singleton } from "tsyringe";
 
 import { WorldService } from "./world.service";
 import { Subscription } from "rxjs";
+import { WorldController } from "./world.controller";
 
 @singleton()
 export class WorldModule implements Module {
 	private readonly _subscriptions: Subscription[] = [];
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
-		@inject(WorldService) private readonly _service: WorldService
+		@inject(WorldService) private readonly _service: WorldService,
+		@inject(WorldController) private readonly _controller: WorldController
 	) {}
 
 	init(): void {
@@ -18,9 +20,10 @@ export class WorldModule implements Module {
 		this._subscriptions.push(
 			this._app.timer
 				.step$()
-				.subscribe(({ elapsedTime }) =>
-					this._service.handleAnimation(elapsedTime)
-				)
+				.subscribe(this._service.update.bind(this._service)),
+			this._controller.dayNightCycle$.subscribe(
+				this._service.handleDayCycle.bind(this._service)
+			)
 		);
 	}
 
