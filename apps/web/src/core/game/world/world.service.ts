@@ -1,4 +1,10 @@
 import { ChessboardModule } from "@chess-d/chessboard";
+import {
+	BOARD_CELL_SIZE,
+	BOARD_MATRIX_RANGE_SIZE,
+	BOARD_RANGE_CELLS_HALF_SIZE,
+	ObservablePayload
+} from "@chess-d/shared";
 import { AppModule } from "@quick-threejs/reactive";
 import {
 	AmbientLight,
@@ -28,10 +34,14 @@ import {
 import { inject, singleton } from "tsyringe";
 
 import { InfiniteGridHelper } from "../../../shared/meshes/infinite-grid.mesh";
-import { Sky } from "three/examples/jsm/Addons.js";
+import {
+	Font,
+	Sky,
+	TextGeometry,
+	TextGeometryParameters
+} from "three/examples/jsm/Addons.js";
 import { HandService } from "../hands/hands.service";
 import { WorldController } from "./world.controller";
-import { ObservablePayload } from "@chess-d/shared";
 
 @singleton()
 export class WorldService {
@@ -47,6 +57,7 @@ export class WorldService {
 		sun: new DirectionalLight("#ffffff", 0.3),
 		sunPropagation: new AmbientLight("#ffffff", 0.05)
 	};
+	public readonly boardSquareHints = new Group();
 
 	/** @description The duration of a day in seconds. */
 	public dayDuration = 60;
@@ -82,8 +93,8 @@ export class WorldService {
 
 		// Floor
 		const infiniteFloor = new InfiniteGridHelper(
-			1,
-			1,
+			BOARD_CELL_SIZE,
+			BOARD_CELL_SIZE,
 			new Color("#d9d9d9"),
 			20
 		);
@@ -98,37 +109,7 @@ export class WorldService {
 		this.floor.add(floorShadow, infiniteFloor);
 	}
 
-	public resetColorManagement(): void {
-		ColorManagement.enabled = true;
-	}
-
-	public resetRenderer(): void {
-		const renderer = this._app.renderer.instance();
-		if (!renderer) return;
-
-		renderer.autoClear = true;
-		renderer.setClearAlpha(0);
-		renderer.setClearColor(new Color(0x000000), 0);
-		renderer.outputColorSpace = SRGBColorSpace;
-		renderer.toneMapping = NoToneMapping;
-		renderer.toneMappingExposure = 1;
-	}
-
-	public resetCamera(): void {
-		const appDebug = this._app.debug;
-		const camera = this._app.camera.instance() as PerspectiveCamera;
-		const miniCamera = appDebug.miniCamera();
-
-		camera.position.set(0, 10, -7);
-		camera.lookAt(0, 0, 0);
-		camera.fov = 40;
-		camera.near = 0.1;
-		camera.far = 500;
-
-		miniCamera?.position.set(6, 2, 0);
-	}
-
-	public updateEnvironmentSky(): void {
+	private _updateEnvironmentSky(): void {
 		const uniforms = this.environment.sky.material.uniforms!;
 		const phi = MathUtils.degToRad(
 			90 - this.environment.sky.userData.elevation
@@ -158,6 +139,35 @@ export class WorldService {
 			);
 	}
 
+	public resetColorManagement(): void {
+		ColorManagement.enabled = true;
+	}
+
+	public resetRenderer(): void {
+		const renderer = this._app.renderer.instance();
+		if (!renderer) return;
+
+		renderer.autoClear = true;
+		renderer.setClearAlpha(0);
+		renderer.setClearColor(new Color(0x000000), 0);
+		renderer.outputColorSpace = SRGBColorSpace;
+		renderer.toneMapping = NoToneMapping;
+		renderer.toneMappingExposure = 1;
+	}
+
+	public resetCamera(): void {
+		const appDebug = this._app.debug;
+		const camera = this._app.camera.instance() as PerspectiveCamera;
+		const miniCamera = appDebug.miniCamera();
+		camera.position.set(0, 12, -9);
+		camera.lookAt(0, 0, 0);
+		camera.fov = 40;
+		camera.near = 0.1;
+		camera.far = 100;
+
+		miniCamera?.position.set(6, 2, 0);
+	}
+
 	public resetEnvironment(): void {
 		const baseScene = this._app.world.scene();
 		baseScene.environment = this.environment.target.texture;
@@ -179,8 +189,6 @@ export class WorldService {
 		this.environment.scene.add(this.environment.sky);
 
 		this.environment.target.depth = 0;
-
-		this.updateEnvironmentSky();
 	}
 
 	public resetLights(): void {
@@ -190,8 +198,6 @@ export class WorldService {
 		this.lights.sun.visible = true;
 		this.lights.sun.intensity = 0.5;
 		this.lights.sun.position.set(0, 5, 0);
-		this.lights.sun.shadow.camera.near = 0.1;
-		this.lights.sun.shadow.camera.far = 60;
 	}
 
 	public resetShadow(): void {
@@ -211,10 +217,10 @@ export class WorldService {
 		this.lights.sun.shadow.map?.setSize(4096, 4096);
 		this.lights.sun.shadow.camera.far = 50;
 		this.lights.sun.shadow.camera.near = 0.1;
-		this.lights.sun.shadow.camera.top = 8;
-		this.lights.sun.shadow.camera.bottom = -8;
-		this.lights.sun.shadow.camera.left = -8;
-		this.lights.sun.shadow.camera.right = 8;
+		this.lights.sun.shadow.camera.top = 10;
+		this.lights.sun.shadow.camera.bottom = -10;
+		this.lights.sun.shadow.camera.left = -10;
+		this.lights.sun.shadow.camera.right = 10;
 	}
 
 	public resetChessboard(): void {
@@ -224,6 +230,63 @@ export class WorldService {
 			child.receiveShadow = true;
 
 			if (child instanceof Mesh) child.material = this.mainMaterial;
+		});
+	}
+
+	public resetBoardSquareHints(): void {
+		this.boardSquareHints.traverse((child) => {
+			if (child instanceof Mesh) child.geometry.dispose();
+		});
+
+		const font = this._app.loader.getLoadedResources()["helvetikerFont"] as
+			| Font
+			| undefined;
+
+		if (!font) return;
+
+		Array.from(Array(BOARD_MATRIX_RANGE_SIZE).keys()).forEach((i) => {
+			const geometryParams: TextGeometryParameters = {
+				font,
+				size: 0.35,
+				height: 0.1,
+				depth: 0.01,
+				bevelSize: 0.01,
+				bevelThickness: 0.01,
+				bevelEnabled: true
+			};
+			const letterGeometry = new TextGeometry(
+				(i + 10).toString(36).toUpperCase(),
+				geometryParams
+			);
+			letterGeometry.center();
+			letterGeometry.rotateX(-Math.PI / 2);
+			letterGeometry.rotateY(Math.PI);
+
+			const numberGeometry = new TextGeometry(`${i + 1}`, geometryParams);
+			numberGeometry.center();
+			numberGeometry.rotateX(-Math.PI / 2);
+			numberGeometry.rotateY(Math.PI);
+
+			const letterMesh = new Mesh(letterGeometry, this.mainMaterial);
+			letterMesh.castShadow = true;
+			letterMesh.receiveShadow = true;
+			letterMesh.position.set(
+				BOARD_RANGE_CELLS_HALF_SIZE - BOARD_CELL_SIZE - i,
+				0,
+				-BOARD_RANGE_CELLS_HALF_SIZE
+			);
+
+			const numberMesh = new Mesh(numberGeometry, this.mainMaterial);
+			numberMesh.castShadow = true;
+			numberMesh.receiveShadow = true;
+			numberMesh.position.set(
+				BOARD_RANGE_CELLS_HALF_SIZE,
+				0,
+				-BOARD_RANGE_CELLS_HALF_SIZE + BOARD_CELL_SIZE + i
+			);
+
+			this.boardSquareHints.position.setY(-0.1);
+			this.boardSquareHints.add(letterMesh, numberMesh);
 		});
 	}
 
@@ -237,12 +300,14 @@ export class WorldService {
 			Object3DEventMap
 		>;
 
-		infiniteFloor.position.setY(-0.5);
+		infiniteFloor.position.setY(-0.1);
 
-		floorShadow.position.setY(-0.49);
 		floorShadow.rotation.x = -Math.PI / 2;
 		floorShadow.receiveShadow = true;
 		floorShadow.material.opacity = 0.2;
+		floorShadow.position.setY(-0.09);
+
+		this.floor.position.setY(-0.15);
 	}
 
 	public resetHands(): void {
@@ -265,6 +330,7 @@ export class WorldService {
 		this.scene.clear();
 		this.scene.add(
 			this.floor,
+			this.boardSquareHints,
 			this._chessboard.world.getScene(),
 			...Object.values(this._handService.hands).map((side) => side.scene),
 			...Object.values(this.lights)
@@ -280,16 +346,10 @@ export class WorldService {
 		this.resetLights();
 		this.resetShadow();
 		this.resetChessboard();
+		this.resetBoardSquareHints();
 		this.resetFloor();
 		this.resetHands();
 		this.resetScene();
-	}
-
-	public update(): void {
-		this.environment.camera?.update(
-			this._app.renderer.instance()!,
-			this.environment.scene
-		);
 	}
 
 	public handleDayCycle({
@@ -299,15 +359,12 @@ export class WorldService {
 		const isMidCycle = normalizedProgress >= 0.5;
 		const sunAngle = progress * Math.PI * 2;
 		const dayFactor = Math.sin(sunAngle);
-		const toneAccent = Math.max(0.4, dayFactor * 0.8);
+		const toneAccent = Math.max(0.3, dayFactor * 0.8);
 		const floorShadow = this.floor.getObjectByName("floor-shadow") as
 			| Mesh<PlaneGeometry, ShadowMaterial, Object3DEventMap>
 			| undefined;
 
-		this.environment.sky.userData.elevation = normalizedProgress * 180 * 2;
-		this.environment.sky.userData.azimuth =
-			(Math.round(progress) % 2) * 50 + 90;
-		this.updateEnvironmentSky();
+		this._app.world.scene().environmentIntensity = Math.max(0.2, -dayFactor);
 
 		this.lights.sun.position.x =
 			this.environment.sky.userData.sunPosition.x * 3 * (isMidCycle ? -1 : 1);
@@ -328,6 +385,17 @@ export class WorldService {
 		if (floorShadow)
 			floorShadow.material.opacity = 0.2 * dayFactor * (isMidCycle ? -1 : 1);
 
-		this._app.world.scene().environmentIntensity = Math.max(0.15, -dayFactor);
+		this.environment.sky.userData.elevation = normalizedProgress * 180 * 2;
+		this.environment.sky.userData.azimuth =
+			(Math.round(progress) % 2) * 50 + 90;
+	}
+
+	public handleUpdates(): void {
+		this.environment.camera?.update(
+			this._app.renderer.instance()!,
+			this.environment.scene
+		);
+
+		this._updateEnvironmentSky();
 	}
 }

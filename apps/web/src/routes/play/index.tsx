@@ -19,6 +19,7 @@ import bishopPiece from "../../assets/3D/pieces/bishop.glb?url";
 import queenPiece from "../../assets/3D/pieces/queen.glb?url";
 import kingPiece from "../../assets/3D/pieces/king.glb?url";
 import masterHand from "../../assets/3D/master-hand.glb?url";
+import helvetikerFont from "../../assets/fonts/helvetiker_regular.typeface.json?url";
 
 /** @internal */
 const workerLocation = new URL(
@@ -89,6 +90,11 @@ export const PlayRoute: FC = () => {
 					name: "masterHand",
 					path: masterHand,
 					type: "gltf"
+				},
+				{
+					name: "helvetikerFont",
+					path: helvetikerFont,
+					type: "font"
 				}
 			],
 			onReady: (_app) => {

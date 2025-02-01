@@ -20,7 +20,7 @@ export class WorldModule implements Module {
 		this._subscriptions.push(
 			this._app.timer
 				.step$()
-				.subscribe(this._service.update.bind(this._service)),
+				.subscribe(this._service.handleUpdates.bind(this._service)),
 			this._controller.dayNightCycle$.subscribe(
 				this._service.handleDayCycle.bind(this._service)
 			)
