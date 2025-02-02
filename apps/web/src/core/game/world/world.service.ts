@@ -1,9 +1,11 @@
-import { ChessboardModule } from "@chess-d/chessboard";
+import { ChessboardModule, InstancedPieceModel } from "@chess-d/chessboard";
 import {
 	BOARD_CELL_SIZE,
 	BOARD_MATRIX_RANGE_SIZE,
 	BOARD_RANGE_CELLS_HALF_SIZE,
-	ObservablePayload
+	BOARD_RANGE_CELLS_SIZE,
+	ObservablePayload,
+	PieceType
 } from "@chess-d/shared";
 import { AppModule } from "@quick-threejs/reactive";
 import {
@@ -217,10 +219,10 @@ export class WorldService {
 		this.lights.sun.shadow.map?.setSize(4096, 4096);
 		this.lights.sun.shadow.camera.far = 50;
 		this.lights.sun.shadow.camera.near = 0.1;
-		this.lights.sun.shadow.camera.top = 10;
-		this.lights.sun.shadow.camera.bottom = -10;
-		this.lights.sun.shadow.camera.left = -10;
-		this.lights.sun.shadow.camera.right = 10;
+		this.lights.sun.shadow.camera.top = BOARD_RANGE_CELLS_SIZE;
+		this.lights.sun.shadow.camera.bottom = -BOARD_RANGE_CELLS_SIZE;
+		this.lights.sun.shadow.camera.left = -BOARD_RANGE_CELLS_SIZE;
+		this.lights.sun.shadow.camera.right = BOARD_RANGE_CELLS_SIZE;
 	}
 
 	public resetChessboard(): void {
@@ -275,6 +277,7 @@ export class WorldService {
 				0,
 				-BOARD_RANGE_CELLS_HALF_SIZE
 			);
+			letterMesh.scale.setScalar(0);
 
 			const numberMesh = new Mesh(numberGeometry, this.mainMaterial);
 			numberMesh.castShadow = true;
@@ -284,6 +287,7 @@ export class WorldService {
 				0,
 				-BOARD_RANGE_CELLS_HALF_SIZE + BOARD_CELL_SIZE + i
 			);
+			numberMesh.scale.setScalar(0);
 
 			this.boardSquareHints.position.setY(-0.1);
 			this.boardSquareHints.add(letterMesh, numberMesh);
@@ -352,10 +356,55 @@ export class WorldService {
 		this.resetScene();
 	}
 
+	public handleIntroAnimation(
+		progress: ObservablePayload<WorldController["introAnimation$"]>
+	) {
+		const groups = this._chessboard.pieces.getGroups();
+
+		Object.values(groups).forEach((group) => {
+			Object.values(group).forEach((instancedPiece) => {
+				if (instancedPiece instanceof InstancedPieceModel)
+					for (
+						let pieceInstanceId = 0;
+						pieceInstanceId < instancedPiece.count || 0;
+						pieceInstanceId++
+					) {
+						const geometry = instancedPiece.geometry;
+						const geometryHight = geometry.boundingBox?.max.y || 0;
+						const piece = instancedPiece?.getPieceByInstanceId(pieceInstanceId);
+
+						if (piece) {
+							this._chessboard.pieces.setPiecePosition(piece, {
+								...piece.position,
+								y:
+									PieceType.pawn === piece.type
+										? geometryHight + 1.05 - progress
+										: progress > 0.3
+											? geometryHight + 1.05 - (progress - 0.3) * 1.43
+											: geometryHight + 1.05
+							});
+						}
+					}
+			});
+		});
+
+		this.boardSquareHints.traverseVisible((child) => {
+			if (child instanceof Mesh) child.scale.setScalar(progress);
+		});
+
+		this._app.camera.instance()?.position.copy({
+			x: -20 + progress * 20,
+			y: progress * 12,
+			z: -9 * progress
+		});
+
+		this._app.camera.instance()?.lookAt(0, 0, 0);
+	}
+
 	public handleDayCycle({
 		normalizedProgress,
 		progress
-	}: ObservablePayload<WorldController["dayNightCycle$"]>): void {
+	}: ObservablePayload<WorldController["dayCycle$"]>): void {
 		const isMidCycle = normalizedProgress >= 0.5;
 		const sunAngle = progress * Math.PI * 2;
 		const dayFactor = Math.sin(sunAngle);
@@ -367,9 +416,13 @@ export class WorldService {
 		this._app.world.scene().environmentIntensity = Math.max(0.2, -dayFactor);
 
 		this.lights.sun.position.x =
-			this.environment.sky.userData.sunPosition.x * 3 * (isMidCycle ? -1 : 1);
+			this.environment.sky.userData.sunPosition.x *
+			BOARD_RANGE_CELLS_SIZE *
+			(isMidCycle ? -1 : 1);
 		this.lights.sun.position.y =
-			this.environment.sky.userData.sunPosition.y * 3 * (isMidCycle ? -1 : 1);
+			this.environment.sky.userData.sunPosition.y *
+			BOARD_RANGE_CELLS_SIZE *
+			(isMidCycle ? -1 : 1);
 		this.lights.sun.position.z = this.environment.sky.userData.sunPosition.z;
 
 		this.lights.sun.color.set(
@@ -387,7 +440,7 @@ export class WorldService {
 
 		this.environment.sky.userData.elevation = normalizedProgress * 180 * 2;
 		this.environment.sky.userData.azimuth =
-			(Math.round(progress) % 2) * 50 + 90;
+			(Math.round(progress) % 2) * 70 + 90;
 	}
 
 	public handleUpdates(): void {

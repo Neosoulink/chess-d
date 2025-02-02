@@ -21,8 +21,11 @@ export class WorldModule implements Module {
 			this._app.timer
 				.step$()
 				.subscribe(this._service.handleUpdates.bind(this._service)),
-			this._controller.dayNightCycle$.subscribe(
+			this._controller.dayCycle$.subscribe(
 				this._service.handleDayCycle.bind(this._service)
+			),
+			this._controller.introAnimation$.subscribe(
+				this._service.handleIntroAnimation.bind(this._service)
 			)
 		);
 	}

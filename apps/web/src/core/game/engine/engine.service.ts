@@ -58,7 +58,7 @@ export class EngineService {
 		let pieceToDrop: MatrixPieceModel | undefined = undefined;
 
 		if (!endCoord || !(nextMoveIndex >= 0) || !nextMove)
-			return this.chessboard.pieces.movePieceByCoord(
+			return this.chessboard.pieces.setPieceCoord(
 				piece,
 				startCoord,
 				positionOffset
@@ -96,7 +96,7 @@ export class EngineService {
 					col: flags === MoveFlags.queenside_castle ? 3 : 5
 				};
 
-				this.chessboard.pieces.movePieceByCoord(
+				this.chessboard.pieces.setPieceCoord(
 					rook,
 					newRookCoord,
 					positionOffset
@@ -106,7 +106,7 @@ export class EngineService {
 
 		if (pieceToDrop) this.chessboard.pieces.dropPiece(pieceToDrop);
 
-		this.chessboard.pieces.movePieceByCoord(piece, endCoord, positionOffset);
+		this.chessboard.pieces.setPieceCoord(piece, endCoord, positionOffset);
 
 		if (nextMove.promotion && piece.type === PieceType.pawn) {
 			this.chessboard.pieces.promotePiece(

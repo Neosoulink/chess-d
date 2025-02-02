@@ -56,7 +56,7 @@ export class PiecesService {
 
 		if (start) this.resetPieces();
 
-		this._chessboard.pieces.movePieceByPosition(piece, position);
+		this._chessboard.pieces.setPiecePosition(piece, position);
 
 		if (end) this.handlePlayerMovedPiece(move);
 	}

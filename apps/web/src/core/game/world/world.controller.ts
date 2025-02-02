@@ -1,4 +1,5 @@
 import { AppModule } from "@quick-threejs/reactive";
+import { gsap } from "gsap";
 import { BehaviorSubject, map, Observable, switchMap } from "rxjs";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
@@ -9,9 +10,11 @@ export class WorldController {
 	public dayCycle$$ = new BehaviorSubject<{
 		duration: number;
 		progress?: number;
-	}>({ duration: 10, progress: 0 });
+	}>({ duration: 60 * 3, progress: 0.05 });
+	public introAnimation$$ = new BehaviorSubject<boolean>(true);
+	public idleAnimation$$ = new BehaviorSubject<boolean>(true);
 
-	public readonly dayNightCycle$: Observable<{
+	public readonly dayCycle$: Observable<{
 		now: number;
 		deltaTime: number;
 		elapsedTime: number;
@@ -21,12 +24,13 @@ export class WorldController {
 		duration: number;
 		totalDuration: number;
 	}>;
+	public readonly introAnimation$: Observable<number>;
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
 		@inject(WorldService) private readonly _service: WorldService
 	) {
-		this.dayNightCycle$ = this.dayCycle$$.pipe(
+		this.dayCycle$ = this.dayCycle$$.pipe(
 			switchMap(({ duration, progress: _baseProgress }) => {
 				const totalDuration = duration * 1000;
 				const initialTime = Date.now();
@@ -59,6 +63,26 @@ export class WorldController {
 					})
 				);
 			})
+		);
+
+		this.introAnimation$ = this.introAnimation$$.pipe(
+			switchMap(
+				(intro) =>
+					new Observable<number>((subscriber) => {
+						const params = { progress: 0 };
+
+						gsap
+							.to(params, {
+								duration: 1.5,
+								progress: 1,
+								onUpdate: () => subscriber.next(params.progress)
+							})
+							.then(() => {
+								subscriber.next(params.progress);
+								subscriber.complete();
+							});
+					})
+			)
 		);
 	}
 }
