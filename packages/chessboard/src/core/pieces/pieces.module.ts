@@ -57,16 +57,14 @@ export class PiecesModule {
 		return this._service.getPieceByCoord(...props);
 	}
 
-	public movePieceByPosition(
-		...props: Parameters<PiecesService["movePieceByPosition"]>
+	public setPiecePosition(
+		...props: Parameters<PiecesService["setPiecePosition"]>
 	) {
-		this._service.movePieceByPosition(...props);
+		this._service.setPiecePosition(...props);
 	}
 
-	public movePieceByCoord(
-		...props: Parameters<PiecesService["movePieceByCoord"]>
-	) {
-		this._service.movePieceByCoord(...props);
+	public setPieceCoord(...props: Parameters<PiecesService["setPieceCoord"]>) {
+		this._service.setPieceCoord(...props);
 	}
 
 	public promotePiece(...props: Parameters<PiecesService["promotePiece"]>) {

@@ -175,7 +175,7 @@ export class InstancedPieceModel<
 
 			if (!boundingBox || !piece) return undefined;
 
-			const height = boundingBox.max.y;
+			const height = boundingBox.max.y + 0.05;
 
 			piece.setCoord(boardMesh, coord, {
 				x: boardMesh.position.x + (offset?.x || 0),

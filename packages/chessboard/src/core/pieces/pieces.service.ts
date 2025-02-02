@@ -156,7 +156,7 @@ export class PiecesService {
 		return piece as unknown as MatrixPieceModel<Type, Color>;
 	}
 
-	public movePieceByPosition<Type extends PieceType, Color extends ColorSide>(
+	public setPiecePosition<Type extends PieceType, Color extends ColorSide>(
 		piece: MatrixPieceModel<Type, Color>,
 		position: Vector3Like
 	) {
@@ -166,7 +166,7 @@ export class PiecesService {
 		);
 	}
 
-	public movePieceByCoord<Type extends PieceType, Color extends ColorSide>(
+	public setPieceCoord<Type extends PieceType, Color extends ColorSide>(
 		piece: MatrixPieceModel<Type, Color>,
 		coord: BoardCoord,
 		offset?: Vector3Like
@@ -243,7 +243,7 @@ export class PiecesService {
 			["x", "z"]
 		);
 
-		this.movePieceByPosition(piece, {
+		this.setPiecePosition(piece, {
 			...cellPosition,
 			y:
 				(instancedPiece?.geometry.boundingBox?.max.y ||
@@ -255,7 +255,7 @@ export class PiecesService {
 	public handlePieceDeselected(payload: PieceNotificationPayload) {
 		const { piece, cell, endCoord, startCoord } = payload;
 
-		this.movePieceByCoord(piece, endCoord ?? cell?.coord ?? startCoord);
+		this.setPieceCoord(piece, endCoord ?? cell?.coord ?? startCoord);
 	}
 
 	public updateGeometries() {
