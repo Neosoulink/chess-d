@@ -4,6 +4,7 @@ import { Module } from "@quick-threejs/reactive";
 
 import { EngineService } from "./engine.service";
 import { EngineController } from "./engine.controller";
+import { GameController } from "../game.controller";
 
 @singleton()
 export class EngineModule implements Module {
@@ -11,6 +12,7 @@ export class EngineModule implements Module {
 
 	constructor(
 		@inject(EngineController) private readonly _controller: EngineController,
+		@inject(GameController) private readonly _gameController: GameController,
 		@inject(EngineService) private readonly _service: EngineService
 	) {}
 
@@ -21,6 +23,9 @@ export class EngineModule implements Module {
 			),
 			this._controller.pieceMoved$?.subscribe(
 				this._service.handlePieceMoved.bind(this._service)
+			),
+			this._gameController.reset$.subscribe(
+				this._service.reset.bind(this._service)
 			)
 		);
 	}

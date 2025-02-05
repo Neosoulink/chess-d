@@ -11,6 +11,7 @@ import {
 	EngineNotificationPayload,
 	EnginePieceMovedNotificationPayload
 } from "../../../shared/types";
+import { GameController } from "../game.controller";
 
 @singleton()
 export class EngineController {

@@ -11,21 +11,18 @@ import {
 	squareToCoord
 } from "@chess-d/shared";
 import { Move } from "chess.js";
-import { gsap } from "gsap";
 import { inject, singleton } from "tsyringe";
+
 import { PiecesController } from "./pieces.controller";
 
 @singleton()
 export class PiecesService {
-	public readonly timeline = gsap.timeline();
-
 	constructor(
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule
 	) {}
 
 	public reset(fen = DEFAULT_FEN) {
 		this._chessboard.pieces.reset(fen);
-		this.timeline.clear();
 	}
 
 	public resetPieces() {
@@ -44,7 +41,6 @@ export class PiecesService {
 						piece.coord
 					);
 				}
-				this.timeline.clear();
 			}
 		}
 	}
@@ -72,7 +68,7 @@ export class PiecesService {
 		const instancedPiece = this._chessboard.pieces.getGroups()[piece.color][
 			piece.type
 		] as InstancedPieceModel;
-		const pieceGeometry = this._chessboard.resource.getGeometryByType(
+		const pieceGeometry = this._chessboard.resources.getPieceGeometry(
 			piece.type
 		);
 

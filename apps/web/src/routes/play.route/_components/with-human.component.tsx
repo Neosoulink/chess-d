@@ -17,7 +17,7 @@ import { io } from "socket.io-client";
 import { PlayerModel } from "../../../shared/models";
 import {
 	GAME_UPDATED_TOKEN,
-	GAME_WILL_RESET_TOKEN,
+	GAME_RESET_TOKEN,
 	PIECE_WILL_MOVE_TOKEN
 } from "../../../shared/tokens";
 import {
@@ -67,7 +67,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		(fen?: string) => {
 			setTimeout(() => {
 				appModule?.getWorker()?.postMessage?.({
-					token: GAME_WILL_RESET_TOKEN,
+					token: GAME_RESET_TOKEN,
 					value: { fen }
 				} satisfies MessageEventPayload<{ fen }>);
 			}, 100);

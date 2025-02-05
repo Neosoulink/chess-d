@@ -97,7 +97,7 @@ export class WorldService {
 		const infiniteFloor = new InfiniteGridHelper(
 			BOARD_CELL_SIZE,
 			BOARD_CELL_SIZE,
-			new Color("#d9d9d9"),
+			new Color("#999999"),
 			20
 		);
 		infiniteFloor.name = "infinite-floor";
@@ -112,7 +112,11 @@ export class WorldService {
 	}
 
 	private _updateEnvironmentSky(): void {
-		const uniforms = this.environment.sky.material.uniforms!;
+		const uniforms = this.environment.sky.material.uniforms;
+		const sunPosition = this.environment.sky.userData.sunPosition;
+
+		if (!uniforms || !(sunPosition instanceof Vector3)) return;
+
 		const phi = MathUtils.degToRad(
 			90 - this.environment.sky.userData.elevation
 		);
@@ -129,16 +133,22 @@ export class WorldService {
 			uniforms["mieDirectionalG"].value =
 				this.environment.sky.userData.mieDirectionalG;
 
-		this.environment.sky.userData.sunPosition.setFromSphericalCoords(
-			1,
-			phi,
-			theta
-		);
+		sunPosition.setFromSphericalCoords(1, phi, theta);
 
 		if (uniforms["sunPosition"])
-			uniforms["sunPosition"].value.copy(
-				this.environment.sky.userData.sunPosition
-			);
+			uniforms["sunPosition"].value.copy(sunPosition);
+	}
+
+	private _updateSunPositionFromSky(invert?: boolean): void {
+		const sunPosition = this.environment.sky.userData.sunPosition;
+
+		if (!(sunPosition instanceof Vector3)) return;
+
+		this.lights.sun.position.x =
+			sunPosition.x * BOARD_RANGE_CELLS_SIZE * (invert ? -1 : 1);
+		this.lights.sun.position.y =
+			sunPosition.y * BOARD_RANGE_CELLS_SIZE * (invert ? -1 : 1);
+		this.lights.sun.position.z = sunPosition.z;
 	}
 
 	public resetColorManagement(): void {
@@ -189,8 +199,9 @@ export class WorldService {
 		this.environment.sky.scale.setScalar(450000);
 		this.environment.scene.clear();
 		this.environment.scene.add(this.environment.sky);
-
 		this.environment.target.depth = 0;
+
+		this._updateEnvironmentSky();
 	}
 
 	public resetLights(): void {
@@ -200,6 +211,8 @@ export class WorldService {
 		this.lights.sun.visible = true;
 		this.lights.sun.intensity = 0.5;
 		this.lights.sun.position.set(0, 5, 0);
+
+		this._updateSunPositionFromSky();
 	}
 
 	public resetShadow(): void {
@@ -305,10 +318,12 @@ export class WorldService {
 		>;
 
 		infiniteFloor.position.setY(-0.1);
+		if (typeof infiniteFloor.material.uniforms.uDistance?.value === "number")
+			infiniteFloor.material.uniforms.uDistance.value = 0;
 
 		floorShadow.rotation.x = -Math.PI / 2;
 		floorShadow.receiveShadow = true;
-		floorShadow.material.opacity = 0.2;
+		floorShadow.material.opacity = 0.01;
 		floorShadow.position.setY(-0.09);
 
 		this.floor.position.setY(-0.15);
@@ -360,6 +375,9 @@ export class WorldService {
 		progress: ObservablePayload<WorldController["introAnimation$"]>
 	) {
 		const groups = this._chessboard.pieces.getGroups();
+		const infiniteFloor = this.floor.getObjectByName(
+			"infinite-floor"
+		) as InfiniteGridHelper;
 
 		Object.values(groups).forEach((group) => {
 			Object.values(group).forEach((instancedPiece) => {
@@ -388,6 +406,9 @@ export class WorldService {
 			});
 		});
 
+		if (typeof infiniteFloor.material.uniforms.uDistance?.value === "number")
+			infiniteFloor.material.uniforms.uDistance.value = progress * 40;
+
 		this.boardSquareHints.traverseVisible((child) => {
 			if (child instanceof Mesh) child.scale.setScalar(progress);
 		});
@@ -415,16 +436,6 @@ export class WorldService {
 
 		this._app.world.scene().environmentIntensity = Math.max(0.2, -dayFactor);
 
-		this.lights.sun.position.x =
-			this.environment.sky.userData.sunPosition.x *
-			BOARD_RANGE_CELLS_SIZE *
-			(isMidCycle ? -1 : 1);
-		this.lights.sun.position.y =
-			this.environment.sky.userData.sunPosition.y *
-			BOARD_RANGE_CELLS_SIZE *
-			(isMidCycle ? -1 : 1);
-		this.lights.sun.position.z = this.environment.sky.userData.sunPosition.z;
-
 		this.lights.sun.color.set(
 			new Color(
 				isMidCycle ? toneAccent : 1,
@@ -441,14 +452,15 @@ export class WorldService {
 		this.environment.sky.userData.elevation = normalizedProgress * 180 * 2;
 		this.environment.sky.userData.azimuth =
 			(Math.round(progress) % 2) * 70 + 90;
+
+		this._updateEnvironmentSky();
+		this._updateSunPositionFromSky(isMidCycle);
 	}
 
-	public handleUpdates(): void {
+	public update(): void {
 		this.environment.camera?.update(
 			this._app.renderer.instance()!,
 			this.environment.scene
 		);
-
-		this._updateEnvironmentSky();
 	}
 }

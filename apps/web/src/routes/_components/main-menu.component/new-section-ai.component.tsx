@@ -9,7 +9,6 @@ export const NewGameAISection: FC = () => {
 	const navigate = useNavigate();
 
 	const { setSection } = useMainMenuStore();
-	const { reset: resetGame } = useGameStore();
 
 	const renderSupportedAiModels = () => {
 		return Object.keys(SupportedAiModel)
@@ -32,7 +31,6 @@ export const NewGameAISection: FC = () => {
 		if (!aiOpponent || SupportedAiModel[aiOpponent] === undefined) return;
 
 		navigate(`/play?mode=ai&ai=${aiOpponent}`);
-		resetGame();
 	};
 
 	return (

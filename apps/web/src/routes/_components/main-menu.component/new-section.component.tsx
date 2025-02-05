@@ -32,10 +32,7 @@ export const NewGameSection: FC = () => {
 			label: "Free Mode",
 			mode: "free",
 			title: "Play against yourself",
-			action: () => {
-				navigate("/play?mode=free");
-				resetGame();
-			}
+			action: () => navigate("/play?mode=free")
 		},
 		{
 			label: "Simulation",

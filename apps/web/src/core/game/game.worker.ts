@@ -19,64 +19,81 @@ launchApp({
 	onReady: async (app) => {
 		const { module: appModule } = app;
 
+		if (!isObject(app))
+			throw new Error("Unable to retrieve the application context.");
+
+		const { module: chessboardModule } = await setupChessboard({
+			camera: appModule.camera.instance() as Camera,
+			observables: {
+				mousedown$: appModule.mousedown$?.(),
+				mouseup$: appModule.mouseup$?.()
+			},
+			enableDebug: appModule.debug.enabled()
+		});
+
+		container.register(Chess, { useValue: new Chess() });
+		container.register(AppModule, { useValue: appModule });
+		container.register(ChessboardModule, { useValue: chessboardModule });
+
+		const game = container.resolve<GameModule>(GameModule);
+
 		appModule.loader.getLoadCompleted$().subscribe(async (payload) => {
 			const loadedResources = payload.loadedResources;
-			const chessboardPieces: Partial<Record<PieceType, BufferGeometry>> = {};
 
 			const pawnGeometry = (
 				(loadedResources["pawnPiece"] as GLTF)?.scene?.children?.[0] as Mesh
 			).geometry;
 			if (pawnGeometry instanceof BufferGeometry)
-				chessboardPieces.p = pawnGeometry;
+				chessboardModule.resources.setPieceGeometry(
+					PieceType.pawn,
+					pawnGeometry
+				);
 
 			const rookGeometry = (
 				(loadedResources["rookPiece"] as GLTF)?.scene?.children?.[0] as Mesh
 			)?.geometry;
 			if (rookGeometry instanceof BufferGeometry)
-				chessboardPieces.r = rookGeometry;
+				chessboardModule.resources.setPieceGeometry(
+					PieceType.rook,
+					rookGeometry
+				);
 
 			const knightGeometry = (
 				(loadedResources["knightPiece"] as GLTF)?.scene?.children?.[0] as Mesh
 			)?.geometry;
 			if (knightGeometry instanceof BufferGeometry)
-				chessboardPieces.n = knightGeometry;
+				chessboardModule.resources.setPieceGeometry(
+					PieceType.knight,
+					knightGeometry
+				);
 
 			const bishopGeometry = (
 				(loadedResources["bishopPiece"] as GLTF)?.scene?.children?.[0] as Mesh
 			)?.geometry;
 			if (bishopGeometry instanceof BufferGeometry)
-				chessboardPieces.b = bishopGeometry;
+				chessboardModule.resources.setPieceGeometry(
+					PieceType.bishop,
+					bishopGeometry
+				);
 
 			const queenGeometry = (
 				(loadedResources["queenPiece"] as GLTF)?.scene?.children?.[0] as Mesh
 			)?.geometry;
 			if (queenGeometry instanceof BufferGeometry)
-				chessboardPieces.q = queenGeometry;
+				chessboardModule.resources.setPieceGeometry(
+					PieceType.queen,
+					queenGeometry
+				);
 
 			const kingGeometry = (
 				(loadedResources["kingPiece"] as GLTF)?.scene?.children?.[0] as Mesh
 			)?.geometry;
 			if (kingGeometry instanceof BufferGeometry)
-				chessboardPieces.k = kingGeometry;
+				chessboardModule.resources.setPieceGeometry(
+					PieceType.king,
+					kingGeometry
+				);
 
-			const { module: chessboardModule } = await setupChessboard({
-				camera: appModule.camera.instance() as Camera,
-				piecesGeometries: chessboardPieces,
-				observables: {
-					mousedown$: appModule.mousedown$?.(),
-					mouseup$: appModule.mouseup$?.()
-				},
-				enableDebug: appModule.debug.enabled()
-			});
-
-			if (!isObject(app))
-				throw new Error("Unable to retrieve the application context.");
-
-			container.register(Chess, { useValue: new Chess() });
-			container.register(AppModule, { useValue: appModule });
-			container.register(ChessboardModule, { useValue: chessboardModule });
-
-			const game = container.resolve<GameModule>(GameModule);
 			game.init();
 		});
 	}

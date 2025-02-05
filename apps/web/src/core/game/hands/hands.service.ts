@@ -18,7 +18,8 @@ import { PiecesController } from "../pieces/pieces.controller";
 export class HandService {
 	static readonly INITIAL_HAND_POSITION: Vector3Like = { x: 0, y: 3, z: 6 };
 
-	public readonly gltf?: GLTF;
+	private _gltf?: GLTF;
+
 	public readonly hands = {} as Record<
 		ColorSide,
 		{
@@ -31,13 +32,11 @@ export class HandService {
 		}
 	>;
 
-	constructor(@inject(AppModule) private readonly _app: AppModule) {
-		this.gltf = this._app.loader.getLoadedResources()["masterHand"] as GLTF;
-	}
+	constructor(@inject(AppModule) private readonly _app: AppModule) {}
 
 	private _setupHand(colorSide: ColorSide) {
-		const modelGroup = this.gltf?.scene;
-		const animationClips = this.gltf?.animations || [];
+		const modelGroup = this._gltf?.scene;
+		const animationClips = this._gltf?.animations || [];
 		const idleClip = AnimationClip.findByName(animationClips, "idle");
 
 		if (!(modelGroup instanceof Group)) throw new Error("Invalid hand model");
@@ -72,6 +71,8 @@ export class HandService {
 	}
 
 	public setup() {
+		this._gltf = this._app.loader.getLoadedResources()["masterHand"] as GLTF;
+
 		this._setupHand(ColorSide.black);
 		this._setupHand(ColorSide.white);
 	}

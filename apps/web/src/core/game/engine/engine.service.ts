@@ -1,4 +1,4 @@
-import { Chess, Move } from "chess.js";
+import { Chess, Move, validateFen } from "chess.js";
 import { inject, singleton } from "tsyringe";
 import { ChessboardModule, MatrixPieceModel } from "@chess-d/chessboard";
 import {
@@ -133,5 +133,12 @@ export class EngineService {
 
 		this._postGameState();
 		return this.game.move(move);
+	}
+
+	public reset(fen?: string) {
+		if (fen && validateFen(fen).ok) this.game.load(fen);
+		else this.game.reset();
+
+		this._postGameState();
 	}
 }

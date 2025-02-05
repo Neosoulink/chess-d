@@ -2,8 +2,12 @@ import { FC, Fragment } from "react";
 import { Routes, Route, Outlet } from "react-router";
 
 import { HomeRoute } from "./home.route";
-import { PlayRoute } from "./play";
-import { MainMenuComponent } from "./_components/main-menu";
+import { PlayRoute } from "./play.route";
+import {
+	ExperienceComponent,
+	LoadingWallComponent,
+	MainMenuComponent
+} from "./_components";
 
 export const Router: FC = () => (
 	<Fragment>
@@ -14,6 +18,8 @@ export const Router: FC = () => (
 					<Fragment>
 						<Outlet />
 
+						<ExperienceComponent />
+						<LoadingWallComponent />
 						<MainMenuComponent />
 					</Fragment>
 				}

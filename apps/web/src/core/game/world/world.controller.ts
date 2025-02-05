@@ -1,18 +1,23 @@
 import { AppModule } from "@quick-threejs/reactive";
 import { gsap } from "gsap";
-import { BehaviorSubject, map, Observable, switchMap } from "rxjs";
+import {
+	BehaviorSubject,
+	filter,
+	map,
+	merge,
+	Observable,
+	switchMap,
+	takeUntil
+} from "rxjs";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
-import { WorldService } from "./world.service";
-
+import { GameController } from "../game.controller";
 @scoped(Lifecycle.ContainerScoped)
 export class WorldController {
-	public dayCycle$$ = new BehaviorSubject<{
+	public readonly dayCycle$$ = new BehaviorSubject<{
 		duration: number;
 		progress?: number;
-	}>({ duration: 60 * 3, progress: 0.05 });
-	public introAnimation$$ = new BehaviorSubject<boolean>(true);
-	public idleAnimation$$ = new BehaviorSubject<boolean>(true);
+	}>({ duration: 10, progress: 0.05 });
 
 	public readonly dayCycle$: Observable<{
 		now: number;
@@ -25,10 +30,11 @@ export class WorldController {
 		totalDuration: number;
 	}>;
 	public readonly introAnimation$: Observable<number>;
+	public readonly idleAnimation$: Observable<number>;
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
-		@inject(WorldService) private readonly _service: WorldService
+		@inject(GameController) private readonly _gameController: GameController
 	) {
 		this.dayCycle$ = this.dayCycle$$.pipe(
 			switchMap(({ duration, progress: _baseProgress }) => {
@@ -65,15 +71,16 @@ export class WorldController {
 			})
 		);
 
-		this.introAnimation$ = this.introAnimation$$.pipe(
+		this.introAnimation$ = this._gameController.state$.pipe(
+			filter((state) => state === "playing"),
 			switchMap(
-				(intro) =>
+				() =>
 					new Observable<number>((subscriber) => {
 						const params = { progress: 0 };
 
 						gsap
 							.to(params, {
-								duration: 1.5,
+								duration: 2,
 								progress: 1,
 								onUpdate: () => subscriber.next(params.progress)
 							})
@@ -82,6 +89,29 @@ export class WorldController {
 								subscriber.complete();
 							});
 					})
+			)
+		);
+
+		this.idleAnimation$ = this._gameController.state$.pipe(
+			filter((state) => state === "idle"),
+			switchMap(
+				() =>
+					new Observable<number>((subscriber) => {
+						const params = { progress: 0 };
+
+						gsap.to(params, {
+							duration: 10,
+							progress: 1,
+							repeat: -1,
+							onUpdate: () => subscriber.next(params.progress)
+						});
+					})
+			),
+			takeUntil(
+				merge(
+					this._gameController.reset$,
+					this._gameController.state$.pipe(filter((state) => state !== "idle"))
+				)
 			)
 		);
 	}

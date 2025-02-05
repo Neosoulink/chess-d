@@ -8,7 +8,6 @@ import { useGameStore, useMainMenuStore } from "../../_stores";
 export const NewGameHumanSection: FC = () => {
 	const navigate = useNavigate();
 	const { setSection } = useMainMenuStore();
-	const { reset: resetGame } = useGameStore();
 
 	const [joinRoom, setJoinRoom] = useState(false);
 
@@ -27,7 +26,6 @@ export const NewGameHumanSection: FC = () => {
 		}
 
 		navigate(to);
-		resetGame();
 	};
 
 	return (
@@ -74,7 +72,6 @@ export const NewGameHumanSection: FC = () => {
 						to="/play?mode=human&random=true"
 						type="submit"
 						className="shadow-md p-2 rounded capitalize flex justify-center items-center"
-						onClick={() => resetGame()}
 					>
 						Random Match
 					</Link>

@@ -8,7 +8,6 @@ import { useGameStore, useMainMenuStore } from "../../_stores";
 export const NewGameSimulationSection: FC = () => {
 	const navigate = useNavigate();
 	const { setSection } = useMainMenuStore();
-	const { reset } = useGameStore();
 
 	const renderSupportedAiModels = () => {
 		return Object.keys(SupportedAiModel)
@@ -60,7 +59,6 @@ export const NewGameSimulationSection: FC = () => {
 			return;
 
 		navigate(`/play?mode=simulation&ai1=${ai1}&ai2=${ai2}`);
-		reset();
 	};
 
 	return (
