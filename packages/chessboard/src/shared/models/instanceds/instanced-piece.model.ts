@@ -97,7 +97,7 @@ export class InstancedPieceModel<
 		instance.userData = this.userData;
 
 		this.dispose(physics);
-		instance.initPhysics(physics);
+		instance.resetPhysics(physics);
 		parent?.add(instance);
 
 		this.update();
@@ -127,7 +127,9 @@ export class InstancedPieceModel<
 		return this.pieces[instanceId];
 	}
 
-	public initPhysics(physics: Physics): void {
+	public resetPhysics(physics: Physics): void {
+		physics?.removeFromWorld(this);
+
 		const physicsProperties = physics.addToWorld(
 			this,
 			0

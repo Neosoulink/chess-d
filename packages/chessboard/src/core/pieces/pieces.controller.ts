@@ -24,7 +24,7 @@ import {
 	MOUSE_UP_OBSERVABLE_TOKEN
 } from "../../shared";
 import { ChessboardService } from "../chessboard.service";
-import { ResourceService } from "../resource/resource.service";
+import { ResourcesService } from "../resources/resources.service";
 import { ChessboardController } from "../chessboard.controller";
 
 @singleton()
@@ -43,8 +43,8 @@ export class PiecesController {
 		private readonly _chessboardController: ChessboardController,
 		@inject(ChessboardService)
 		private readonly _coreComponent: ChessboardService,
-		@inject(ResourceService)
-		private readonly _resourceService: ResourceService
+		@inject(ResourcesService)
+		private readonly _resourcesService: ResourcesService
 	) {
 		this.pieceSelected$ = this._mousedown$.pipe(
 			map(() => {
@@ -72,7 +72,7 @@ export class PiecesController {
 					"row"
 				]) as BoardCoord;
 				const lastPosition = startPosition;
-				const pieceGeometry = this._resourceService.getGeometryByType(
+				const pieceGeometry = this._resourcesService.getPieceGeometry(
 					piece.type
 				);
 				const colorSide = piece.color;

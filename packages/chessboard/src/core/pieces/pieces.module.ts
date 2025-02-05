@@ -3,15 +3,20 @@ import { inject, singleton } from "tsyringe";
 import { PiecesService } from "./pieces.service";
 import { PiecesController } from "./pieces.controller";
 import { Subscription } from "rxjs";
+import { ResourcesController } from "../resources/resources.controller";
+import { BLACK, WHITE } from "chess.js";
+import { ColorSide } from "@chess-d/shared";
 
 @singleton()
 export class PiecesModule {
 	private _subscriptions: (Subscription | undefined)[] = [];
 
 	constructor(
-		@inject(PiecesService) private readonly _service: PiecesService,
 		@inject(PiecesController)
-		private readonly _controller: PiecesController
+		private readonly _controller: PiecesController,
+		@inject(ResourcesController)
+		private readonly _resourcesController: ResourcesController,
+		@inject(PiecesService) private readonly _service: PiecesService
 	) {}
 
 	public init() {
@@ -23,7 +28,16 @@ export class PiecesModule {
 			),
 			this._controller.pieceDeselected$?.subscribe(
 				this._service.handlePieceDeselected.bind(this._service)
-			)
+			),
+			this._resourcesController.updateTypeGeometry$$.subscribe((value) => {
+				[BLACK, WHITE].forEach((color) => {
+					this._service.updateGroupGeometry(
+						color as ColorSide,
+						value.type,
+						value.geometry
+					);
+				});
+			})
 		);
 	}
 
@@ -83,7 +97,17 @@ export class PiecesModule {
 		this._service.clear(...props);
 	}
 
-	dispose() {
+	public updateGroupGeometry(
+		...props: Parameters<PiecesService["updateGroupGeometry"]>
+	) {
+		return this._service.updateGroupGeometry(...props);
+	}
+
+	public updateGroupsGeometries() {
+		return this._service.updateGroupsGeometries();
+	}
+
+	public dispose() {
 		this._subscriptions.forEach((sub) => sub?.unsubscribe());
 		this._subscriptions = [];
 	}

@@ -3,7 +3,7 @@ import { BoxGeometry, BufferGeometry } from "three";
 import { PieceType } from "@chess-d/shared";
 
 @singleton()
-export class ResourceService {
+export class ResourcesService {
 	private readonly pieceGeometries: Record<PieceType, BufferGeometry> = {
 		p: new BoxGeometry(0.2, 1, 0.2),
 		r: new BoxGeometry(0.5, 1, 0.5),
@@ -15,11 +15,11 @@ export class ResourceService {
 
 	constructor() {}
 
-	public getGeometryByType(type: PieceType) {
+	public getPieceGeometry(type: PieceType) {
 		return this.pieceGeometries[type];
 	}
 
-	public setGeometryByType(type: PieceType, geometry: BufferGeometry) {
+	public setPieceGeometry(type: PieceType, geometry: BufferGeometry) {
 		this.pieceGeometries[type] = geometry;
 	}
 }

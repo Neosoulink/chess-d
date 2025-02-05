@@ -3,7 +3,7 @@ import { Physics } from "@chess-d/rapier";
 
 import { ChessboardService } from "./chessboard.service";
 import { ChessboardController } from "./chessboard.controller";
-import { ResourceModule } from "./resource/resource.module";
+import { ResourcesModule } from "./resources/resources.module";
 import { WorldModule } from "./world/world.module";
 import { BoardModule } from "./board/board.module";
 import { PiecesModule } from "./pieces/pieces.module";
@@ -20,7 +20,7 @@ export class ChessboardModule {
 		@inject(ChessboardController)
 		private readonly _controller: ChessboardController,
 		@inject(Physics) public readonly physics: Physics,
-		@inject(ResourceModule) public readonly resource: ResourceModule,
+		@inject(ResourcesModule) public readonly resources: ResourcesModule,
 		@inject(WorldModule) public readonly world: WorldModule,
 		@inject(BoardModule) public readonly board: BoardModule,
 		@inject(PiecesModule) public readonly pieces: PiecesModule,
@@ -30,7 +30,7 @@ export class ChessboardModule {
 	}
 
 	public init() {
-		this.resource.init();
+		this.resources.init();
 		this.world.init();
 		this.board.init();
 		this.pieces.init();
@@ -49,7 +49,7 @@ export class ChessboardModule {
 	}
 
 	public dispose() {
-		this.resource.dispose();
+		this.resources.dispose();
 		this.world.dispose();
 		this.board.dispose();
 		this.pieces.dispose();

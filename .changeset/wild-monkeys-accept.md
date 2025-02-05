@@ -2,4 +2,6 @@
 "@chess-d/chessboard": patch
 ---
 
-refactor(chessboard): corrent pieces `y`position
+# 02-02-2025
+
+## refactor(chessboard): correct pieces `y` position

@@ -10,8 +10,7 @@ import {
 	DEBUG_MODE_TOKEN,
 	INITIAL_FEN_TOKEN,
 	MOUSE_DOWN_OBSERVABLE_TOKEN,
-	MOUSE_UP_OBSERVABLE_TOKEN,
-	PIECES_GEOMETRIES_TOKEN
+	MOUSE_UP_OBSERVABLE_TOKEN
 } from "../shared";
 import { ChessboardModule } from "./chessboard.module";
 import { fromEvent, Observable } from "rxjs";
@@ -94,12 +93,17 @@ export const setup = async (props: SetupProps) => {
 	container.register(Physics, { useValue: await RapierPhysics() });
 	container.register(CAMERA_TOKEN, { useValue: camera });
 	container.register(INITIAL_FEN_TOKEN, { useValue: fen });
-	container.register(PIECES_GEOMETRIES_TOKEN, { useValue: piecesGeometries });
 	container.register(MOUSE_DOWN_OBSERVABLE_TOKEN, { useValue: mousedown$ });
 	container.register(MOUSE_UP_OBSERVABLE_TOKEN, { useValue: mouseup$ });
 	container.register(DEBUG_MODE_TOKEN, { useValue: !!props.enableDebug });
 
 	const module = container.resolve(ChessboardModule);
+
+	Object.keys(piecesGeometries).forEach((key) => {
+		const geometry = piecesGeometries[key as PieceType];
+		if (geometry instanceof BufferGeometry)
+			module.resources.setPieceGeometry(key as PieceType, geometry);
+	});
 
 	return { container, module };
 };

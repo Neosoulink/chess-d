@@ -20,7 +20,7 @@ import {
 	VECTOR
 } from "../../shared";
 import { BoardService } from "../board/board.service";
-import { ResourceService } from "../resource/resource.service";
+import { ResourcesService } from "../resources/resources.service";
 import { WorldService } from "../world/world.service";
 
 @singleton()
@@ -39,8 +39,8 @@ export class PiecesService {
 		@inject(Physics) private readonly _physics: Physics,
 		@inject(WorldService) private readonly _worldService: WorldService,
 		@inject(BoardService) private readonly _boardService: BoardService,
-		@inject(ResourceService)
-		private readonly _resourceService: ResourceService
+		@inject(ResourcesService)
+		private readonly _resourcesService: ResourcesService
 	) {}
 
 	private _createGroup<Type extends PieceType, Color extends ColorSide>(
@@ -49,7 +49,7 @@ export class PiecesService {
 		coords: BoardCoord[],
 		pieces?: InstancedPieceModel<Type, Color>["pieces"]
 	) {
-		const geometry = this._resourceService.getGeometryByType(type);
+		const geometry = this._resourcesService.getPieceGeometry(type);
 
 		if (!geometry) throw new Error("Invalid geometry.");
 
@@ -65,7 +65,7 @@ export class PiecesService {
 			group.setPieceCoord(instanceId, this._boardService.instancedCell, coord);
 		});
 
-		group.initPhysics(this._physics);
+		group.resetPhysics(this._physics);
 
 		return group;
 	}
@@ -258,16 +258,27 @@ export class PiecesService {
 		this.setPieceCoord(piece, endCoord ?? cell?.coord ?? startCoord);
 	}
 
-	public updateGeometries() {
+	public updateGroupGeometry<Type extends PieceType, Color extends ColorSide>(
+		color: Color,
+		key: Type,
+		geometry: InstancedPieceModel<Type, Color>["geometry"]
+	) {
+		const group = this.groups[color][key as PieceType];
+
+		if (!(group instanceof InstancedPieceModel)) return;
+
+		group.geometry = geometry;
+		group.resetPhysics(this._physics);
+	}
+
+	public updateGroupsGeometries() {
 		[ColorSide.black, ColorSide.white].forEach((color) => {
 			Object.keys(this.groups[color]).forEach((key) => {
-				const group = this.groups[color][key as PieceType];
+				const geometry = this._resourcesService.getPieceGeometry(
+					key as PieceType
+				);
 
-				if (group instanceof InstancedPieceModel) {
-					group.geometry = this._resourceService.getGeometryByType(
-						group.piecesType
-					);
-				}
+				this.updateGroupGeometry(color, key as PieceType, geometry);
 			});
 		});
 	}
