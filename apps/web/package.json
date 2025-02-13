@@ -16,7 +16,7 @@
 		"@chess-d/shared": "workspace:*",
 		"@quick-threejs/reactive": "^0.1.38",
 		"@quick-threejs/utils": "^0.1.17",
-		"chess.js": "1.0.0-beta.8",
+		"chess.js": "1.0.0",
 		"eslint-plugin-react-hooks": "^5.1.0",
 		"eslint-plugin-react-refresh": "^0.4.16",
 		"gsap": "^3.12.5",
