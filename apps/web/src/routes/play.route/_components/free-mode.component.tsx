@@ -1,32 +1,20 @@
-import { Move } from "chess.js";
-import { FC, Fragment, useCallback, useEffect } from "react";
+import { ColorSide, DEFAULT_FEN, PlayerEntity } from "@chess-d/shared";
+import { FC, Fragment, useCallback, useEffect, useRef } from "react";
 import { merge } from "rxjs";
 
-import { useGameStore } from "../../_stores";
+import { useGameStore, useLoaderStore } from "../../_stores";
 import { PlayerModel } from "../../../shared/models";
-import {
-	GAME_UPDATED_TOKEN,
-	PIECE_WILL_MOVE_TOKEN
-} from "../../../shared/tokens";
-import {
-	EngineGameUpdatedMessageEventPayload,
-	MessageEventPayload
-} from "../../../shared/types";
-import { ColorSide, PlayerEntity } from "@chess-d/shared";
+import { GAME_UPDATED_TOKEN } from "../../../shared/tokens";
+import { EngineUpdatedMessageData } from "../../../shared/types";
+import { useLocation } from "react-router";
+import { validateFen } from "chess.js";
 
 export const FreeModeComponent: FC = () => {
-	const { app } = useGameStore();
-	const { module: appModule } = app ?? {};
+	const location = useLocation();
+	const { app, fen, resetGame, setFen, performPieceMove } = useGameStore();
+	const { setIsLoading } = useLoaderStore();
 
-	const performPieceMove = useCallback(
-		(move: Move) => {
-			appModule?.getWorker()?.postMessage?.({
-				token: PIECE_WILL_MOVE_TOKEN,
-				value: move
-			} satisfies MessageEventPayload<Move>);
-		},
-		[appModule]
-	);
+	const locationKeyRef = useRef<string | null>(null);
 
 	const createPlayer = useCallback((identity: PlayerEntity) => {
 		const player = new PlayerModel();
@@ -36,13 +24,26 @@ export const FreeModeComponent: FC = () => {
 	}, []);
 
 	useEffect(() => {
-		const _players = [
+		if (locationKeyRef.current === location.key || validateFen(`${fen}`).ok)
+			return;
+		setFen(DEFAULT_FEN);
+	}, [fen, location.key, setFen]);
+
+	useEffect(() => {
+		if (locationKeyRef.current === location.key) return;
+
+		locationKeyRef.current = location.key;
+		setIsLoading(true);
+		resetGame();
+
+		const appModule = app?.module;
+		const players = [
 			createPlayer({ color: ColorSide.white }),
 			createPlayer({ color: ColorSide.black })
 		];
 
 		const handleMessages = (
-			payload: MessageEvent<EngineGameUpdatedMessageEventPayload>
+			payload: MessageEvent<EngineUpdatedMessageData>
 		) => {
 			if (!payload.data?.token) return;
 
@@ -50,7 +51,7 @@ export const FreeModeComponent: FC = () => {
 				payload.data.token === GAME_UPDATED_TOKEN &&
 				payload.data?.value?.fen
 			) {
-				_players.forEach((player) => {
+				players.forEach((player) => {
 					player.next({
 						token: "NOTIFIED",
 						value: payload.data.value
@@ -59,23 +60,32 @@ export const FreeModeComponent: FC = () => {
 			}
 		};
 
-		const playersSubscription = merge(..._players).subscribe((payload) => {
+		const playersSubscription = merge(...players).subscribe((payload) => {
 			if (payload.token === "PLACED_PIECE" && payload.value?.move)
 				return performPieceMove(payload.value?.move);
 		});
 
 		appModule?.getWorker()?.addEventListener("message", handleMessages);
 
+		setTimeout(() => setIsLoading(false), 100);
+
 		return () => {
 			playersSubscription.unsubscribe();
-			_players.forEach((player) => {
+			players.forEach((player) => {
 				player.complete();
 				player.unsubscribe();
-				_players.shift();
+				players.shift();
 			});
 			appModule?.getWorker()?.removeEventListener("message", handleMessages);
 		};
-	}, [app, appModule, createPlayer, performPieceMove]);
+	}, [
+		app,
+		createPlayer,
+		performPieceMove,
+		location.key,
+		setIsLoading,
+		resetGame
+	]);
 
 	return <Fragment />;
 };

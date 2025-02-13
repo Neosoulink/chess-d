@@ -3,7 +3,7 @@ import { FC } from "react";
 import { useNavigate } from "react-router";
 
 import { MainMenuSection } from "../../../shared/enum";
-import { useGameStore, useMainMenuStore } from "../../_stores";
+import { useMainMenuStore } from "../../_stores";
 
 export const NewGameAISection: FC = () => {
 	const navigate = useNavigate();

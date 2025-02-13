@@ -1,27 +1,50 @@
 import { create } from "zustand";
 import { ContainerizedApp, RegisterModule } from "@quick-threejs/reactive";
 import { Properties } from "@quick-threejs/utils";
-import { ObservablePayload } from "@chess-d/shared";
-import { GameController } from "../../core/game/game.controller";
+import { GAME_RESET_TOKEN, PIECE_WILL_MOVE_TOKEN } from "../../shared/tokens";
+import { MessageData } from "../../shared/types";
+import { DEFAULT_FEN } from "@chess-d/shared";
+import { Move } from "chess.js";
 
 export interface GameStore {
 	app?: ContainerizedApp<RegisterModule>;
-	state: ObservablePayload<GameController["state$"]> | "loading";
+	fen?: string;
+	isResourcesLoaded: boolean;
+	setApp: (app?: ContainerizedApp<RegisterModule> | undefined) => void;
+	setFen: (fen?: string) => void;
+	setIsResourcesLoaded: (bool: boolean) => void;
+	performPieceMove: (move: Move) => void;
+	resetGame: () => void;
 	reset: () => void;
-	setApp: (app: ContainerizedApp<RegisterModule> | undefined) => void;
-	setState: (
-		state: ObservablePayload<GameController["state$"]> | "loading"
-	) => void;
 }
 
-export const gameInitialState: Properties<GameStore> = {
+export const gameStoreInitialState: Properties<GameStore> = {
 	app: undefined,
-	state: "loading"
+	fen: undefined,
+	isResourcesLoaded: false
 };
 
-export const useGameStore = create<GameStore>((set) => ({
-	...gameInitialState,
-	reset: () => set(() => ({ ...gameInitialState })),
-	setApp: (app?: ContainerizedApp<RegisterModule>) => set(() => ({ app })),
-	setState: (state) => set(() => ({ state }))
+export const useGameStore = create<GameStore>((set, get) => ({
+	...gameStoreInitialState,
+	setApp: (app) => set(() => ({ app })),
+	setFen: (fen) => set(() => ({ fen })),
+	setIsResourcesLoaded: (bool) => set(() => ({ isResourcesLoaded: bool })),
+	performPieceMove: (move: Move) => {
+		const appModule = get().app?.module;
+
+		appModule?.getWorker()?.postMessage?.({
+			token: PIECE_WILL_MOVE_TOKEN,
+			value: move
+		} satisfies MessageData<Move>);
+	},
+	resetGame: () => {
+		const appModule = get().app?.module;
+		const fen = get().fen;
+
+		appModule?.getWorker()?.postMessage({
+			token: GAME_RESET_TOKEN,
+			value: { fen }
+		} satisfies MessageData);
+	},
+	reset: () => set(() => ({ ...gameStoreInitialState }))
 }));

@@ -7,8 +7,10 @@ import {
 } from "./_components";
 import { GameMode } from "../../shared/enum";
 import { getGameModeFromUrl } from "../../shared/utils";
+import { useGameStore } from "../_stores";
 
 export const PlayRoute: FC = () => {
+	const { app, isResourcesLoaded } = useGameStore();
 	const [searchParams] = useSearchParams();
 	const gameMode = useMemo(
 		() => getGameModeFromUrl(searchParams),
@@ -23,6 +25,8 @@ export const PlayRoute: FC = () => {
 
 		return <FreeModeComponent />;
 	}, [gameMode]);
+
+	if (!app || !isResourcesLoaded) return null;
 
 	return renderGameMode();
 };

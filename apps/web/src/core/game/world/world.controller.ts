@@ -1,10 +1,10 @@
 import { AppModule } from "@quick-threejs/reactive";
+import { validateFen } from "chess.js";
 import { gsap } from "gsap";
 import {
 	BehaviorSubject,
 	filter,
 	map,
-	merge,
 	Observable,
 	switchMap,
 	takeUntil
@@ -12,12 +12,13 @@ import {
 import { inject, Lifecycle, scoped } from "tsyringe";
 
 import { GameController } from "../game.controller";
+
 @scoped(Lifecycle.ContainerScoped)
 export class WorldController {
 	public readonly dayCycle$$ = new BehaviorSubject<{
 		duration: number;
 		progress?: number;
-	}>({ duration: 10, progress: 0.05 });
+	}>({ duration: 100, progress: 0.05 });
 
 	public readonly dayCycle$: Observable<{
 		now: number;
@@ -30,7 +31,15 @@ export class WorldController {
 		totalDuration: number;
 	}>;
 	public readonly introAnimation$: Observable<number>;
-	public readonly idleAnimation$: Observable<number>;
+	public readonly idleAnimation$: Observable<{
+		frame: number;
+		initialTime: number;
+		currentTime: number;
+		deltaTime: number;
+		deltaRatio: number;
+		elapsedTime: number;
+		enabled: true;
+	}>;
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
@@ -71,8 +80,8 @@ export class WorldController {
 			})
 		);
 
-		this.introAnimation$ = this._gameController.state$.pipe(
-			filter((state) => state === "playing"),
+		this.introAnimation$ = this._gameController.reset$.pipe(
+			filter((data) => validateFen(`${data?.fen}`).ok),
 			switchMap(
 				() =>
 					new Observable<number>((subscriber) => {
@@ -92,27 +101,19 @@ export class WorldController {
 			)
 		);
 
-		this.idleAnimation$ = this._gameController.state$.pipe(
-			filter((state) => state === "idle"),
-			switchMap(
-				() =>
-					new Observable<number>((subscriber) => {
-						const params = { progress: 0 };
-
-						gsap.to(params, {
-							duration: 10,
-							progress: 1,
-							repeat: -1,
-							onUpdate: () => subscriber.next(params.progress)
-						});
-					})
-			),
-			takeUntil(
-				merge(
-					this._gameController.reset$,
-					this._gameController.state$.pipe(filter((state) => state !== "idle"))
-				)
-			)
+		this.idleAnimation$ = this._gameController.reset$.pipe(
+			filter((data) => !validateFen(`${data?.fen}`).ok),
+			switchMap(() => {
+				return (
+					this._app.timer.step$() as WorldController["idleAnimation$"]
+				).pipe(
+					takeUntil(
+						this._gameController.reset$.pipe(
+							filter((data) => validateFen(`${data?.fen}`).ok)
+						)
+					)
+				);
+			})
 		);
 	}
 }

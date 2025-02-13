@@ -1,11 +1,18 @@
 import { register } from "@quick-threejs/reactive";
-import { FC, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+	FC,
+	PropsWithChildren,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef
+} from "react";
 import Stats from "stats-gl";
 import { Pane } from "tweakpane";
-import { update as tweenUpdate } from "three/examples/jsm/libs/tween.module.js";
 
-import { useGameStore } from "../_stores";
 import { configureTweakpane } from "../../shared/utils";
+import { useGameStore, useLoaderStore } from "../_stores";
+
 import pawnPiece from "../../assets/3D/pieces/pawn.glb?url";
 import rookPiece from "../../assets/3D/pieces/rook.glb?url";
 import knightPiece from "../../assets/3D/pieces/knight.glb?url";
@@ -14,7 +21,7 @@ import queenPiece from "../../assets/3D/pieces/queen.glb?url";
 import kingPiece from "../../assets/3D/pieces/king.glb?url";
 import masterHand from "../../assets/3D/master-hand.glb?url";
 import helvetikerFont from "../../assets/fonts/helvetiker_regular.typeface.json?url";
-import { GAME_STATE_TOKEN } from "../../shared/tokens";
+import { useLocation } from "react-router";
 
 /** @internal */
 const workerLocation = new URL(
@@ -22,12 +29,23 @@ const workerLocation = new URL(
 	import.meta.url
 ) as unknown as string;
 
-export const ExperienceComponent: FC = () => {
-	const { app, setApp, setState } = useGameStore();
+export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
+	const {
+		app,
+		isResourcesLoaded,
+		setApp,
+		setFen,
+		setIsResourcesLoaded,
+		resetGame,
+		reset: resetStore
+	} = useGameStore();
+	const { setIsLoading } = useLoaderStore();
+	const { key: routeKey, pathname } = useLocation();
 
 	const devMode = useMemo(() => import.meta.env?.DEV, []);
 	const rootDom = useMemo(() => document.getElementById("root"), []);
 
+	const locationKey = useRef<string | null>(null);
 	const paneRef = useRef<Pane>(null);
 	const statsRef = useRef<Stats>(null);
 	const stateRef = useRef<{
@@ -37,9 +55,11 @@ export const ExperienceComponent: FC = () => {
 
 	const init = useCallback(async () => {
 		if (stateRef.current.isPending || stateRef.current.isReady) return;
+
 		stateRef.current.isPending = true;
 
-		setState("loading");
+		setIsLoading(true);
+		setIsResourcesLoaded(false);
 		register({
 			location: workerLocation,
 			enableDebug: devMode,
@@ -92,62 +112,70 @@ export const ExperienceComponent: FC = () => {
 				stateRef.current.isPending = false;
 				stateRef.current.isReady = true;
 
-				setApp(_app);
-
-				if (!devMode || !rootDom) return;
-
 				const appWorker = _app.module.getWorker() as Worker;
 				const appThread = _app.module.getThread();
 
-				paneRef.current = new Pane();
-				statsRef.current = new Stats();
-
-				configureTweakpane(paneRef.current, (type, value) =>
-					appWorker.postMessage({ type: `$tweakpane-${type}`, value })
-				);
-				rootDom.appendChild(statsRef.current.dom);
-
-				appThread.getBeforeStep$().subscribe(() => {
-					statsRef.current?.begin();
+				const loadSub = _app.module.loader.getLoadCompleted$().subscribe(() => {
+					setIsResourcesLoaded(true);
+					loadSub.unsubscribe();
 				});
 
-				appThread?.getStep$()?.subscribe(() => {
-					statsRef.current?.end();
-					statsRef.current?.update();
-					tweenUpdate();
-				});
+				if (devMode && rootDom) {
+					paneRef.current = new Pane();
+					statsRef.current = new Stats();
 
-				appWorker.addEventListener("message", (event) => {
-					if (event.data.token !== GAME_STATE_TOKEN) return;
-					setState(event.data.value);
-				});
+					configureTweakpane(paneRef.current, (type, value) =>
+						appWorker.postMessage({ type: `$tweakpane-${type}`, value })
+					);
+					rootDom.appendChild(statsRef.current.dom);
+
+					appThread.getBeforeStep$().subscribe(() => {
+						statsRef.current?.begin();
+					});
+
+					appThread?.getStep$()?.subscribe(() => {
+						statsRef.current?.end();
+						statsRef.current?.update();
+					});
+				}
+
+				setApp(_app);
 			}
 		});
-	}, [devMode, rootDom, setApp, setState]);
+	}, [setIsLoading, devMode, rootDom, setApp, setIsResourcesLoaded]);
 
 	const dispose = useCallback(async () => {
 		if (stateRef.current.isPending || !stateRef.current.isReady) return;
 
 		stateRef.current.isPending = false;
 		stateRef.current.isReady = false;
+		setIsResourcesLoaded(false);
 
 		if (statsRef.current) rootDom?.removeChild(statsRef.current.dom);
 		paneRef.current?.dispose();
 
 		app?.container.clearInstances();
 		await app?.container.dispose();
-		setApp(undefined);
-	}, [app, rootDom, setApp]);
+		resetStore();
+	}, [app?.container, resetStore, rootDom, setIsResourcesLoaded]);
 
 	useEffect(() => {
 		if (!app) init();
 
 		return () => {
-			if (app && app) dispose();
+			if (app) dispose();
 		};
 	}, [app, init, dispose]);
 
-	if (!app) return null;
+	useEffect(() => {
+		if (pathname.startsWith("/play") || !isResourcesLoaded) return;
 
-	return null;
+		setIsLoading(true);
+		setFen(undefined);
+		resetGame();
+
+		setTimeout(() => setIsLoading(false), 100);
+	}, [isResourcesLoaded, pathname, resetGame, routeKey, setFen, setIsLoading]);
+
+	return children;
 };

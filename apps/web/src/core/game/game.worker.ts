@@ -1,13 +1,13 @@
 import "reflect-metadata";
 
-import { AppModule } from "@quick-threejs/reactive";
-import { launchApp } from "@quick-threejs/reactive/worker";
-import { isObject } from "@quick-threejs/utils";
 import {
 	ChessboardModule,
 	setup as setupChessboard
 } from "@chess-d/chessboard";
 import { PieceType } from "@chess-d/shared";
+import { AppModule } from "@quick-threejs/reactive";
+import { launchApp } from "@quick-threejs/reactive/worker";
+import { isObject } from "@quick-threejs/utils";
 import { Chess } from "chess.js";
 import { BufferGeometry, Camera, Mesh } from "three";
 import { GLTF } from "three/examples/jsm/Addons.js";
@@ -94,6 +94,7 @@ launchApp({
 					kingGeometry
 				);
 
+			chessboardModule.pieces.reset();
 			game.init();
 		});
 	}

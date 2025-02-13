@@ -8,10 +8,11 @@ import {
 	PieceType
 } from "@chess-d/shared";
 
-import { EngineGameUpdatedMessageEventPayload } from "../../../shared/types";
+import { EngineUpdatedMessageData } from "../../../shared/types";
 import { GAME_UPDATED_TOKEN } from "../../../shared/tokens";
 import { EngineController } from "./engine.controller";
 import { PiecesService } from "../pieces/pieces.service";
+import { GameController } from "../game.controller";
 
 @singleton()
 export class EngineService {
@@ -31,7 +32,7 @@ export class EngineService {
 				turn: this.game.turn(),
 				move: nextMove
 			}
-		} satisfies EngineGameUpdatedMessageEventPayload);
+		} satisfies EngineUpdatedMessageData);
 	}
 
 	public handlePieceSelected(
@@ -109,10 +110,13 @@ export class EngineService {
 		this.chessboard.pieces.setPieceCoord(piece, endCoord, positionOffset);
 
 		if (nextMove.promotion && piece.type === PieceType.pawn) {
-			this.chessboard.pieces.promotePiece(
-				piece as MatrixPieceModel<PieceType.pawn, (typeof piece)["color"]>,
-				nextMove.promotion as PieceType
-			);
+			this.chessboard.pieces.promotePiece({
+				piece: piece as MatrixPieceModel<
+					PieceType.pawn,
+					(typeof piece)["color"]
+				>,
+				toPiece: nextMove.promotion as PieceType
+			});
 		}
 
 		this.game.move(nextMove);
@@ -135,7 +139,9 @@ export class EngineService {
 		return this.game.move(move);
 	}
 
-	public reset(fen?: string) {
+	public reset(data: ObservablePayload<GameController["reset$"]>) {
+		const { fen } = data || {};
+
 		if (fen && validateFen(fen).ok) this.game.load(fen);
 		else this.game.reset();
 

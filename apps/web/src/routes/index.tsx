@@ -3,23 +3,18 @@ import { Routes, Route, Outlet } from "react-router";
 
 import { HomeRoute } from "./home.route";
 import { PlayRoute } from "./play.route";
-import {
-	ExperienceComponent,
-	LoadingWallComponent,
-	MainMenuComponent
-} from "./_components";
+import { GameProvider } from "./providers";
+import { LoaderComponent, MainMenuComponent } from "./_components";
 
 export const Router: FC = () => (
-	<Fragment>
+	<GameProvider>
 		<Routes>
 			<Route
 				path="/"
 				element={
 					<Fragment>
 						<Outlet />
-
-						<ExperienceComponent />
-						<LoadingWallComponent />
+						<LoaderComponent />
 						<MainMenuComponent />
 					</Fragment>
 				}
@@ -28,5 +23,5 @@ export const Router: FC = () => (
 				<Route path="/play" element={<PlayRoute />} />
 			</Route>
 		</Routes>
-	</Fragment>
+	</GameProvider>
 );

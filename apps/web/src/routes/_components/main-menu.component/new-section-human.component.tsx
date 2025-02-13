@@ -3,7 +3,7 @@ import { FC, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { MainMenuSection } from "../../../shared/enum";
-import { useGameStore, useMainMenuStore } from "../../_stores";
+import { useMainMenuStore } from "../../_stores";
 
 export const NewGameHumanSection: FC = () => {
 	const navigate = useNavigate();
@@ -11,13 +11,13 @@ export const NewGameHumanSection: FC = () => {
 
 	const [joinRoom, setJoinRoom] = useState(false);
 
-	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		let to = "/play?mode=human";
 
+		e.preventDefault();
+
 		if (joinRoom) {
-			const formData = new FormData(event.currentTarget);
+			const formData = new FormData(e.currentTarget);
 			const roomId = formData.get("room-id") as
 				| keyof typeof SupportedAiModel
 				| null;

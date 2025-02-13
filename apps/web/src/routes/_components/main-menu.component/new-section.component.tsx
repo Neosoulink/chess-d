@@ -1,13 +1,11 @@
 import { FC } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import { GameMode, MainMenuSection } from "../../../shared/enum";
-import { useGameStore, useMainMenuStore } from "../../_stores";
+import { useMainMenuStore } from "../../_stores";
 
 export const NewGameSection: FC = () => {
 	const navigate = useNavigate();
-
-	const { reset: resetGame } = useGameStore();
 	const { setSection } = useMainMenuStore();
 
 	const GameModeOptions: {

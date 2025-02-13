@@ -1,36 +1,34 @@
 import { gsap } from "gsap";
 import { FC, useEffect, useRef, useState } from "react";
 
-import { useGameStore } from "../_stores";
+import { useGameStore, useLoaderStore } from "../_stores";
 
-export const LoadingWallComponent: FC = () => {
-	const { app, state } = useGameStore();
+export const LoaderComponent: FC = () => {
+	const { app } = useGameStore();
+	const { isLoading } = useLoaderStore();
 	const [loadProgress, setLoadProgress] = useState(0);
 
 	const loaderWallRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		let tween: ReturnType<typeof gsap.to> | undefined = undefined;
+		const loaderWall = loaderWallRef.current;
 
-		if (loaderWallRef.current) {
-			loaderWallRef.current.style.opacity = "1";
-
-			if (["playing", "idle"].includes(state))
-				tween = gsap.to(loaderWallRef.current.style, {
-					duration: 0.3,
-					delay: 1,
-					opacity: "0",
-					onComplete: () => {
-						if (loaderWallRef.current)
-							loaderWallRef.current.style.pointerEvents = "none";
-					}
-				});
-		}
+		if (!isLoading && loaderWall)
+			tween = gsap.to(loaderWall.style, {
+				duration: 0.3,
+				delay: 0.5,
+				opacity: "0",
+				onComplete: () => {
+					if (loaderWall) loaderWall.style.pointerEvents = "none";
+				}
+			});
 
 		return () => {
 			tween?.progress(1).kill();
+			if (loaderWall) loaderWall.style.opacity = "1";
 		};
-	}, [state]);
+	}, [isLoading]);
 
 	useEffect(() => {
 		const sub = app?.module.loader.getLoad$().subscribe((load) => {
@@ -45,7 +43,7 @@ export const LoadingWallComponent: FC = () => {
 	return (
 		<div
 			ref={loaderWallRef}
-			className="fixed top-0 left-0 w-full h-full bg-black z-[9999] flex justify-center items-center"
+			className="fixed top-0 left-0 w-full h-full bg-black z-10 flex justify-center items-center"
 		>
 			<div className="w-96 bg-gray-900">
 				<div

@@ -1,3 +1,2 @@
 export const GAME_RESET_TOKEN = "GAME_RESET";
-export const GAME_STATE_TOKEN = "GAME_STATE";
 export const GAME_UPDATED_TOKEN = "GAME_UPDATED";

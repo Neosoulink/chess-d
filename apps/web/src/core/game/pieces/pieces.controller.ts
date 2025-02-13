@@ -16,13 +16,13 @@ import { Vector3Like } from "three";
 import { filter, fromEvent, map, Observable, share, switchMap } from "rxjs";
 import { inject, singleton } from "tsyringe";
 
-import { MessageEventPayload } from "../../../shared/types";
+import { MessageData } from "../../../shared/types";
 import { PIECE_WILL_MOVE_TOKEN } from "../../../shared/tokens";
 
 @singleton()
 export class PiecesController {
 	public readonly playerMovedPiece$: Observable<Move> = fromEvent<
-		MessageEvent<MessageEventPayload<Move>>
+		MessageEvent<MessageData<Move>>
 	>(self, "message").pipe(
 		filter(
 			(payload) =>

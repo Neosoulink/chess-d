@@ -24,6 +24,5 @@ export const useMainMenuStore = create<MainMenuStore>((set) => ({
 	close: () => set(() => ({ isOpen: false })),
 	setSection: (section: MainMenuSection) =>
 		set(() => ({ currentSection: section })),
-	reset: () =>
-		set((currentState) => ({ ...currentState, ...mainMenuInitialState }))
+	reset: () => set(() => ({ ...mainMenuInitialState }))
 }));

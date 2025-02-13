@@ -15,8 +15,7 @@ export interface MainMenuComponentProps {}
 export const MainMenuComponent: FC<MainMenuComponentProps> = () => {
 	const location = useLocation();
 
-	const { isOpen, currentSection, setSection, open, close } =
-		useMainMenuStore();
+	const { isOpen, currentSection, open, close } = useMainMenuStore();
 
 	const handleEscPress = useCallback(
 		(event: KeyboardEvent) => {
@@ -41,7 +40,7 @@ export const MainMenuComponent: FC<MainMenuComponentProps> = () => {
 		}
 	}, [currentSection]);
 
-	useEffect(() => close(), [close, setSection, location]);
+	useEffect(() => close(), [close, location]);
 
 	useEffect(() => {
 		document.addEventListener("keydown", handleEscPress);

@@ -14,9 +14,7 @@ export class EngineModule implements Module {
 		@inject(EngineController) private readonly _controller: EngineController,
 		@inject(GameController) private readonly _gameController: GameController,
 		@inject(EngineService) private readonly _service: EngineService
-	) {}
-
-	public init() {
+	) {
 		this.subscriptions.push(
 			this._controller.pieceSelected$?.subscribe(
 				this._service.handlePieceSelected.bind(this._service)
@@ -29,6 +27,8 @@ export class EngineModule implements Module {
 			)
 		);
 	}
+
+	public init() {}
 
 	public getUndoHistory() {
 		return this._service.undoHistory;
@@ -44,7 +44,6 @@ export class EngineModule implements Module {
 
 	public undoMove() {
 		const move = this._service.undoMove();
-		console.log("undoMove", move);
 		if (move) this._controller.undoMove$$.next(move);
 	}
 

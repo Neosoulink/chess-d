@@ -4,27 +4,24 @@ import {
 	GameUpdatedPayload,
 	PlayerEntity,
 	SOCKET_JOINED_ROOM_TOKEN,
+	SOCKET_LEFT_ROOM_TOKEN,
 	SOCKET_MOVE_PERFORMED_TOKEN,
 	SOCKET_ROOM_CREATED_TOKEN,
 	SocketAuthInterface
 } from "@chess-d/shared";
 import { Move } from "chess.js";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router";
+import { useLocation, useSearchParams } from "react-router";
 import { merge } from "rxjs";
 import { io } from "socket.io-client";
 
 import { PlayerModel } from "../../../shared/models";
 import {
 	GAME_UPDATED_TOKEN,
-	GAME_RESET_TOKEN,
 	PIECE_WILL_MOVE_TOKEN
 } from "../../../shared/tokens";
-import {
-	EngineGameUpdatedMessageEventPayload,
-	MessageEventPayload
-} from "../../../shared/types";
-import { useGameStore } from "../../_stores";
+import { EngineUpdatedMessageData, MessageData } from "../../../shared/types";
+import { useGameStore, useLoaderStore } from "../../_stores";
 
 /** @internal */
 interface SocketPayload {
@@ -36,8 +33,16 @@ interface SocketPayload {
 export interface WithHumanComponentProps {}
 
 export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
-	const { app } = useGameStore();
-	const { module: appModule } = app ?? {};
+	const { app, setFen, resetGame } = useGameStore();
+	const { setIsLoading } = useLoaderStore();
+	const location = useLocation();
+	const [searchParams, setSearchParams] = useSearchParams();
+
+	const [currentPlayer, setCurrentPlayer] = useState<PlayerModel | undefined>();
+	const [opponentPlayer, setOpponentPlayer] = useState<
+		PlayerModel | undefined
+	>();
+
 	const socket = useMemo(
 		() =>
 			io("http://localhost:3000", {
@@ -46,33 +51,16 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		[]
 	);
 
-	const [searchParams, setSearchParams] = useSearchParams();
-
-	const [currentPlayer, setCurrentPlayer] = useState<PlayerModel | undefined>();
-	const [opponentPlayer, setOpponentPlayer] = useState<
-		PlayerModel | undefined
-	>();
+	const locationKey = location.key;
 
 	const moveBoardPiece = useCallback(
 		(move: Move) => {
-			appModule?.getWorker()?.postMessage?.({
+			app?.module?.getWorker()?.postMessage?.({
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
-			} satisfies MessageEventPayload<Move>);
+			} satisfies MessageData<Move>);
 		},
-		[appModule]
-	);
-
-	const resetBoardPieces = useCallback(
-		(fen?: string) => {
-			setTimeout(() => {
-				appModule?.getWorker()?.postMessage?.({
-					token: GAME_RESET_TOKEN,
-					value: { fen }
-				} satisfies MessageEventPayload<{ fen }>);
-			}, 100);
-		},
-		[appModule]
+		[app?.module]
 	);
 
 	const onRoomCreated = useCallback(
@@ -91,9 +79,12 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 			setCurrentPlayer(player);
 			setSearchParams((prev) => [...prev, ["roomID", data.roomID]]);
-			resetBoardPieces(data.room.fen);
+			setFen(data.room.fen);
+			resetGame();
+
+			setTimeout(() => setIsLoading(false), 100);
 		},
-		[resetBoardPieces, setSearchParams, socket]
+		[resetGame, setFen, setIsLoading, setSearchParams, socket]
 	);
 
 	const onJoinedRoom = useCallback(
@@ -118,17 +109,30 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 					side: player.color,
 					fen: data.room.fen
 				};
+				setFen(data.room.fen);
+				resetGame();
+				setSearchParams((_urlSearchParams) => {
+					_urlSearchParams.set("roomID", data.roomID);
+
+					return _urlSearchParams;
+				});
 			} else {
 				currentPlayer.host = true;
 				setOpponentPlayer(player);
 			}
 
-			resetBoardPieces(data.room.fen);
-			setSearchParams((prev) => [...prev, ["roomID", data.roomID]]);
+			setTimeout(() => setIsLoading(false), 100);
+
 			console.log("Joined room:", data);
 		},
-		[currentPlayer, resetBoardPieces, setSearchParams, socket]
+		[currentPlayer, resetGame, setFen, setIsLoading, setSearchParams, socket]
 	);
+
+	const onLeftRoom = useCallback((playerId: string) => {
+		console.log("Player left room.", playerId);
+
+		setOpponentPlayer(undefined);
+	}, []);
 
 	const onDisconnect = useCallback(() => {
 		console.log("Disconnected from server.");
@@ -165,9 +169,14 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 	);
 
 	useEffect(() => {
+		setIsLoading(true);
+	}, [location, currentPlayer, setIsLoading, socket]);
+
+	useEffect(() => {
 		socket.on(SOCKET_ROOM_CREATED_TOKEN, onRoomCreated);
 		socket.on(SOCKET_JOINED_ROOM_TOKEN, onJoinedRoom);
 		socket.on(SOCKET_MOVE_PERFORMED_TOKEN, onMovePerformed);
+		socket.on(SOCKET_LEFT_ROOM_TOKEN, onLeftRoom);
 		socket.on("disconnect", onDisconnect);
 		socket.on("error", onError);
 
@@ -186,6 +195,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 			socket.off(SOCKET_ROOM_CREATED_TOKEN, onRoomCreated);
 			socket.off(SOCKET_JOINED_ROOM_TOKEN, onJoinedRoom);
 			socket.off(SOCKET_MOVE_PERFORMED_TOKEN, onMovePerformed);
+			socket.off(SOCKET_LEFT_ROOM_TOKEN, onLeftRoom);
 			socket.off("disconnect", onDisconnect);
 			socket.off("error", onError);
 		};
@@ -193,10 +203,13 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		onDisconnect,
 		onError,
 		onJoinedRoom,
+		onLeftRoom,
 		onMovePerformed,
 		onRoomCreated,
 		searchParams,
-		socket
+		setIsLoading,
+		socket,
+		location
 	]);
 
 	useEffect(() => {
@@ -226,7 +239,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		});
 
 		const handleMessages = (
-			payload: MessageEvent<EngineGameUpdatedMessageEventPayload>
+			payload: MessageEvent<EngineUpdatedMessageData>
 		) => {
 			const { token, value } = payload.data;
 			const { fen } = value || {};
@@ -236,26 +249,38 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 			console.log("Received message:", payload.data);
 			if (token === GAME_UPDATED_TOKEN)
 				players.forEach((player) => {
-					player.next({
+					player?.next({
 						token: "NOTIFIED",
 						value: { ...payload.data.value, entity: player.getEntity() }
 					});
 				});
 		};
 
-		appModule?.getWorker()?.addEventListener("message", handleMessages);
+		app?.module?.getWorker()?.addEventListener("message", handleMessages);
 
 		return () => {
 			subscription.unsubscribe();
-			appModule?.getWorker?.().removeEventListener("message", handleMessages);
+			app?.module?.getWorker?.().removeEventListener("message", handleMessages);
 		};
-	}, [app, currentPlayer, opponentPlayer, moveBoardPiece, socket, appModule]);
+	}, [app, currentPlayer, opponentPlayer, moveBoardPiece, socket, app?.module]);
+
+	useEffect(() => {
+		const roomId = searchParams.get("roomID");
+		const auth = socket.auth as SocketAuthInterface;
+
+		if (roomId === auth?.roomID) return;
+
+		socket.disconnect();
+		onDisconnect();
+		console.log("Socket disconnected.");
+	}, [location, locationKey, onDisconnect, searchParams, socket]);
 
 	useEffect(() => {
 		return () => {
 			socket.disconnect();
+			onDisconnect();
 		};
-	}, [socket]);
+	}, [onDisconnect, socket]);
 
 	return null;
 };

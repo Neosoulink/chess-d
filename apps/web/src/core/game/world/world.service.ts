@@ -249,61 +249,61 @@ export class WorldService {
 	}
 
 	public resetBoardSquareHints(): void {
-		this.boardSquareHints.traverse((child) => {
-			if (child instanceof Mesh) child.geometry.dispose();
-		});
-
 		const font = this._app.loader.getLoadedResources()["helvetikerFont"] as
 			| Font
 			| undefined;
 
 		if (!font) return;
 
-		Array.from(Array(BOARD_MATRIX_RANGE_SIZE).keys()).forEach((i) => {
-			const geometryParams: TextGeometryParameters = {
-				font,
-				size: 0.35,
-				height: 0.1,
-				depth: 0.01,
-				bevelSize: 0.01,
-				bevelThickness: 0.01,
-				bevelEnabled: true
-			};
-			const letterGeometry = new TextGeometry(
-				(i + 10).toString(36).toUpperCase(),
-				geometryParams
-			);
-			letterGeometry.center();
-			letterGeometry.rotateX(-Math.PI / 2);
-			letterGeometry.rotateY(Math.PI);
+		if (!this.boardSquareHints.children.length)
+			Array.from(Array(BOARD_MATRIX_RANGE_SIZE).keys()).forEach((i) => {
+				const geometryParams: TextGeometryParameters = {
+					font,
+					size: 0.35,
+					height: 0.1,
+					depth: 0.01,
+					bevelSize: 0.01,
+					bevelThickness: 0.01,
+					bevelEnabled: true
+				};
+				const letterGeometry = new TextGeometry(
+					(i + 10).toString(36).toUpperCase(),
+					geometryParams
+				);
+				letterGeometry.center();
+				letterGeometry.rotateX(-Math.PI / 2);
+				letterGeometry.rotateY(Math.PI);
 
-			const numberGeometry = new TextGeometry(`${i + 1}`, geometryParams);
-			numberGeometry.center();
-			numberGeometry.rotateX(-Math.PI / 2);
-			numberGeometry.rotateY(Math.PI);
+				const numberGeometry = new TextGeometry(`${i + 1}`, geometryParams);
+				numberGeometry.center();
+				numberGeometry.rotateX(-Math.PI / 2);
+				numberGeometry.rotateY(Math.PI);
 
-			const letterMesh = new Mesh(letterGeometry, this.mainMaterial);
-			letterMesh.castShadow = true;
-			letterMesh.receiveShadow = true;
-			letterMesh.position.set(
-				BOARD_RANGE_CELLS_HALF_SIZE - BOARD_CELL_SIZE - i,
-				0,
-				-BOARD_RANGE_CELLS_HALF_SIZE
-			);
-			letterMesh.scale.setScalar(0);
+				const letterMesh = new Mesh(letterGeometry, this.mainMaterial);
+				letterMesh.castShadow = true;
+				letterMesh.receiveShadow = true;
+				letterMesh.position.set(
+					BOARD_RANGE_CELLS_HALF_SIZE - BOARD_CELL_SIZE - i,
+					0,
+					-BOARD_RANGE_CELLS_HALF_SIZE
+				);
+				letterMesh.scale.setScalar(0);
 
-			const numberMesh = new Mesh(numberGeometry, this.mainMaterial);
-			numberMesh.castShadow = true;
-			numberMesh.receiveShadow = true;
-			numberMesh.position.set(
-				BOARD_RANGE_CELLS_HALF_SIZE,
-				0,
-				-BOARD_RANGE_CELLS_HALF_SIZE + BOARD_CELL_SIZE + i
-			);
-			numberMesh.scale.setScalar(0);
+				const numberMesh = new Mesh(numberGeometry, this.mainMaterial);
+				numberMesh.castShadow = true;
+				numberMesh.receiveShadow = true;
+				numberMesh.position.set(
+					BOARD_RANGE_CELLS_HALF_SIZE,
+					0,
+					-BOARD_RANGE_CELLS_HALF_SIZE + BOARD_CELL_SIZE + i
+				);
 
-			this.boardSquareHints.position.setY(-0.1);
-			this.boardSquareHints.add(letterMesh, numberMesh);
+				this.boardSquareHints.position.setY(-0.1);
+				this.boardSquareHints.add(letterMesh, numberMesh);
+			});
+
+		this.boardSquareHints.traverse((child) => {
+			if (child instanceof Mesh) child.scale.setScalar(0);
 		});
 	}
 
@@ -346,6 +346,8 @@ export class WorldService {
 	}
 
 	public resetScene(): void {
+		this.scene.rotation.y = 0;
+
 		this.scene.clear();
 		this.scene.add(
 			this.floor,
@@ -374,12 +376,12 @@ export class WorldService {
 	public handleIntroAnimation(
 		progress: ObservablePayload<WorldController["introAnimation$"]>
 	) {
-		const groups = this._chessboard.pieces.getGroups();
+		const piecesGroups = this._chessboard.pieces.getGroups();
 		const infiniteFloor = this.floor.getObjectByName(
 			"infinite-floor"
 		) as InfiniteGridHelper;
 
-		Object.values(groups).forEach((group) => {
+		Object.values(piecesGroups).forEach((group) => {
 			Object.values(group).forEach((instancedPiece) => {
 				if (instancedPiece instanceof InstancedPieceModel)
 					for (
@@ -420,6 +422,19 @@ export class WorldService {
 		});
 
 		this._app.camera.instance()?.lookAt(0, 0, 0);
+	}
+
+	public handleIdleAnimation(
+		data: ObservablePayload<WorldController["idleAnimation$"]>
+	) {
+		this._app.camera.instance()?.lookAt(0, 0, 0);
+		this._app.camera
+			.instance()
+			?.position.set(
+				Math.sin(data.elapsedTime * 0.0001) * 10,
+				12,
+				Math.cos(data.elapsedTime * 0.0001) * 10
+			);
 	}
 
 	public handleDayCycle({

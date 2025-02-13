@@ -3,23 +3,22 @@ import { ColorSide, DEFAULT_FEN } from "@chess-d/shared";
 import { RegisterModule } from "@quick-threejs/reactive";
 import { Move, validateFen } from "chess.js";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router";
+import { useLocation, useSearchParams } from "react-router";
 import { merge, Subscription } from "rxjs";
 
 import { GameMode } from "../../../shared/enum";
 import { PlayerModel } from "../../../shared/models";
-import {
-	EngineGameUpdatedMessageEventPayload,
-	MessageEventPayload
-} from "../../../shared/types";
+import { EngineUpdatedMessageData, MessageData } from "../../../shared/types";
 import {
 	AI_PERFORMED_MOVE_TOKEN,
 	AI_WILL_PERFORM_MOVE_TOKEN,
+	GAME_RESET_TOKEN,
 	GAME_UPDATED_TOKEN,
 	PIECE_WILL_MOVE_TOKEN
 } from "../../../shared/tokens";
 import { getGameModeFromUrl } from "../../../shared/utils";
-import { useGameStore } from "../../_stores";
+import { useGameStore, useLoaderStore } from "../../_stores";
+import { WorkerThread } from "@quick-threejs/utils";
 
 export interface WithAIComponentProps {}
 
@@ -30,14 +29,18 @@ const workerLocation = new URL(
 ) as unknown as string;
 
 export const WithAIComponent: FC<WithAIComponentProps> = () => {
-	const { app } = useGameStore();
+	const { app, fen, resetGame, setFen } = useGameStore();
+	const { setIsLoading } = useLoaderStore();
+	const location = useLocation();
 	const { module: appModule } = app ?? {};
 	const [searchParams] = useSearchParams();
 
-	const state = useRef<{
+	const stateRef = useRef<{
 		isPending: boolean;
 		isReady: boolean;
 	}>({ isPending: false, isReady: false });
+
+	const locationKeyRef = useRef<string | null>(null);
 
 	const [workerThread, setWorkerThread] = useState<
 		| Awaited<ReturnType<ReturnType<RegisterModule["getWorkerPool"]>["run"]>>
@@ -45,7 +48,17 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 	>();
 
 	const init = useCallback(async () => {
-		state.current.isPending = true;
+		setIsLoading(true);
+		resetGame();
+
+		const worker = appModule?.getWorker() as Worker | undefined;
+		const handleResetMessage = (e: MessageEvent<MessageData | undefined>) => {
+			if (e.data?.token === GAME_RESET_TOKEN)
+				worker?.removeEventListener("message", handleResetMessage);
+		};
+
+		worker?.addEventListener("message", handleResetMessage);
+		stateRef.current.isPending = true;
 
 		const _workerThread = await appModule?.getWorkerPool()?.run?.({
 			payload: {
@@ -54,19 +67,20 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 			}
 		});
 
-		state.current.isPending = false;
-		state.current.isReady = !!_workerThread;
+		stateRef.current.isPending = false;
+		stateRef.current.isReady = !!_workerThread;
 
 		setWorkerThread(_workerThread);
-	}, [appModule]);
+		setTimeout(() => setIsLoading(false), 100);
+	}, [appModule, resetGame, setIsLoading]);
 
 	const dispose = useCallback(() => {
-		workerThread?.[0]?.worker?.terminate();
-		workerThread?.[0]?.thread?.lifecycle$?.();
+		(workerThread?.[0] as WorkerThread)?.terminate();
+
 		setWorkerThread(undefined);
 
-		state.current.isPending = false;
-		state.current.isReady = false;
+		stateRef.current.isPending = false;
+		stateRef.current.isReady = false;
 	}, [workerThread]);
 
 	const performPieceMove = useCallback(
@@ -74,20 +88,36 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 			appModule?.getWorker()?.postMessage?.({
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
-			} satisfies MessageEventPayload<Move>);
+			} satisfies MessageData<Move>);
 		},
 		[appModule]
 	);
 
 	useEffect(() => {
-		const _state = state.current;
+		if (locationKeyRef.current === location.key || validateFen(`${fen}`).ok)
+			return;
+		setFen(DEFAULT_FEN);
+	}, [fen, location.key, setFen]);
 
-		if (app && !workerThread && !_state.isPending && !_state.isReady) init();
+	useEffect(() => {
+		const state = stateRef.current;
+		const locationKey = location.key;
+		const currentLocationKey = locationKeyRef.current;
+		if (
+			currentLocationKey !== locationKey &&
+			!workerThread &&
+			!state.isPending &&
+			!state.isReady
+		) {
+			locationKeyRef.current = location.key;
+
+			init();
+		}
 
 		return () => {
-			if (workerThread && !_state.isPending && _state.isReady) dispose();
+			if (workerThread && currentLocationKey === locationKey) dispose();
 		};
-	}, [app, dispose, init, workerThread]);
+	}, [dispose, init, location.key, workerThread]);
 
 	useEffect(() => {
 		const gameMode = getGameModeFromUrl(searchParams);
@@ -121,14 +151,14 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 			if (
 				app &&
 				workerThread?.[0]?.thread?.movePerformed$ &&
-				!state.current.isPending &&
-				state.current.isReady
+				!stateRef.current.isPending &&
+				stateRef.current.isReady
 			)
 				setTimeout(() => {
 					workerThread?.[0]?.worker?.postMessage?.({
 						token: AI_WILL_PERFORM_MOVE_TOKEN,
 						value: { fen: DEFAULT_FEN, ai: aiPlayer1.id as SupportedAiModel }
-					} satisfies MessageEventPayload<{
+					} satisfies MessageData<{
 						fen: string;
 						ai: SupportedAiModel;
 					}>);
@@ -147,7 +177,7 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 		}
 
 		const handleMessages = (
-			payload: MessageEvent<EngineGameUpdatedMessageEventPayload>
+			payload: MessageEvent<EngineUpdatedMessageData>
 		) => {
 			if (!payload.data?.token) return;
 
@@ -163,7 +193,7 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 		const aimPerformedMoveSubscription: Subscription | undefined =
 			workerThread?.[0]?.thread
 				?.movePerformed$()
-				?.subscribe((message: MessageEventPayload<{ move: Move }>) => {
+				?.subscribe((message: MessageData<{ move: Move }>) => {
 					const { token, value } = message;
 
 					if (token !== AI_PERFORMED_MOVE_TOKEN || !value) return;
@@ -194,7 +224,7 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 				workerThread?.[0]?.worker?.postMessage?.({
 					token: AI_WILL_PERFORM_MOVE_TOKEN,
 					value: { fen, ai: entity.id as SupportedAiModel }
-				} satisfies MessageEventPayload<{ fen: string; ai: SupportedAiModel }>);
+				} satisfies MessageData<{ fen: string; ai: SupportedAiModel }>);
 
 			if (payload.token === "PLACED_PIECE" && payload.value?.move)
 				return performPieceMove(payload.value.move);

@@ -1,3 +1,2 @@
-export * from "./experience.component";
-export * from "./loading-wall.component";
+export * from "./loader.component";
 export * from "./main-menu.component";

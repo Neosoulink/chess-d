@@ -1,11 +1,10 @@
-import { Color, Move, Square } from "chess.js";
+import { Move, Square } from "chess.js";
 import { PieceNotificationPayload } from "@chess-d/chessboard";
 import { BoardCoord, GameUpdatedPayload } from "@chess-d/shared";
 
-import { MessageEventPayload } from "./events.type";
+import { MessageData } from "./events.type";
 
-export type EngineGameUpdatedMessageEventPayload =
-	MessageEventPayload<GameUpdatedPayload>;
+export type EngineUpdatedMessageData = MessageData<GameUpdatedPayload>;
 
 export interface EngineNotificationPayload extends PieceNotificationPayload {
 	pgnSquare: Square;
