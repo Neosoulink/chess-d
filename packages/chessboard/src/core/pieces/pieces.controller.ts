@@ -1,9 +1,14 @@
 import { copyProperties } from "@quick-threejs/utils";
-import { BoardCoord, coordToSquare } from "@chess-d/shared";
+import {
+	BoardCoord,
+	ColorSide,
+	coordToSquare,
+	ObservablePayload,
+	PieceType
+} from "@chess-d/shared";
 import { inject, singleton } from "tsyringe";
 import {
 	filter,
-	fromEvent,
 	map,
 	merge,
 	Observable,
@@ -30,9 +35,22 @@ import { ChessboardController } from "../chessboard.controller";
 @singleton()
 export class PiecesController {
 	public readonly pieceDeselected$$ = new Subject<PieceNotificationPayload>();
+	public readonly piecePromoted$$ = new Subject<{
+		piece: MatrixPieceModel<PieceType.pawn, ColorSide>;
+		toPiece: PieceType;
+	}>();
+	public readonly pieceDropped$$ = new Subject<
+		MatrixPieceModel<PieceType, ColorSide>
+	>();
 	public readonly pieceSelected$?: Observable<PieceNotificationPayload>;
 	public readonly pieceMoving$?: Observable<PieceNotificationPayload>;
 	public readonly pieceDeselected$?: Observable<PieceNotificationPayload>;
+	public readonly piecePromoted$?: Observable<
+		ObservablePayload<PiecesController["piecePromoted$$"]>
+	>;
+	public readonly pieceDropped$?: Observable<
+		ObservablePayload<PiecesController["pieceDropped$$"]>
+	>;
 
 	constructor(
 		@inject(MOUSE_DOWN_OBSERVABLE_TOKEN)
@@ -156,5 +174,7 @@ export class PiecesController {
 			),
 			this.pieceDeselected$$.pipe()
 		).pipe(share());
+
+		this.pieceDropped$ = this.pieceDropped$$.asObservable().pipe(share());
 	}
 }

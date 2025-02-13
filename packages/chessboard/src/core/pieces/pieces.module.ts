@@ -5,7 +5,7 @@ import { PiecesController } from "./pieces.controller";
 import { Subscription } from "rxjs";
 import { ResourcesController } from "../resources/resources.controller";
 import { BLACK, WHITE } from "chess.js";
-import { ColorSide } from "@chess-d/shared";
+import { ColorSide, ObservablePayload } from "@chess-d/shared";
 
 @singleton()
 export class PiecesModule {
@@ -17,11 +17,7 @@ export class PiecesModule {
 		@inject(ResourcesController)
 		private readonly _resourcesController: ResourcesController,
 		@inject(PiecesService) private readonly _service: PiecesService
-	) {}
-
-	public init() {
-		this._service.reset();
-
+	) {
 		this._subscriptions.push(
 			this._controller.pieceMoving$?.subscribe(
 				this._service.handlePieceMoving.bind(this._service)
@@ -37,8 +33,26 @@ export class PiecesModule {
 						value.geometry
 					);
 				});
-			})
+			}),
+			this._controller.piecePromoted$?.subscribe(({ piece, toPiece }) =>
+				this._service.promotePiece(piece, toPiece)
+			),
+			this._controller.pieceDropped$?.subscribe(
+				this._service.dropPiece.bind(this._service)
+			)
 		);
+	}
+
+	public init() {
+		this._service.reset();
+	}
+
+	public getPieceDeselected$$() {
+		return this._controller.pieceDeselected$$;
+	}
+
+	public getPieceDropped$$() {
+		return this._controller.pieceDropped$$;
 	}
 
 	public getPieceSelected$() {
@@ -49,12 +63,16 @@ export class PiecesModule {
 		return this._controller.pieceMoving$;
 	}
 
-	public getPieceDeselected$$() {
-		return this._controller.pieceDeselected$$;
-	}
-
 	public getPieceDeselected$() {
 		return this._controller.pieceDeselected$;
+	}
+
+	public getPiecePromoted$() {
+		return this._controller.piecePromoted$;
+	}
+
+	public getPieceDropped$() {
+		return this._controller.pieceDropped$;
 	}
 
 	public getGroups() {
@@ -81,12 +99,14 @@ export class PiecesModule {
 		this._service.setPieceCoord(...props);
 	}
 
-	public promotePiece(...props: Parameters<PiecesService["promotePiece"]>) {
-		this._service.promotePiece(...props);
+	public promotePiece(
+		data: ObservablePayload<PiecesController["piecePromoted$"]>
+	) {
+		this._controller.piecePromoted$$.next(data);
 	}
 
-	public dropPiece(...props: Parameters<PiecesService["dropPiece"]>) {
-		this._service.dropPiece(...props);
+	public dropPiece(data: ObservablePayload<PiecesController["pieceDropped$"]>) {
+		this._controller.pieceDropped$$?.next(data);
 	}
 
 	public reset(...props: Parameters<PiecesService["reset"]>) {
