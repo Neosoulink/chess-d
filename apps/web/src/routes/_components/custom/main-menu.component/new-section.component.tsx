@@ -1,8 +1,8 @@
 import { FC } from "react";
 import { useNavigate } from "react-router";
 
-import { GameMode, MainMenuSection } from "../../../shared/enum";
-import { useMainMenuStore } from "../../_stores";
+import { GameMode, MainMenuSection } from "../../../../shared/enum";
+import { useMainMenuStore } from "../../../_stores";
 
 export const NewGameSection: FC = () => {
 	const navigate = useNavigate();

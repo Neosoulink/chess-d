@@ -1,8 +1,8 @@
 import { FC } from "react";
 import { Link } from "react-router";
 
-import { MainMenuSection } from "../../../shared/enum";
-import { useMainMenuStore } from "../../_stores";
+import { MainMenuSection } from "../../../../shared/enum";
+import { useMainMenuStore } from "../../../_stores";
 
 export const MainSection: FC = () => {
 	const { setSection } = useMainMenuStore();

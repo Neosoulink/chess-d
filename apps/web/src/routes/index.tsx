@@ -4,7 +4,11 @@ import { Routes, Route, Outlet } from "react-router";
 import { HomeRoute } from "./home.route";
 import { PlayRoute } from "./play.route";
 import { GameProvider } from "./providers";
-import { LoaderComponent, MainMenuComponent } from "./_components";
+import {
+	ActionsSection,
+	LoaderComponent,
+	MainMenuComponent
+} from "./_components/custom";
 
 export const Router: FC = () => (
 	<GameProvider>
@@ -14,6 +18,7 @@ export const Router: FC = () => (
 				element={
 					<Fragment>
 						<Outlet />
+						<ActionsSection />
 						<LoaderComponent />
 						<MainMenuComponent />
 					</Fragment>

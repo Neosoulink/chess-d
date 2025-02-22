@@ -1,7 +1,7 @@
 import { gsap } from "gsap";
 import { FC, useEffect, useRef, useState } from "react";
 
-import { useGameStore, useLoaderStore } from "../_stores";
+import { useGameStore, useLoaderStore } from "../../_stores";
 
 export const LoaderComponent: FC = () => {
 	const { app } = useGameStore();
@@ -43,7 +43,7 @@ export const LoaderComponent: FC = () => {
 	return (
 		<div
 			ref={loaderWallRef}
-			className="fixed top-0 left-0 w-full h-full bg-black z-10 flex justify-center items-center"
+			className="fixed top-0 left-0 w-full h-full bg-black z-20 flex justify-center items-center"
 		>
 			<div className="w-96 bg-gray-900">
 				<div

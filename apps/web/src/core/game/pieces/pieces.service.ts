@@ -33,7 +33,7 @@ export class PiecesService {
 				const group = this._chessboard.pieces.getGroups()[color][
 					pieceType
 				] as InstancedPieceModel;
-				for (const piece of group.pieces) {
+				for (const piece of group.pieces || []) {
 					piece.physics?.rigidBody.setBodyType(1, false);
 					group.setPieceCoord(
 						piece.instanceId,
@@ -93,5 +93,21 @@ export class PiecesService {
 			instancedPiece,
 			pieceGeometry
 		});
+	}
+
+	public handlePiecePromoted(
+		data: ObservablePayload<
+			ReturnType<ChessboardModule["pieces"]["getPiecePromoted$"]>
+		>
+	) {
+		const { piece, toPiece } = data;
+		const promotedPiece = this._chessboard.pieces.getPieceByCoord(
+			toPiece,
+			piece.color,
+			piece.coord
+		);
+
+		promotedPiece?.physics?.rigidBody.setBodyType(0, true);
+		promotedPiece?.physics?.collider.setMass(1);
 	}
 }

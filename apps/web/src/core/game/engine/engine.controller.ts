@@ -1,5 +1,5 @@
 import { inject, singleton } from "tsyringe";
-import { map, Observable, Subject } from "rxjs";
+import { filter, fromEvent, map, merge, Observable, Subject } from "rxjs";
 import { Chess, Move } from "chess.js";
 import {
 	ChessboardModule,
@@ -9,16 +9,23 @@ import { coordToSquare, squareToCoord } from "@chess-d/shared";
 
 import {
 	EngineNotificationPayload,
-	EnginePieceMovedNotificationPayload
+	EnginePieceMovedNotificationPayload,
+	MessageData
 } from "../../../shared/types";
-import { GameController } from "../game.controller";
+import {
+	ENGINE_WILL_REDO_TOKEN,
+	ENGINE_WILL_UNDO_TOKEN
+} from "../../../shared/tokens/engine.token";
 
 @singleton()
 export class EngineController {
-	public readonly undoMove$$ = new Subject<Move>();
-	public readonly redoMove$$ = new Subject<Move>();
+	public readonly undo$$ = new Subject();
+	public readonly redo$$ = new Subject();
+
 	public readonly pieceSelected$?: Observable<EngineNotificationPayload>;
 	public readonly pieceMoved$?: Observable<EnginePieceMovedNotificationPayload>;
+	public readonly undo$: Observable<unknown>;
+	public readonly redo$: Observable<unknown>;
 
 	constructor(
 		@inject(Chess) private readonly _game: Chess,
@@ -49,6 +56,28 @@ export class EngineController {
 					nextMove
 				};
 			})
+		);
+
+		this.undo$ = merge(
+			this.undo$$,
+			fromEvent(self, "message").pipe(
+				filter<any>(
+					(e: MessageEvent<MessageData>) =>
+						e.data.token === ENGINE_WILL_UNDO_TOKEN
+				),
+				map((e: MessageEvent<MessageData>) => e.data.value)
+			)
+		);
+
+		this.redo$ = merge(
+			this.redo$$,
+			fromEvent(self, "message").pipe(
+				filter<any>(
+					(e: MessageEvent<MessageData>) =>
+						e.data.token === ENGINE_WILL_REDO_TOKEN
+				),
+				map((e: MessageEvent<MessageData>) => e.data.value)
+			)
 		);
 	}
 

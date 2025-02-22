@@ -10,27 +10,40 @@ import {
 
 import { EngineUpdatedMessageData } from "../../../shared/types";
 import { GAME_UPDATED_TOKEN } from "../../../shared/tokens";
-import { EngineController } from "./engine.controller";
 import { PiecesService } from "../pieces/pieces.service";
 import { GameController } from "../game.controller";
+import { EngineController } from "./engine.controller";
 
 @singleton()
 export class EngineService {
-	public readonly undoHistory: Move[] = [];
+	public redoHistory: Move[] = [];
 
 	constructor(
-		@inject(Chess) private readonly game: Chess,
+		@inject(Chess) private readonly _game: Chess,
 		@inject(ChessboardModule) private readonly chessboard: ChessboardModule,
 		@inject(PiecesService) private readonly _pieceService: PiecesService
 	) {}
 
-	private _postGameState(nextMove?: Move) {
+	private _postState(nextMove?: Move) {
 		self.postMessage({
 			token: GAME_UPDATED_TOKEN,
 			value: {
-				fen: this.game.fen(),
-				turn: this.game.turn(),
-				move: nextMove
+				move: nextMove,
+				redoHistory: this.redoHistory,
+				history: this._game.history({ verbose: true }) as Move[],
+
+				ascii: this._game.ascii(),
+				fen: this._game.fen(),
+				inCheck: this._game.inCheck(),
+				isCheck: this._game.isCheck(),
+				isCheckmate: this._game.isCheckmate(),
+				isDraw: this._game.isDraw(),
+				isGameOver: this._game.isGameOver(),
+				isInsufficientMaterial: this._game.isInsufficientMaterial(),
+				isStalemate: this._game.isStalemate(),
+				isThreefoldRepetition: this._game.isThreefoldRepetition(),
+				pgn: this._game.pgn(),
+				turn: this._game.turn()
 			}
 		} satisfies EngineUpdatedMessageData);
 	}
@@ -109,7 +122,7 @@ export class EngineService {
 
 		this.chessboard.pieces.setPieceCoord(piece, endCoord, positionOffset);
 
-		if (nextMove.promotion && piece.type === PieceType.pawn) {
+		if (nextMove.promotion && piece.type === PieceType.pawn)
 			this.chessboard.pieces.promotePiece({
 				piece: piece as MatrixPieceModel<
 					PieceType.pawn,
@@ -117,34 +130,37 @@ export class EngineService {
 				>,
 				toPiece: nextMove.promotion as PieceType
 			});
-		}
 
-		this.game.move(nextMove);
-		this._postGameState(payload.nextMove);
+		this._game.move(nextMove);
+		this.redoHistory = [];
+		this._postState(payload.nextMove);
 	}
 
-	public undoMove(): Move | null {
-		const move = this.game.undo();
-		if (move) this.undoHistory.push(move);
+	public handleUndo(): Move | null {
+		const move = this._game.undo();
+		if (move) this.redoHistory.push(move);
 
-		this._postGameState();
+		this._postState();
 		return move;
 	}
 
-	public redoMove(): Move | null {
-		const move = this.undoHistory.pop();
+	public handleRedo(): Move | null {
+		const move = this.redoHistory.pop();
 		if (!move) return null;
 
-		this._postGameState();
-		return this.game.move(move);
+		this._game.move(move);
+		this._postState();
+
+		return move;
 	}
 
 	public reset(data: ObservablePayload<GameController["reset$"]>) {
 		const { fen } = data || {};
 
-		if (fen && validateFen(fen).ok) this.game.load(fen);
-		else this.game.reset();
+		if (fen && validateFen(fen).ok) this._game.load(fen);
+		else this._game.reset();
 
-		this._postGameState();
+		this.redoHistory = [];
+		this._postState();
 	}
 }

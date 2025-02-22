@@ -6,14 +6,17 @@ import { GameController } from "../game.controller";
 import { WorldService } from "./world.service";
 import { WorldController } from "./world.controller";
 import { ChessboardModule } from "@chess-d/chessboard";
+import { EngineController } from "../engine/engine.controller";
 
 @singleton()
 export class WorldModule implements Module {
-	private readonly _subscriptions: Subscription[] = [];
+	private readonly _subscriptions: (Subscription | undefined)[] = [];
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
 		@inject(GameController) private readonly _gameController: GameController,
+		@inject(EngineController)
+		private readonly _engineController: EngineController,
 		@inject(WorldController) private readonly _controller: WorldController,
 		@inject(WorldService) private readonly _service: WorldService
 	) {
@@ -30,12 +33,21 @@ export class WorldModule implements Module {
 			this._controller.idleAnimation$.subscribe(
 				this._service.handleIdleAnimation.bind(this._service)
 			),
+			this._chessboard.pieces.getPieceDropped$()?.subscribe(() => {
+				this._service.resetChessboard();
+			}),
+			this._chessboard.pieces
+				.getPiecePromoted$()
+				?.subscribe(this._service.resetChessboard.bind(this._service)),
+			this._engineController.undo$.subscribe(
+				this._service.resetChessboard.bind(this._service)
+			),
+			this._engineController.redo$.subscribe(
+				this._service.resetChessboard.bind(this._service)
+			),
 			this._gameController.reset$.subscribe(
 				this._service.reset.bind(this._service)
-			),
-			this._chessboard.pieces.getPieceDropped$$().subscribe(() => {
-				this._service.resetChessboard();
-			})
+			)
 		);
 	}
 
@@ -45,6 +57,6 @@ export class WorldModule implements Module {
 
 	dispose(): void {
 		this._service.scene.clear();
-		this._subscriptions.forEach((sub) => sub.unsubscribe());
+		this._subscriptions.forEach((sub) => sub?.unsubscribe());
 	}
 }

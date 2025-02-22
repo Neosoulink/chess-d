@@ -22,6 +22,12 @@ export class EngineModule implements Module {
 			this._controller.pieceMoved$?.subscribe(
 				this._service.handlePieceMoved.bind(this._service)
 			),
+			this._controller.undo$.subscribe(
+				this._service.handleUndo.bind(this._service)
+			),
+			this._controller.redo$.subscribe(
+				this._service.handleRedo.bind(this._service)
+			),
 			this._gameController.reset$.subscribe(
 				this._service.reset.bind(this._service)
 			)
@@ -30,26 +36,8 @@ export class EngineModule implements Module {
 
 	public init() {}
 
-	public getUndoHistory() {
-		return this._service.undoHistory;
-	}
-
-	public getUndoMove$() {
-		return this._controller.undoMove$$.asObservable();
-	}
-
-	public getRedoMove$() {
-		return this._controller.redoMove$$.asObservable();
-	}
-
-	public undoMove() {
-		const move = this._service.undoMove();
-		if (move) this._controller.undoMove$$.next(move);
-	}
-
-	public redoMove() {
-		const move = this._service.redoMove();
-		if (move) this._controller.redoMove$$.next(move);
+	public getRedoHistory() {
+		return this._service.redoHistory;
 	}
 
 	public dispose() {
