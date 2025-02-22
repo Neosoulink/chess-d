@@ -175,6 +175,8 @@ export class PiecesController {
 			this.pieceDeselected$$.pipe()
 		).pipe(share());
 
-		this.pieceDropped$ = this.pieceDropped$$.asObservable().pipe(share());
+		this.piecePromoted$ = this.piecePromoted$$.pipe(share());
+
+		this.pieceDropped$ = this.pieceDropped$$.pipe(share());
 	}
 }
