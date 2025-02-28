@@ -61,7 +61,7 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 		setIsResourcesLoaded(false);
 		register({
 			location: workerLocation,
-			enableDebug: !devMode,
+			enableDebug: devMode,
 			enableControls: true,
 			axesSizes: 5,
 			withMiniCamera: false,
@@ -119,7 +119,7 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 					loadSub.unsubscribe();
 				});
 
-				if (!devMode && rootDom) {
+				if (devMode && rootDom) {
 					paneRef.current = new Pane();
 					statsRef.current = new Stats();
 

@@ -8,6 +8,8 @@
 	"scripts": {
 		"dev": "turbo dev",
 		"build": "turbo build",
+		"build-web": "turbo run build --filter=web...",
+		"build-server": "turbo run build --filter=server...",
 		"test": "turbo test",
 		"test:e2e": "turbo test:e2e",
 		"lint": "turbo lint",
