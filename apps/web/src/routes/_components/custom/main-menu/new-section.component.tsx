@@ -3,6 +3,8 @@ import { useNavigate } from "react-router";
 
 import { GameMode, MainMenuSection } from "../../../../shared/enum";
 import { useMainMenuStore } from "../../../_stores";
+import { Button } from "../../core";
+import { ModalSection } from "../modal-section";
 
 export const NewGameSection: FC = () => {
 	const navigate = useNavigate();
@@ -21,7 +23,7 @@ export const NewGameSection: FC = () => {
 			action: () => setSection(MainMenuSection.newGameAI)
 		},
 		{
-			label: "Human",
+			label: "Online",
 			mode: "human",
 			title: "Play against another human player",
 			action: () => setSection(MainMenuSection.newGameHuman)
@@ -41,32 +43,29 @@ export const NewGameSection: FC = () => {
 	];
 
 	return (
-		<section className="flex flex-col gap-8 items-start">
-			<div>
-				<h2 className="text-xl mb-2">Choose your game mode:</h2>
+		<ModalSection
+			title="New Game"
+			onGoBack={() => setSection(MainMenuSection.main)}
+		>
+			<div className="flex flex-col gap-4">
+				<h2 className="text-2xl">Choose your game mode:</h2>
 
 				<div className="flex flex-wrap gap-4 text-xl">
 					{GameModeOptions.map((option) => (
-						<button
+						<Button
 							key={option.mode}
 							{...{
 								title: option.title,
 								onClick: option.action,
-								className: "p-5 rounded shadow-md hover:bg-gray-100"
+								className:
+									"min-h-28 min-w-28 p-2 rounded-xl bg-black/20 hover:bg-black/30 hover:scale-105 text-shadow"
 							}}
 						>
 							{option.label}
-						</button>
+						</Button>
 					))}
 				</div>
 			</div>
-
-			<button
-				className="shadow-md p-2 rounded"
-				onClick={() => setSection(MainMenuSection.main)}
-			>
-				Go Back
-			</button>
-		</section>
+		</ModalSection>
 	);
 };

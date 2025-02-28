@@ -1,14 +1,15 @@
 @import "tailwindcss";
 
-@layer utilities {
-	.no-scrollbar::-webkit-scrollbar {
-		display: none;
-	}
+@font-face {
+	font-family: "Kelly Slab";
+	src:
+		local("Kelly Slab"), url("../fonts/ttf/kelly-slab/kelly-slab-regular.ttf");
+}
 
-	.no-scrollbar {
-		-ms-overflow-style: none;
-		scrollbar-width: none;
-	}
+@font-face {
+	font-family: "Comic Neue";
+	src:
+		local("Comic Neue"), url("../fonts/ttf/comic-neue/comic-neue-regular.ttf");
 }
 
 :root {
@@ -35,17 +36,43 @@
 	--tp-monitor-foreground-color: hsla(0, 0%, 100%, 0.3);
 }
 
-html,
-body {
-	margin: 0;
-	padding: 0;
-	top: 0;
-	left: 0;
-	overflow: hidden;
+@theme {
+	--color-light: #cfcfcf;
+	--color-dark: #262a2b;
 
-	@apply bg-white dark:bg-[#262a2b];
+	--font-kelly-slab: "Kelly Slab";
+	--font-comic-neue: "Comic Neue";
+}
 
-	@media (prefers-color-scheme: dark) {
-		color-scheme: dark;
+@utility no-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		@apply hidden;
+	}
+}
+
+@utility text-shadow {
+	text-shadow: 0 0 0.15rem var(--color-black);
+}
+
+@layer base {
+	html,
+	body {
+		@apply font-comic-neue font-bold p-0 m-0 top-0 left-0 overflow-hidden bg-light dark:bg-dark;
+
+		@media (prefers-color-scheme: dark) {
+			@apply scheme-dark;
+		}
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		@apply font-kelly-slab font-normal;
 	}
 }

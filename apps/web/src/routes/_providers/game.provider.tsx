@@ -7,6 +7,7 @@ import {
 	useMemo,
 	useRef
 } from "react";
+import { useLocation } from "react-router";
 import Stats from "stats-gl";
 import { Pane } from "tweakpane";
 
@@ -20,8 +21,7 @@ import bishopPiece from "../../assets/3D/pieces/bishop.glb?url";
 import queenPiece from "../../assets/3D/pieces/queen.glb?url";
 import kingPiece from "../../assets/3D/pieces/king.glb?url";
 import masterHand from "../../assets/3D/master-hand.glb?url";
-import helvetikerFont from "../../assets/fonts/helvetiker_regular.typeface.json?url";
-import { useLocation } from "react-router";
+import helvetikerFont from "../../assets/fonts/typefaces/helvetiker_regular.typeface.json?url";
 
 /** @internal */
 const workerLocation = new URL(
@@ -45,7 +45,6 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 	const devMode = useMemo(() => import.meta.env?.DEV, []);
 	const rootDom = useMemo(() => document.getElementById("root"), []);
 
-	const locationKey = useRef<string | null>(null);
 	const paneRef = useRef<Pane>(null);
 	const statsRef = useRef<Stats>(null);
 	const stateRef = useRef<{
@@ -62,7 +61,7 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 		setIsResourcesLoaded(false);
 		register({
 			location: workerLocation,
-			enableDebug: devMode,
+			enableDebug: !devMode,
 			enableControls: true,
 			axesSizes: 5,
 			withMiniCamera: false,
@@ -120,7 +119,7 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 					loadSub.unsubscribe();
 				});
 
-				if (devMode && rootDom) {
+				if (!devMode && rootDom) {
 					paneRef.current = new Pane();
 					statsRef.current = new Stats();
 

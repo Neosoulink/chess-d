@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router";
 
 import { MainMenuSection } from "../../../../shared/enum";
 import { useMainMenuStore } from "../../../_stores";
+import { ModalSection } from "../modal-section";
+import { Button, Input } from "../../core";
 
 export const NewGameHumanSection: FC = () => {
 	const navigate = useNavigate();
@@ -29,20 +31,23 @@ export const NewGameHumanSection: FC = () => {
 	};
 
 	return (
-		<section className="flex flex-col gap-8 items-start">
+		<ModalSection
+			title="New Game (Online)"
+			onGoBack={() => setSection(MainMenuSection.newGame)}
+		>
 			<form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
 				<h2 className="text-xl">Enter The infos:</h2>
 
-				<button
+				<Button
 					type="button"
-					className="shadow-md p-2 flex justify-center items-center gap-2 rounded capitalize w-fit"
+					className="p-2 bg-black/30 w-fit"
 					onClick={() => setJoinRoom(!joinRoom)}
 				>
 					<div
-						className={`w-4 h-4 rounded-full ${joinRoom ? "bg-gray-900" : "bg-gray-200"}`}
+						className={`w-4 h-4 rounded-full border ${joinRoom ? "bg-white" : ""}`}
 					/>
 					Join Room
-				</button>
+				</Button>
 
 				{joinRoom && (
 					<div>
@@ -52,7 +57,8 @@ export const NewGameHumanSection: FC = () => {
 						>
 							Enter the room ID
 						</label>
-						<input
+
+						<Input
 							id="room-id"
 							name="room-id"
 							type="text"
@@ -64,26 +70,19 @@ export const NewGameHumanSection: FC = () => {
 				)}
 
 				<div className="flex flex-col gap-2">
-					<button type="submit" className="shadow-md p-2 rounded capitalize">
+					<Button type="submit" className="p-2 bg-black/30">
 						{joinRoom ? "Play with opponent" : "New online match"}
-					</button>
+					</Button>
 
-					<Link
+					<Button
+						asLink
 						to="/play?mode=human&random=true"
-						type="submit"
-						className="shadow-md p-2 rounded capitalize flex justify-center items-center"
+						className="p-2 bg-black/30"
 					>
 						Random Match
-					</Link>
+					</Button>
 				</div>
 			</form>
-
-			<button
-				className="shadow-md p-2 rounded"
-				onClick={() => setSection(MainMenuSection.newGame)}
-			>
-				Go Back
-			</button>
-		</section>
+		</ModalSection>
 	);
 };

@@ -1,4 +1,7 @@
-export * from "./actions-section";
-export * from "./main-menu.component";
+export * from "./actions-section/";
+export * from "./main-menu/";
 
-export * from "./loader.component";
+export * from "./pieces-position-editor";
+export * from "./history-modal";
+export * from "./loader";
+export * from "./modal-section";

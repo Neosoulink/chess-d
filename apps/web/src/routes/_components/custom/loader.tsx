@@ -3,7 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 
 import { useGameStore, useLoaderStore } from "../../_stores";
 
-export const LoaderComponent: FC = () => {
+export const Loader: FC = () => {
 	const { app } = useGameStore();
 	const { isLoading } = useLoaderStore();
 	const [loadProgress, setLoadProgress] = useState(0);

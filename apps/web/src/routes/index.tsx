@@ -1,32 +1,31 @@
-import { FC, Fragment } from "react";
+import { FC } from "react";
 import { Routes, Route, Outlet } from "react-router";
 
 import { HomeRoute } from "./home.route";
-import { PlayRoute } from "./play.route";
-import { GameProvider } from "./providers";
+import { PlayRoute } from "./play";
+import { GameProvider } from "./_providers";
 import {
 	ActionsSection,
-	LoaderComponent,
-	MainMenuComponent
+	HistoryModal,
+	Loader,
+	MainMenu
 } from "./_components/custom";
 
 export const Router: FC = () => (
-	<GameProvider>
-		<Routes>
-			<Route
-				path="/"
-				element={
-					<Fragment>
-						<Outlet />
-						<ActionsSection />
-						<LoaderComponent />
-						<MainMenuComponent />
-					</Fragment>
-				}
-			>
-				<Route index element={<HomeRoute />} />
-				<Route path="/play" element={<PlayRoute />} />
-			</Route>
-		</Routes>
-	</GameProvider>
+	<Routes>
+		<Route
+			element={
+				<GameProvider>
+					<Outlet />
+					<ActionsSection />
+					<Loader />
+					<HistoryModal />
+					<MainMenu />
+				</GameProvider>
+			}
+		>
+			<Route index element={<HomeRoute />} />
+			<Route path="/play" element={<PlayRoute />} />
+		</Route>
+	</Routes>
 );

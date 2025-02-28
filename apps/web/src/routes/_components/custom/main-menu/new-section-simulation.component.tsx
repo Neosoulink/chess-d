@@ -4,6 +4,8 @@ import { useNavigate } from "react-router";
 
 import { MainMenuSection } from "../../../../shared/enum";
 import { useMainMenuStore } from "../../../_stores";
+import { Button, Input } from "../../core";
+import { ModalSection } from "../modal-section";
 
 export const NewGameSimulationSection: FC = () => {
 	const navigate = useNavigate();
@@ -28,13 +30,15 @@ export const NewGameSimulationSection: FC = () => {
 				>
 					AI Player {num}
 				</label>
-				<select
+
+				<Input
+					asSelect
 					id={`select-ai-${num}`}
 					name={`select-ai-${num}`}
 					className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 capitalize"
 				>
 					{renderSupportedAiModels()}
-				</select>
+				</Input>
 			</div>
 		);
 	};
@@ -62,27 +66,25 @@ export const NewGameSimulationSection: FC = () => {
 	};
 
 	return (
-		<section className="flex flex-col gap-8 items-start">
-			<h2 className="text-xl">Select AIs for the simulation:</h2>
+		<ModalSection
+			title="New Game (AI vs AI)"
+			onGoBack={() => setSection(MainMenuSection.newGame)}
+		>
+			<div>
+				<h2 className="text-xl mb-4">Select AIs for the simulation:</h2>
 
-			<form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
-				<div className="grid gap-6 md:grid-cols-2">
-					{Array.from({ length: 2 }).map((_, index) =>
-						renderPayersSelection(index + 1)
-					)}
-				</div>
+				<form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
+					<div className="grid gap-6 md:grid-cols-2">
+						{Array.from({ length: 2 }).map((_, index) =>
+							renderPayersSelection(index + 1)
+						)}
+					</div>
 
-				<button type="submit" className="shadow-md p-2 rounded">
-					Start Simulation
-				</button>
-			</form>
-
-			<button
-				className="shadow-md p-2 rounded"
-				onClick={() => setSection(MainMenuSection.newGame)}
-			>
-				Go Back
-			</button>
-		</section>
+					<Button type="submit" className="bg-black/30 p-2">
+						Start Simulation
+					</Button>
+				</form>
+			</div>
+		</ModalSection>
 	);
 };

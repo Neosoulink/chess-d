@@ -4,6 +4,8 @@ import { useNavigate } from "react-router";
 
 import { MainMenuSection } from "../../../../shared/enum";
 import { useMainMenuStore } from "../../../_stores";
+import { Button, Input } from "../../core";
+import { ModalSection } from "../modal-section";
 
 export const NewGameAISection: FC = () => {
 	const navigate = useNavigate();
@@ -34,37 +36,40 @@ export const NewGameAISection: FC = () => {
 	};
 
 	return (
-		<section className="flex flex-col gap-8 items-start">
-			<h2 className="text-xl">Select AIs for the simulation:</h2>
+		<ModalSection
+			title="New Game (AI)"
+			onGoBack={() => setSection(MainMenuSection.newGame)}
+		>
+			<div className="flex flex-col gap-8 items-start">
+				<h2 className="text-xl">Select AIs for the simulation:</h2>
 
-			<form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
-				<div>
-					<label
-						htmlFor="select-ai"
-						className="block mb-2 text-sm font-medium capitalize"
+				<form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
+					<div>
+						<label
+							htmlFor="select-ai"
+							className="block mb-2 font-medium capitalize"
+						>
+							AI Opponent
+						</label>
+
+						<Input
+							id="select-ai"
+							name="select-ai"
+							asSelect
+							className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 capitalize"
+						>
+							{renderSupportedAiModels()}
+						</Input>
+					</div>
+
+					<Button
+						type="submit"
+						className="bg-black/20 hover:bg-black/30 p-2 rounded-lg text-xl"
 					>
-						Select AI opponent player
-					</label>
-					<select
-						id="select-ai"
-						name="select-ai"
-						className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 capitalize"
-					>
-						{renderSupportedAiModels()}
-					</select>
-				</div>
-
-				<button type="submit" className="shadow-md p-2 rounded">
-					Start Match
-				</button>
-			</form>
-
-			<button
-				className="shadow-md p-2 rounded"
-				onClick={() => setSection(MainMenuSection.newGame)}
-			>
-				Go Back
-			</button>
-		</section>
+						Start Match
+					</Button>
+				</form>
+			</div>
+		</ModalSection>
 	);
 };
