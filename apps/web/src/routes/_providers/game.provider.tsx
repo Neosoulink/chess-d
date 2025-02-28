@@ -24,8 +24,11 @@ import masterHand from "../../assets/3D/master-hand.glb?url";
 import helvetikerFont from "../../assets/fonts/typefaces/helvetiker_regular.typeface.json?url";
 
 /** @internal */
+const devMode = import.meta.env?.DEV;
+
+/** @internal */
 const workerLocation = new URL(
-	"../../core/game/game.worker.ts",
+	devMode ? "../../core/game/game.worker.ts" : "./game-worker.js",
 	import.meta.url
 ) as unknown as string;
 
@@ -42,7 +45,6 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 	const { setIsLoading } = useLoaderStore();
 	const { key: routeKey, pathname } = useLocation();
 
-	const devMode = useMemo(() => import.meta.env?.DEV, []);
 	const rootDom = useMemo(() => document.getElementById("root"), []);
 
 	const paneRef = useRef<Pane>(null);
@@ -141,7 +143,7 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 				setApp(_app);
 			}
 		});
-	}, [setIsLoading, devMode, rootDom, setApp, setIsResourcesLoaded]);
+	}, [setIsLoading, rootDom, setApp, setIsResourcesLoaded]);
 
 	const dispose = useCallback(async () => {
 		if (stateRef.current.isPending || !stateRef.current.isReady) return;

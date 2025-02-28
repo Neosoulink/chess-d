@@ -20,11 +20,14 @@ import { getGameModeFromUrl } from "../../../shared/utils";
 import { useGameStore, useLoaderStore } from "../../_stores";
 import { WorkerThread } from "@quick-threejs/utils";
 
+/** @internal */
+const devMode = import.meta.env?.DEV;
+
 export interface WithAIComponentProps {}
 
 /** @internal */
 const workerLocation = new URL(
-	"../../../core/ai/ai.worker.ts",
+	devMode ? "../../../core/ai/ai.worker.ts" : "./ai-worker.js",
 	import.meta.url
 ) as unknown as string;
 
