@@ -11,10 +11,10 @@ import "@chrisoakman/chessboard2/dist/chessboard2.min.css";
 export const ActionsSection: FC = () => {
 	const { pathname } = useLocation();
 
+	if (!pathname.startsWith("/play")) return null;
+
 	return (
-		<section
-			className={`h-fit z-10 absolute bottom-0 left-0 pointer-events-none select-none ${!pathname.startsWith("/play") ? "opacity-0 pointer-events-none" : ""}`}
-		>
+		<section className="h-fit z-10 absolute bottom-0 left-0 pointer-events-none select-none ">
 			<div className="relative w-dvw flex items-end justify-between p-10">
 				<div className="flex flex-col items-start gap-2 text-base text-gray-400 flex-1">
 					<h2 className="uppercase mb-1">Game Status</h2>

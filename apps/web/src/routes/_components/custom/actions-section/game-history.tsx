@@ -14,7 +14,7 @@ const MoveItem: FC<{ content: string; active?: boolean }> = ({
 }) => (
 	<li className="flex-none" id={active ? "active-move-item" : undefined}>
 		<Button
-			className={`text-base text-gray-50 font-bold italic shadow rounded bg-black/20 py-1 px-2 hover:bg-black/30 ${active ? "!opacity-100" : ""}`}
+			className={`text-base text-gray-50 font-bold italic shadow rounded  py-1 px-2 hover:bg-black/30 ${active ? "!opacity-100 bg-black/20" : ""}`}
 		>
 			{content}
 		</Button>

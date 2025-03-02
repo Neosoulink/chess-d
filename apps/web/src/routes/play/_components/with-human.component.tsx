@@ -45,7 +45,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 	const socket = useMemo(
 		() =>
-			io("http://localhost:3000", {
+			io(import.meta.env.VITE_SERVER_HOST, {
 				autoConnect: false
 			}),
 		[]

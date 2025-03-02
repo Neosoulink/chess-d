@@ -17,11 +17,12 @@ export const ActionsSectionGameMap: FC = () => {
 		const appWorker = appModule?.getWorker() as Worker | undefined;
 
 		const handleMessages = (e: MessageEvent<EngineUpdatedMessageData>) => {
-			if (
-				e.data?.token === GAME_UPDATED_TOKEN &&
-				validateFen(e.data?.value?.fen || "").ok
-			)
-				mapRef.current?.position(e.data!.value!.fen, true);
+			const fen = e.data?.value?.fen || "";
+
+			if (e.data?.token === GAME_UPDATED_TOKEN && validateFen(fen).ok)
+				setTimeout(() => {
+					mapRef.current?.position(fen, true);
+				}, 0);
 		};
 
 		appWorker?.addEventListener("message", handleMessages);

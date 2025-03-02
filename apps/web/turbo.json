@@ -3,7 +3,7 @@
 	"extends": ["//"],
 	"tasks": {
 		"dev": {
-			"env": ["DEV"]
+			"env": ["DEV", "VITE_SERVER_HOST"]
 		}
 	}
 }
