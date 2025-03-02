@@ -43,6 +43,8 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		PlayerModel | undefined
 	>();
 
+	console.log(import.meta.env.VITE_SERVER_HOST);
+
 	const socket = useMemo(
 		() =>
 			io(import.meta.env.VITE_SERVER_HOST, {
