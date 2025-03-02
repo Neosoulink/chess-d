@@ -43,7 +43,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		PlayerModel | undefined
 	>();
 
-	console.log(import.meta.env);
+	console.log(import.meta);
 
 	const socket = useMemo(
 		() =>
