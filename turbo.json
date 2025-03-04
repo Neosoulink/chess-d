@@ -11,10 +11,6 @@
 			"dependsOn": ["^build"],
 			"outputs": ["dist/**"]
 		},
-		"build-deploy": {
-			"dependsOn": ["^build"],
-			"outputs": ["dist/**"]
-		},
 		"lint": {
 			"dependsOn": ["^build"]
 		},

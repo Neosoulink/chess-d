@@ -110,7 +110,6 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 				}
 			],
 			onReady: (_app) => {
-				console.log("App ready! ===>", import.meta.env);
 				stateRef.current.isPending = false;
 				stateRef.current.isReady = true;
 
