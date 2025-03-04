@@ -5,6 +5,7 @@
 	"scripts": {
 		"dev": "vite --host",
 		"build": "pnpm run lint && vite build",
+		"build-deploy": "PUBLIC_SERVER_HOST=$PUBLIC_SERVER_HOST vite build",
 		"preview": "vite preview",
 		"lint": "tsc && eslint .",
 		"test": "jest --passWithNoTests"
