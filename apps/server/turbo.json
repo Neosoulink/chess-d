@@ -3,12 +3,12 @@
 	"extends": ["//"],
 	"tasks": {
 		"dev": {
-			"env": ["DEV", "PUBLIC_SERVER_HOST"]
+			"env": ["CLIENT_HOST"]
 		},
 		"build": {
 			"dependsOn": ["^build"],
 			"outputs": ["dist/**"],
-			"env": ["PUBLIC_SERVER_HOST"]
+			"env": ["CLIENT_HOST"]
 		}
 	}
 }

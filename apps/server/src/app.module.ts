@@ -1,9 +1,19 @@
-import { APP_PIPE } from "@nestjs/core";
+import Joi from "@hapi/joi";
+import { ConfigModule } from "@nestjs/config";
 import { Module, ValidationPipe } from "@nestjs/common";
+import { APP_PIPE } from "@nestjs/core";
+
 import { PlayersModule } from "./players/players.module";
 
 @Module({
-	imports: [PlayersModule],
+	imports: [
+		ConfigModule.forRoot({
+			validationSchema: Joi.object({
+				CLIENT_HOST: Joi.string().required()
+			})
+		}),
+		PlayersModule
+	],
 	providers: [
 		{
 			provide: APP_PIPE,
