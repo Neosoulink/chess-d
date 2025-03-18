@@ -11,7 +11,13 @@ import { validateFen } from "chess.js";
 
 export const FreeModeComponent: FC = () => {
 	const location = useLocation();
-	const { app, fen, resetGame, setFen, performPieceMove } = useGameStore();
+	const {
+		app,
+		initialGameState,
+		resetGame,
+		setInitialGameState,
+		performPieceMove
+	} = useGameStore();
 	const { setIsLoading } = useLoaderStore();
 
 	const locationKeyRef = useRef<string | null>(null);
@@ -24,10 +30,13 @@ export const FreeModeComponent: FC = () => {
 	}, []);
 
 	useEffect(() => {
-		if (locationKeyRef.current === location.key || validateFen(`${fen}`).ok)
+		if (
+			locationKeyRef.current === location.key ||
+			validateFen(`${initialGameState?.fen}`).ok
+		)
 			return;
-		setFen(DEFAULT_FEN);
-	}, [fen, location.key, setFen]);
+		setInitialGameState({ fen: DEFAULT_FEN });
+	}, [initialGameState?.fen, location.key, setInitialGameState]);
 
 	useEffect(() => {
 		if (locationKeyRef.current === location.key) return;

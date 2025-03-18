@@ -32,7 +32,8 @@ const workerLocation = new URL(
 ) as unknown as string;
 
 export const WithAIComponent: FC<WithAIComponentProps> = () => {
-	const { app, fen, resetGame, setFen } = useGameStore();
+	const { app, initialGameState, resetGame, setInitialGameState } =
+		useGameStore();
 	const { setIsLoading } = useLoaderStore();
 	const location = useLocation();
 	const { module: appModule } = app ?? {};
@@ -97,10 +98,13 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 	);
 
 	useEffect(() => {
-		if (locationKeyRef.current === location.key || validateFen(`${fen}`).ok)
+		if (
+			locationKeyRef.current === location.key ||
+			validateFen(`${initialGameState?.fen}`).ok
+		)
 			return;
-		setFen(DEFAULT_FEN);
-	}, [fen, location.key, setFen]);
+		setInitialGameState({ fen: DEFAULT_FEN });
+	}, [initialGameState?.fen, location.key, setInitialGameState]);
 
 	useEffect(() => {
 		const state = stateRef.current;

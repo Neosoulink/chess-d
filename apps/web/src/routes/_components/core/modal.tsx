@@ -34,7 +34,7 @@ export const Modal = forwardRef<HTMLElement, ModalProps>(
 		return (
 			<section
 				ref={ref}
-				className={`fixed h-dvh w-dvw flex flex-col z-50 top-0 left-0 p-4 bg-black/30 backdrop-blur-xs transition-opacity duration-300 overflow-hidden ${showClassNames} ${className}`}
+				className={`fixed h-dvh w-dvw flex flex-col z-50 top-0 left-0 p-4 bg-black/50 transition-opacity duration-300 overflow-hidden ${showClassNames} ${className}`}
 				{...props}
 			>
 				{onClose && (

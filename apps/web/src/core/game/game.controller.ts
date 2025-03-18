@@ -9,8 +9,9 @@ import {
 } from "rxjs";
 import { singleton } from "tsyringe";
 
-import { MessageData } from "../../shared/types";
+import { MessageData, MoveLike } from "../../shared/types";
 import { GAME_RESET_TOKEN } from "../../shared/tokens";
+import { ObservablePayload } from "@chess-d/shared";
 
 @singleton()
 export class GameController {
@@ -20,16 +21,17 @@ export class GameController {
 	).pipe(share());
 
 	public readonly reset$$ = new Subject<
-		{ fen: string | undefined } | undefined
+		{ fen?: string; pgn?: string; redoHistory?: MoveLike[] } | undefined
 	>();
-	public readonly reset$: Observable<{ fen: string | undefined } | undefined> =
-		merge(
-			this._message$.pipe(
-				filter((message) => message.data.token === GAME_RESET_TOKEN),
-				map((payload) => payload.data.value)
-			),
-			this.reset$$
-		);
+	public readonly reset$: Observable<
+		ObservablePayload<GameController["reset$$"]>
+	> = merge(
+		this._message$.pipe(
+			filter((message) => message.data.token === GAME_RESET_TOKEN),
+			map((payload) => payload.data.value)
+		),
+		this.reset$$
+	);
 
 	constructor() {}
 }

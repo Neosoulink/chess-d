@@ -1,13 +1,20 @@
 import { ColorSide, DEFAULT_FEN } from "@chess-d/shared";
 import { Chessboard2 } from "@chrisoakman/chessboard2/dist/chessboard2.min.js";
 
-import { Button, Icon, Input } from "../core";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Button, Icon, Input, InputProps } from "../core";
+import {
+	ChangeEventHandler,
+	useCallback,
+	useEffect,
+	useRef,
+	useState
+} from "react";
 import { validateFen } from "chess.js";
 import { useGameStore } from "../../_stores";
 
 export const PiecesPositionEditor = () => {
-	const { fen, setFen } = useGameStore();
+	const { initialGameState, setInitialGameState } = useGameStore();
+	const { fen } = initialGameState || {};
 	const [inputFen, setInputFen] = useState(fen || DEFAULT_FEN);
 	const [showMap, setShowMap] = useState(false);
 
@@ -22,16 +29,16 @@ export const PiecesPositionEditor = () => {
 			if (!validateFen(newFen).ok) return;
 
 			setInputFen(newFen);
-			setFen(newFen);
+			setInitialGameState({ fen: newFen });
 		},
-		[fen, setFen]
+		[fen, setInitialGameState]
 	);
 
 	const reset = useCallback(() => {
-		setFen(DEFAULT_FEN);
+		setInitialGameState({ fen: DEFAULT_FEN });
 		setInputFen(DEFAULT_FEN);
 		mapRef.current?.position(DEFAULT_FEN, true);
-	}, [setFen]);
+	}, [setInitialGameState]);
 
 	useEffect(() => {
 		const mapParentElement = mapWrapperRef.current;
@@ -49,7 +56,7 @@ export const PiecesPositionEditor = () => {
 
 						if (!newFen || !validateFen(newFen).ok) return;
 
-						setFen(newFen);
+						setInitialGameState({ fen: newFen });
 						setInputFen(newFen);
 					}
 				});
@@ -63,7 +70,7 @@ export const PiecesPositionEditor = () => {
 			mapBoard?.destroy();
 			mapElement.remove();
 		};
-	}, [setFen, showMap]);
+	}, [setInitialGameState, showMap]);
 
 	useEffect(() => {
 		if (fen && validateFen(fen).ok) {
@@ -101,12 +108,15 @@ export const PiecesPositionEditor = () => {
 
 						<Input
 							value={inputFen}
-							onChange={(e) => {
-								const newFen = e.target.value;
-								setInputFen(newFen);
+							onChange={
+								((e: Parameters<ChangeEventHandler<HTMLInputElement>>[0]) => {
+									const newFen = e.target.value;
+									setInputFen(newFen);
 
-								if (validateFen(newFen).ok) setFen(newFen);
-							}}
+									if (validateFen(newFen).ok)
+										setInitialGameState({ fen: newFen });
+								}) as InputProps["onChange"]
+							}
 						/>
 					</div>
 				</div>
@@ -116,7 +126,7 @@ export const PiecesPositionEditor = () => {
 				</Button>
 
 				<Button
-					className={`h-11 w-11 text-2xl bg-black/30 ${showMap ? "" : "!opacity-30 hover:!opacity-100"}`}
+					className={`h-11 w-11 text-2xl bg-black/30 ${showMap ? "" : " text-light/90"}`}
 					onClick={() => setShowMap(!showMap)}
 				>
 					<Icon.Chessboard />

@@ -8,13 +8,15 @@ export interface ModalSectionProps extends PropsWithChildren {
 	title?: string;
 	editPiecesPosition?: boolean;
 	onGoBack?: MouseEventHandler<HTMLButtonElement>;
+	onClose?: MouseEventHandler<HTMLButtonElement>;
 }
 
 export const ModalSection: FC<ModalSectionProps> = ({
 	title,
 	children,
 	editPiecesPosition = true,
-	onGoBack
+	onGoBack,
+	onClose
 }) => {
 	return (
 		<section className="flex items-center justify-center w-dvw h-dvh">
@@ -27,7 +29,7 @@ export const ModalSection: FC<ModalSectionProps> = ({
 
 				<hr className="h-0.5 w-full border-none bg-gradient-to-r from-white/0 via-white to-white/0" />
 
-				<div>
+				<div className="flex justify-between items-center">
 					{!!onGoBack && (
 						<Button
 							className="p-2 rounded font-kelly-slab text-xl shadow-none bg-black/20 hover:bg-black/30 text-shadow"
@@ -35,6 +37,15 @@ export const ModalSection: FC<ModalSectionProps> = ({
 						>
 							<Icon.ArrowBackward />
 							Go Back
+						</Button>
+					)}
+
+					{!!onClose && (
+						<Button
+							className="p-2 rounded font-kelly-slab text-xl shadow-none bg-black/20 hover:bg-black/30 text-shadow"
+							onClick={onClose}
+						>
+							Close
 						</Button>
 					)}
 				</div>

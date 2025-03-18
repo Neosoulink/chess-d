@@ -9,13 +9,15 @@ import {
 	EngineUpdatedMessageData,
 	MessageData
 } from "../../../../shared/types";
-import { useGameStore } from "../../../_stores";
+import { useGameStore, useMainMenuStore } from "../../../_stores";
 import { Button } from "../../core";
 import { Icon } from "../../core/icon";
 import { ColorSide } from "@chess-d/shared";
+import { MainMenuSection } from "../../../../shared/enum";
 
 export const ActionsSectionGameControls: FC = () => {
 	const { app } = useGameStore();
+	const { open: openMenu } = useMainMenuStore();
 
 	const [status, setStatus] = useState<EngineUpdatedMessageData["value"]>();
 
@@ -36,6 +38,10 @@ export const ActionsSectionGameControls: FC = () => {
 
 		worker?.postMessage(message);
 	}, [app?.module]);
+
+	const openSaveMenu = useCallback(() => {
+		openMenu(MainMenuSection.saveGame);
+	}, [openMenu]);
 
 	useEffect(() => {
 		const appModule = app?.module;
@@ -90,7 +96,7 @@ export const ActionsSectionGameControls: FC = () => {
 
 				<hr className="h-5 border-l" />
 
-				<Button>
+				<Button onClick={openSaveMenu}>
 					<Icon.Save size={24} />
 				</Button>
 

@@ -33,7 +33,7 @@ interface SocketPayload {
 export interface WithHumanComponentProps {}
 
 export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
-	const { app, setFen, resetGame } = useGameStore();
+	const { app, setInitialGameState, resetGame } = useGameStore();
 	const { setIsLoading } = useLoaderStore();
 	const location = useLocation();
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -79,12 +79,12 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 			setCurrentPlayer(player);
 			setSearchParams((prev) => [...prev, ["roomID", data.roomID]]);
-			setFen(data.room.fen);
+			setInitialGameState({ fen: data.room.fen });
 			resetGame();
 
 			setTimeout(() => setIsLoading(false), 100);
 		},
-		[resetGame, setFen, setIsLoading, setSearchParams, socket]
+		[resetGame, setInitialGameState, setIsLoading, setSearchParams, socket]
 	);
 
 	const onJoinedRoom = useCallback(
@@ -109,7 +109,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 					side: player.color,
 					fen: data.room.fen
 				};
-				setFen(data.room.fen);
+				setInitialGameState({ fen: data.room.fen });
 				resetGame();
 				setSearchParams((_urlSearchParams) => {
 					_urlSearchParams.set("roomID", data.roomID);
@@ -125,7 +125,14 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 			console.log("Joined room:", data);
 		},
-		[currentPlayer, resetGame, setFen, setIsLoading, setSearchParams, socket]
+		[
+			currentPlayer,
+			resetGame,
+			setInitialGameState,
+			setIsLoading,
+			setSearchParams,
+			socket
+		]
 	);
 
 	const onLeftRoom = useCallback((playerId: string) => {

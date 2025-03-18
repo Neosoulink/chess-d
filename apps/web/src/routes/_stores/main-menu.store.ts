@@ -10,6 +10,7 @@ export interface MainMenuStore {
 	close: () => void;
 	setSection: (section: MainMenuSection) => void;
 	reset: () => void;
+	toggle: () => void;
 }
 
 export const mainMenuInitialState: Properties<MainMenuStore> = {
@@ -22,7 +23,7 @@ export const useMainMenuStore = create<MainMenuStore>((set) => ({
 	open: (section = MainMenuSection.main) =>
 		set(() => ({ isOpen: true, currentSection: section })),
 	close: () => set(() => ({ isOpen: false })),
-	setSection: (section: MainMenuSection) =>
-		set(() => ({ currentSection: section })),
-	reset: () => set(() => ({ ...mainMenuInitialState }))
+	setSection: (section) => set(() => ({ currentSection: section })),
+	reset: () => set(() => ({ ...mainMenuInitialState })),
+	toggle: () => set((state) => ({ isOpen: !state.isOpen }))
 }));

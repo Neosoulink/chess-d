@@ -8,7 +8,7 @@ import {
 	PieceType
 } from "@chess-d/shared";
 
-import { EngineUpdatedMessageData } from "../../../shared/types";
+import { EngineUpdatedMessageData, MoveLike } from "../../../shared/types";
 import { GAME_UPDATED_TOKEN } from "../../../shared/tokens";
 import { PiecesService } from "../pieces/pieces.service";
 import { GameController } from "../game.controller";
@@ -16,7 +16,7 @@ import { EngineController } from "./engine.controller";
 
 @singleton()
 export class EngineService {
-	public redoHistory: Move[] = [];
+	public redoHistory: MoveLike[] = [];
 
 	constructor(
 		@inject(Chess) private readonly _game: Chess,
@@ -30,7 +30,7 @@ export class EngineService {
 			value: {
 				move: nextMove,
 				redoHistory: this.redoHistory,
-				history: this._game.history({ verbose: true }) as Move[],
+				history: this._game.history({ verbose: true }),
 
 				ascii: this._game.ascii(),
 				fen: this._game.fen(),
@@ -138,13 +138,19 @@ export class EngineService {
 
 	public handleUndo(): Move | null {
 		const move = this._game.undo();
-		if (move) this.redoHistory.push(move);
+		if (move)
+			this.redoHistory.push({
+				from: move.from,
+				to: move.to,
+				san: move.san,
+				promotion: move.promotion
+			});
 
 		this._postState();
 		return move;
 	}
 
-	public handleRedo(): Move | null {
+	public handleRedo(): MoveLike | null {
 		const move = this.redoHistory.pop();
 		if (!move) return null;
 
@@ -155,12 +161,15 @@ export class EngineService {
 	}
 
 	public reset(data: ObservablePayload<GameController["reset$"]>) {
-		const { fen } = data || {};
+		const { fen, pgn, redoHistory } = data || {};
+
+		this._game.reset();
+		this.redoHistory = [];
 
 		if (fen && validateFen(fen).ok) this._game.load(fen);
-		else this._game.reset();
+		if (pgn) this._game.loadPgn(pgn);
+		if (Array.isArray(redoHistory)) this.redoHistory = redoHistory;
 
-		this.redoHistory = [];
 		this._postState();
 	}
 }

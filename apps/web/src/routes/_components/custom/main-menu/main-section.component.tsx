@@ -1,5 +1,4 @@
 import { FC, PropsWithChildren } from "react";
-import { Link } from "react-router";
 
 import { MainMenuSection } from "../../../../shared/enum";
 import { useMainMenuStore } from "../../../_stores";
@@ -58,8 +57,7 @@ export const MainSection: FC = () => {
 		},
 		{
 			children: "Load Game",
-			disabled: true,
-			action: () => setSection(MainMenuSection.newGame)
+			action: () => setSection(MainMenuSection.loadGame)
 		},
 		{
 			children: "Settings",

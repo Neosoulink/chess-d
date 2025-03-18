@@ -29,8 +29,8 @@ export class PiecesModule implements Module {
 			this._engineController.undo$?.subscribe(() =>
 				this._service.reset(this._game.fen())
 			),
-			this._gameController.reset$.subscribe((data) =>
-				this._service.reset(data?.fen)
+			this._gameController.reset$.subscribe(() =>
+				this._service.reset(this._game.fen())
 			),
 			this._engineController.redo$?.subscribe(() =>
 				this._service.reset(this._game.fen())

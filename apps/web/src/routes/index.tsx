@@ -17,8 +17,8 @@ export const Router: FC = () => (
 			element={
 				<GameProvider>
 					<Outlet />
-					<ActionsSection />
 					<Loader />
+					<ActionsSection />
 					<HistoryModal />
 					<MainMenu />
 				</GameProvider>

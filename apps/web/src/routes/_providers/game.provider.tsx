@@ -37,7 +37,7 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 		app,
 		isResourcesLoaded,
 		setApp,
-		setFen,
+		setInitialGameState,
 		setIsResourcesLoaded,
 		resetGame,
 		reset: resetStore
@@ -172,11 +172,18 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 		if (pathname.startsWith("/play") || !isResourcesLoaded) return;
 
 		setIsLoading(true);
-		setFen(undefined);
+		setInitialGameState(undefined);
 		resetGame();
 
 		setTimeout(() => setIsLoading(false), 100);
-	}, [isResourcesLoaded, pathname, resetGame, routeKey, setFen, setIsLoading]);
+	}, [
+		isResourcesLoaded,
+		pathname,
+		resetGame,
+		routeKey,
+		setInitialGameState,
+		setIsLoading
+	]);
 
 	return children;
 };

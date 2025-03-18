@@ -2,7 +2,7 @@ import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { Move } from "chess.js";
 
 import { GAME_UPDATED_TOKEN } from "../../../../shared/tokens";
-import { EngineUpdatedMessageData } from "../../../../shared/types";
+import { EngineUpdatedMessageData, MoveLike } from "../../../../shared/types";
 import { useGameStore } from "../../../_stores";
 import { Button } from "../../core";
 import { Icon } from "../../core/icon";
@@ -25,7 +25,7 @@ export const ActionsSectionGameHistory: FC = () => {
 	const { app } = useGameStore();
 
 	const [movesHistory, setMovesHistory] = useState<Move[]>([]);
-	const [redoHistory, setRedoHistory] = useState<Move[]>([]);
+	const [redoHistory, setRedoHistory] = useState<MoveLike[]>([]);
 
 	const reversedRdoHistory = useMemo(
 		() => redoHistory.slice().reverse(),
@@ -82,7 +82,7 @@ export const ActionsSectionGameHistory: FC = () => {
 			>
 				{movesHistory.map((move, i) => (
 					<MoveItem
-						key={move.after}
+						key={`${move.before}-${move.after}`}
 						content={`${i + 1}. ${move.san}`}
 						active={movesHistory.length - 1 === i}
 					/>
@@ -90,7 +90,7 @@ export const ActionsSectionGameHistory: FC = () => {
 
 				{reversedRdoHistory.map((move, i) => (
 					<MoveItem
-						key={move.after}
+						key={`${i}-${move.san}`}
 						content={`${movesHistory.length + i + 1}. ${move.san}`}
 					/>
 				))}
