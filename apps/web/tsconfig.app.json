@@ -9,7 +9,12 @@
 		"allowImportingTsExtensions": true,
 		"jsx": "react-jsx",
 		"noEmit": true,
-		"outDir": "./dist"
+
+		"outDir": "./dist",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"]
+		}
 	},
 	"include": ["src"]
 }

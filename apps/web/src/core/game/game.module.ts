@@ -1,4 +1,5 @@
-import { AppModule, Module } from "@quick-threejs/reactive";
+import { Module } from "@quick-threejs/reactive";
+import { AppModule } from "@quick-threejs/reactive/worker";
 import { Subscription } from "rxjs";
 import { inject, singleton } from "tsyringe";
 

@@ -5,7 +5,7 @@ import {
 	setup as setupChessboard
 } from "@chess-d/chessboard";
 import { PieceType } from "@chess-d/shared";
-import { AppModule } from "@quick-threejs/reactive";
+import { AppModule } from "@quick-threejs/reactive/worker";
 import { launchApp } from "@quick-threejs/reactive/worker";
 import { isObject } from "@quick-threejs/utils";
 import { Chess } from "chess.js";

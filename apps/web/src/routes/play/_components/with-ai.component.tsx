@@ -1,6 +1,7 @@
 import { SupportedAiModel } from "@chess-d/ai";
 import { ColorSide, DEFAULT_FEN } from "@chess-d/shared";
 import { RegisterModule } from "@quick-threejs/reactive";
+import { WorkerThread } from "@quick-threejs/worker";
 import { Move, validateFen } from "chess.js";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "react-router";
@@ -18,7 +19,6 @@ import {
 } from "../../../shared/tokens";
 import { getGameModeFromUrl } from "../../../shared/utils";
 import { useGameStore, useLoaderStore } from "../../_stores";
-import { WorkerThread } from "@quick-threejs/utils";
 
 /** @internal */
 const devMode = import.meta.env?.DEV;

@@ -1,5 +1,5 @@
 import { ObservablePayload } from "@chess-d/shared";
-import { AppModule } from "@quick-threejs/reactive";
+import { AppModule } from "@quick-threejs/reactive/worker";
 import { Vector2Like } from "three";
 import { singleton } from "tsyringe";
 

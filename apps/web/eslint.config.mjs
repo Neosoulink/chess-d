@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
 import globals from "globals";
+import { defineConfig } from "eslint/config";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import path from "node:path";
@@ -15,14 +16,14 @@ const compat = new FlatCompat({
 	allConfig: js.configs.all
 });
 
-export default tsEslint.config(
+export default defineConfig(
 	...tsEslint.configs.recommended,
 	{ ignores: ["dist"] },
 	{
 		files: ["./src/**/*.js?(x)", "./src/**/*.ts?(x)"],
 		languageOptions: {
 			parserOptions: {
-				project: true
+				project: "./tsconfig.app.json"
 			}
 		}
 	},

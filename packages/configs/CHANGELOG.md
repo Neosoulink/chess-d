@@ -15,7 +15,6 @@
 - a1a7930: use `quick-three/config`
 
   ### logs
-
   - Use configs from `quick-three/config`
     - For `eslint` base
     - For `prettier` base

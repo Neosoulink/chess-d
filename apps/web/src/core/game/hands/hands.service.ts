@@ -1,7 +1,7 @@
 import { ChessboardModule } from "@chess-d/chessboard";
 import { ColorSide, type ObservablePayload } from "@chess-d/shared";
-import { AppModule } from "@quick-threejs/reactive";
 import { deserializeObject3D, serializeObject3D } from "@quick-threejs/utils";
+import { AppModule } from "@quick-threejs/reactive/worker";
 import {
 	AnimationAction,
 	AnimationClip,

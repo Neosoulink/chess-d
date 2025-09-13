@@ -1,4 +1,4 @@
-import { AppModule } from "@quick-threejs/reactive";
+import { AppModule } from "@quick-threejs/reactive/worker";
 import {
 	ColorManagement,
 	Quaternion,
@@ -113,8 +113,6 @@ export class DebugService {
 					Number(props.value) || 0;
 			if (props.type === "environment-reset")
 				this._worldService.resetEnvironment();
-			if (props.type.startsWith("environment-"))
-				this._worldService.updateEnvironmentSky();
 
 			// Lights
 			if (props.type === "lights-enableAmbient")

@@ -9,3 +9,7 @@ dist
 dist-ssr
 lib
 *.d.ts
+
+# Changesets
+.changeset/
+**/CHANGELOG.md

@@ -1,4 +1,4 @@
-import { WorkerThreadModule } from "@quick-threejs/utils";
+import { WorkerThreadModule } from "@quick-threejs/worker";
 import { Module } from "@quick-threejs/reactive";
 import { inject, singleton } from "tsyringe";
 import { Subscription } from "rxjs";

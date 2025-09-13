@@ -1,4 +1,4 @@
-import { AppModule } from "@quick-threejs/reactive";
+import { AppModule } from "@quick-threejs/reactive/worker";
 import { validateFen } from "chess.js";
 import { gsap } from "gsap";
 import {
