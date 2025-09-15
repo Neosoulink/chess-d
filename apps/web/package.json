@@ -39,7 +39,7 @@
 		"@types/react": "^19.0.6",
 		"@types/react-dom": "^19.0.3",
 		"@types/three": "^0.172.0",
-		"@vitejs/plugin-react": "^4.3.2",
+		"@vitejs/plugin-react": "^5.0.2",
 		"autoprefixer": "^10.4.20",
 		"postcss": "^8.4.49",
 		"reflect-metadata": "^0.2.0",
