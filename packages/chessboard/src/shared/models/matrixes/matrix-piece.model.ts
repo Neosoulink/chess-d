@@ -46,12 +46,13 @@ export class MatrixPieceModel<
 				z: x.z || this.position.z
 			});
 
-		if (this.physics?.rigidBody)
+		if (this.physics?.rigidBody) {
 			this.rotation.copy(this.physics.rigidBody.rotation());
 
-		this.physics?.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
-		this.physics?.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
-		this.physics?.rigidBody.setTranslation(this.position, true);
+			this.physics.rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+			this.physics.rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+			this.physics.rigidBody.setTranslation(this.position, true);
+		}
 
 		try {
 			setTimeout(() => {

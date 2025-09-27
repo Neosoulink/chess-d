@@ -128,7 +128,7 @@ export class InstancedPieceModel<
 	}
 
 	public resetPhysics(physics: Physics): void {
-		physics?.removeFromWorld(this);
+		this._disposePhysics(physics);
 
 		const physicsProperties = physics.addToWorld(
 			this,
@@ -225,8 +225,15 @@ export class InstancedPieceModel<
 		});
 	}
 
+	private _disposePhysics(physics?: Physics): void {
+		if (!physics) return;
+
+		physics.removePropsFromWorld(this.userData.grabProps);
+		physics.removeFromWorld(this);
+	}
+
 	public dispose(physics?: Physics): this {
-		physics?.removeFromWorld(this);
+		this._disposePhysics(physics);
 		this._handlePiecesDispose();
 		this.removeFromParent();
 		this.pieceUpdated$$.complete();
