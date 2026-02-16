@@ -1,7 +1,6 @@
 import { AppModule } from "@quick-threejs/reactive/worker";
 import { validateFen } from "chess.js";
 import { gsap } from "gsap";
-import type { TimerService } from "node_modules/@quick-threejs/reactive/dist/core/app/timer/timer.service";
 import {
 	BehaviorSubject,
 	filter,
@@ -32,7 +31,7 @@ export class WorldController {
 		totalDuration: number;
 	}>;
 	public readonly introAnimation$: Observable<number>;
-	public readonly idleAnimation$: Observable<TimerService>;
+	public readonly idleAnimation$: ReturnType<AppModule["timer"]["step$"]>;
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,

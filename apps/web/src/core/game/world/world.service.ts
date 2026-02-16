@@ -1,4 +1,8 @@
-import { ChessboardModule, InstancedPieceModel } from "@chess-d/chessboard";
+import {
+	ChessboardModule,
+	InstancedCellModel,
+	InstancedPieceModel
+} from "@chess-d/chessboard";
 import {
 	BOARD_CELL_SIZE,
 	BOARD_MATRIX_RANGE_SIZE,
@@ -14,9 +18,9 @@ import {
 	ColorManagement,
 	DirectionalLight,
 	DoubleSide,
+	FrontSide,
 	Group,
 	Material,
-	MathUtils,
 	Mesh,
 	MeshPhysicalMaterial,
 	NoToneMapping,
@@ -26,8 +30,7 @@ import {
 	PlaneGeometry,
 	ShadowMaterial,
 	SkinnedMesh,
-	SRGBColorSpace,
-	Vector3
+	SRGBColorSpace
 } from "three";
 import { inject, singleton } from "tsyringe";
 
@@ -46,27 +49,21 @@ export class WorldService {
 	public readonly floor = new Group();
 	public readonly lights = {
 		sun: new DirectionalLight(),
+		sunReflection: new DirectionalLight(),
 		sunPropagation: new AmbientLight()
 	};
-	public readonly sun = {
-		position: new Vector3(),
-		elevation: 2,
-		azimuth: 90,
-		isNight: false,
-		enabled: true
-	};
 	public readonly boardSquareHints = new Group();
-
-	/** @description The duration of a day in seconds. */
-	public dayDuration = 60;
-	/** @description Whether the current time is night. */
-	public isNight = false;
 
 	public mainMaterial = new MeshPhysicalMaterial({
 		side: DoubleSide,
 		sheen: 2,
+		roughness: 0.45,
+		metalness: 0.02
+	});
+	public boardMaterial = new MeshPhysicalMaterial({
+		side: FrontSide,
 		roughness: 0.8,
-		metalness: 0
+		metalness: 0.1
 	});
 
 	constructor(
@@ -74,50 +71,30 @@ export class WorldService {
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
 		@inject(HandService) private readonly _handService: HandService
 	) {
-		// Floor
-		const infiniteFloor = new InfiniteGridHelper(
+		const floorGrid = new InfiniteGridHelper(
 			BOARD_CELL_SIZE,
 			BOARD_CELL_SIZE,
-			new Color("#999999"),
-			20
+			new Color("#bbb"),
+			10
 		);
-		infiniteFloor.name = "infinite-floor";
 		const floorShadow = new Mesh(
 			new PlaneGeometry(50, 50),
 			new ShadowMaterial({
 				opacity: 0.2
 			})
 		);
-		floorShadow.name = "floor-shadow";
-		this.floor.add(floorShadow, infiniteFloor);
-	}
 
-	private _updateSunPosition(): void {
-		const sunPosition = this.sun.position;
-		const phi = MathUtils.degToRad(90 - this.sun.elevation);
-		const theta = MathUtils.degToRad(this.sun.azimuth);
+		floorGrid.name = "grid";
+		floorShadow.name = "shadow";
 
-		sunPosition.setFromSphericalCoords(1, phi, theta);
-	}
-
-	private _updateSunLight(): void {
-		const sunPosition = this.sun.position;
-
-		this.lights.sun.position.x =
-			sunPosition.x * BOARD_RANGE_CELLS_SIZE * (this.sun.isNight ? -1 : 1);
-		this.lights.sun.position.y =
-			sunPosition.y * BOARD_RANGE_CELLS_SIZE * (this.sun.isNight ? -1 : 1);
-		this.lights.sun.position.z = sunPosition.z;
-	}
-
-	public resetColorManagement(): void {
-		ColorManagement.enabled = true;
+		this.floor.add(floorGrid, floorShadow);
 	}
 
 	public resetRenderer(): void {
 		const renderer = this._app.renderer.instance();
 		if (!renderer) return;
 
+		ColorManagement.enabled = true;
 		renderer.autoClear = true;
 		renderer.setClearAlpha(0);
 		renderer.setClearColor(new Color(0x000000), 0);
@@ -139,24 +116,21 @@ export class WorldService {
 		miniCamera?.position.set(6, 2, 0);
 	}
 
-	public resetEnvironment(): void {
-		const baseScene = this._app.world.scene();
-		baseScene.environmentRotation.set(0, 0, 0, "XYZ");
-		baseScene.environmentIntensity = 1;
-
-		this.sun.elevation = 2;
-		this.sun.azimuth = 90;
-		this.sun.position.set(0, 0, 0);
-
-		this._updateSunPosition();
-	}
-
 	public resetLights(): void {
-		this.lights.sun.intensity = 0.8;
-		this.lights.sun.position.set(-1, 5, 1);
+		this.lights.sun.color = new Color("#fff");
+		this.lights.sun.intensity = 1.1;
+		this.lights.sun.position.set(-1, 4, 2);
 
-		this.lights.sunPropagation.intensity = 0.4;
-		this.lights.sunPropagation.color = new Color("#fff3e2");
+		this.lights.sunReflection.color = this.lights.sun.color;
+		this.lights.sunReflection.intensity = 1;
+		this.lights.sunReflection.position.set(
+			this.lights.sun.position.x * -1,
+			this.lights.sun.position.y,
+			this.lights.sun.position.z * -1
+		);
+
+		this.lights.sunPropagation.color = this.lights.sun.color;
+		this.lights.sunPropagation.intensity = 1;
 	}
 
 	public resetShadow(): void {
@@ -172,8 +146,8 @@ export class WorldService {
 
 		this.lights.sun.shadow.bias = 0;
 		this.lights.sun.shadow.normalBias = 0.05;
-		this.lights.sun.shadow.mapSize.set(4096, 4096);
-		this.lights.sun.shadow.map?.setSize(4096, 4096);
+		this.lights.sun.shadow.mapSize.set(2048, 2048);
+		this.lights.sun.shadow.map?.setSize(2048, 2048);
 		this.lights.sun.shadow.camera.far = 50;
 		this.lights.sun.shadow.camera.near = 0.1;
 		this.lights.sun.shadow.camera.top = BOARD_RANGE_CELLS_SIZE;
@@ -188,7 +162,11 @@ export class WorldService {
 			child.castShadow = true;
 			child.receiveShadow = true;
 
-			if (child instanceof Mesh) child.material = this.mainMaterial;
+			if (child instanceof InstancedCellModel)
+				return (child.material = this.boardMaterial);
+			if (child instanceof Mesh) return (child.material = this.mainMaterial);
+
+			return;
 		});
 	}
 
@@ -252,25 +230,27 @@ export class WorldService {
 	}
 
 	public resetFloor(): void {
-		const infiniteFloor = this.floor.getObjectByName(
-			"infinite-floor"
-		) as InfiniteGridHelper;
-		const floorShadow = this.floor.getObjectByName("floor-shadow") as Mesh<
-			PlaneGeometry,
-			ShadowMaterial,
-			Object3DEventMap
-		>;
+		const floorGrid = this.floor.getObjectByName("grid") as
+			| InfiniteGridHelper
+			| undefined;
+		const floorShadow = this.floor.getObjectByName("shadow") as
+			| Mesh<PlaneGeometry, ShadowMaterial, Object3DEventMap>
+			| undefined;
 
-		infiniteFloor.position.setY(-0.1);
-		if (typeof infiniteFloor.material.uniforms.uDistance?.value === "number")
-			infiniteFloor.material.uniforms.uDistance.value = 0;
+		if (floorGrid) {
+			floorGrid.position.setY(-0.1);
+			if (typeof floorGrid.material.uniforms.uDistance?.value === "number")
+				floorGrid.material.uniforms.uDistance.value = 0;
+		}
 
-		floorShadow.rotation.x = -Math.PI / 2;
-		floorShadow.receiveShadow = true;
-		floorShadow.material.opacity = 0.01;
-		floorShadow.position.setY(-0.09);
+		if (floorShadow) {
+			floorShadow.receiveShadow = true;
+			floorShadow.material.opacity = 0.3;
+			floorShadow.rotation.x = -Math.PI / 2;
+			floorShadow.position.y = -0.09;
+		}
 
-		this.floor.position.setY(-0.15);
+		this.floor.position.setY(-0.09);
 	}
 
 	public resetHands(): void {
@@ -289,41 +269,41 @@ export class WorldService {
 		});
 	}
 
-	public resetScene(): void {
-		this.scene.rotation.y = 0;
+	public resetScenes(): void {
+		const worldScene = this._app.world.scene();
+		const scene = this.scene;
 
-		this.scene.clear();
-		this.scene.add(
+		worldScene.environmentRotation.set(0, 0, 0, "XYZ");
+		worldScene.environmentIntensity = 1;
+
+		scene.rotation.y = 0;
+		scene.clear();
+		scene.add(
 			this.floor,
 			this.boardSquareHints,
 			this._chessboard.world.getScene(),
 			...Object.values(this._handService.hands).map((side) => side.scene),
 			...Object.values(this.lights)
-			// this.environment.scene
 		);
 	}
 
 	public reset() {
-		this.resetColorManagement();
 		this.resetRenderer();
 		this.resetCamera();
-		this.resetEnvironment();
 		this.resetLights();
 		this.resetShadow();
 		this.resetChessboard();
 		this.resetBoardSquareHints();
 		this.resetFloor();
 		this.resetHands();
-		this.resetScene();
+		this.resetScenes();
 	}
 
 	public handleIntroAnimation(
 		progress: ObservablePayload<WorldController["introAnimation$"]>
 	) {
 		const piecesGroups = this._chessboard.pieces.getGroups();
-		const infiniteFloor = this.floor.getObjectByName(
-			"infinite-floor"
-		) as InfiniteGridHelper;
+		const floorGrid = this.floor.getObjectByName("grid") as InfiniteGridHelper;
 
 		Object.values(piecesGroups).forEach((group) => {
 			Object.values(group).forEach((instancedPiece) => {
@@ -352,8 +332,8 @@ export class WorldService {
 			});
 		});
 
-		if (typeof infiniteFloor.material.uniforms.uDistance?.value === "number")
-			infiniteFloor.material.uniforms.uDistance.value = progress * 40;
+		if (typeof floorGrid.material.uniforms.uDistance?.value === "number")
+			floorGrid.material.uniforms.uDistance.value = progress * 40;
 
 		this.boardSquareHints.traverseVisible((child) => {
 			if (child instanceof Mesh) child.scale.setScalar(progress);
@@ -381,41 +361,14 @@ export class WorldService {
 			);
 	}
 
-	// TODO: Improve for better lightning.
-	public handleDayCycle({
-		normalizedProgress,
-		progress
-	}: ObservablePayload<WorldController["dayCycle$"]>): void {
-		if (!this.sun.enabled) return;
-
-		const sunAngle = progress * Math.PI * 2;
-		const dayFactor = Math.sin(sunAngle);
-		const toneAccent = Math.max(0.3, dayFactor * 0.8);
-		const floorShadow = this.floor.getObjectByName("floor-shadow") as
-			| Mesh<PlaneGeometry, ShadowMaterial>
-			| undefined;
-
-		this._app.world.scene().environmentIntensity = Math.max(0.2, -dayFactor);
-		this.sun.isNight = normalizedProgress >= 0.5;
-		this.lights.sun.color.set(
-			new Color(
-				this.sun.isNight ? toneAccent : 1,
-				Math.max(0.7, dayFactor),
-				this.sun.isNight ? 1 : toneAccent
-			)
-		);
-		this.lights.sun.intensity = 0.7 * dayFactor * (this.sun.isNight ? -1 : 1);
-		this.lights.sunPropagation.intensity = Math.max(0.1, 0.2 * (1 - dayFactor));
-
-		if (floorShadow)
-			floorShadow.material.opacity =
-				0.2 * dayFactor * (this.sun.isNight ? -1 : 1);
-
-		this.sun.elevation = normalizedProgress * 180 * 2;
-		this.sun.azimuth = (Math.round(progress) % 2) * 70 + 90;
+	public init() {
+		this._app.world.scene().add(this.scene);
 	}
 
-	public update(): void {
-		this._updateSunPosition();
+	public update(): void {}
+
+	public dispose() {
+		this.scene.removeFromParent();
+		this.scene.clear();
 	}
 }

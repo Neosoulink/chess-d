@@ -28,9 +28,6 @@ export class WorldModule implements Module {
 			this._controller.introAnimation$.subscribe(
 				this._service.handleIntroAnimation.bind(this._service)
 			),
-			// this._controller.dayCycle$.subscribe(
-			// 	this._service.handleDayCycle.bind(this._service)
-			// ),
 			this._controller.idleAnimation$.subscribe(
 				this._service.handleIdleAnimation.bind(this._service)
 			),
@@ -53,11 +50,11 @@ export class WorldModule implements Module {
 	}
 
 	init(): void {
-		this._app.world.scene().add(this._service.scene);
+		this._service.init();
 	}
 
 	dispose(): void {
-		this._service.scene.clear();
+		this._service.dispose();
 		this._subscriptions.forEach((sub) => sub?.unsubscribe());
 	}
 }
