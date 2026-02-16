@@ -63,7 +63,7 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 		setIsResourcesLoaded(false);
 		register({
 			location: workerLocation,
-			enableDebug: devMode,
+			enableDebug: false,
 			enableControls: true,
 			axesSizes: 5,
 			withMiniCamera: false,
@@ -113,10 +113,11 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 				stateRef.current.isPending = false;
 				stateRef.current.isReady = true;
 
-				const appWorker = _app.module.getWorker() as Worker;
+				const appWorker: Worker | undefined = _app.module.getWorker();
 				const appThread = _app.module.getThread();
+				const appLoader = _app.module.loader;
 
-				const loadSub = _app.module.loader.getLoadCompleted$().subscribe(() => {
+				const loadSub = appLoader.getLoadCompleted$().subscribe(() => {
 					setIsResourcesLoaded(true);
 					loadSub.unsubscribe();
 				});
@@ -126,11 +127,11 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 					statsRef.current = new Stats();
 
 					configureTweakpane(paneRef.current, (type, value) =>
-						appWorker.postMessage({ type: `$tweakpane-${type}`, value })
+						appWorker?.postMessage({ type: `$tweakpane-${type}`, value })
 					);
 					rootDom.appendChild(statsRef.current.dom);
 
-					appThread.getBeforeStep$().subscribe(() => {
+					appThread?.getBeforeStep$().subscribe(() => {
 						statsRef.current?.begin();
 					});
 

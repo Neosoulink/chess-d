@@ -12,11 +12,9 @@ import {
 	AmbientLight,
 	Color,
 	ColorManagement,
-	CubeCamera,
 	DirectionalLight,
 	DoubleSide,
 	Group,
-	HalfFloatType,
 	Material,
 	MathUtils,
 	Mesh,
@@ -26,19 +24,16 @@ import {
 	PCFSoftShadowMap,
 	PerspectiveCamera,
 	PlaneGeometry,
-	Scene,
 	ShadowMaterial,
 	SkinnedMesh,
 	SRGBColorSpace,
-	Vector3,
-	WebGLCubeRenderTarget
+	Vector3
 } from "three";
 import { inject, singleton } from "tsyringe";
 
 import { InfiniteGridHelper } from "../../../shared/meshes/infinite-grid.mesh";
 import {
 	Font,
-	Sky,
 	TextGeometry,
 	TextGeometryParameters
 } from "three/examples/jsm/Addons.js";
@@ -49,15 +44,16 @@ import { WorldController } from "./world.controller";
 export class WorldService {
 	public readonly scene = new Group();
 	public readonly floor = new Group();
-	public readonly environment: {
-		scene: Scene;
-		target: WebGLCubeRenderTarget;
-		sky: Sky;
-		camera: CubeCamera;
-	};
 	public readonly lights = {
-		sun: new DirectionalLight("#ffffff", 0.3),
-		sunPropagation: new AmbientLight("#ffffff", 0.05)
+		sun: new DirectionalLight(),
+		sunPropagation: new AmbientLight()
+	};
+	public readonly sun = {
+		position: new Vector3(),
+		elevation: 2,
+		azimuth: 90,
+		isNight: false,
+		enabled: true
 	};
 	public readonly boardSquareHints = new Group();
 
@@ -78,21 +74,6 @@ export class WorldService {
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
 		@inject(HandService) private readonly _handService: HandService
 	) {
-		// Environment
-		const environmentScene = new Scene();
-		const environmentTarget = new WebGLCubeRenderTarget(256, {
-			type: HalfFloatType
-		});
-		const environmentSky = new Sky();
-		const environmentCamera = new CubeCamera(0.1, 100, environmentTarget);
-
-		this.environment = {
-			scene: environmentScene,
-			target: environmentTarget,
-			sky: environmentSky,
-			camera: environmentCamera
-		};
-
 		// Floor
 		const infiniteFloor = new InfiniteGridHelper(
 			BOARD_CELL_SIZE,
@@ -111,43 +92,21 @@ export class WorldService {
 		this.floor.add(floorShadow, infiniteFloor);
 	}
 
-	private _updateEnvironmentSky(): void {
-		const uniforms = this.environment.sky.material.uniforms;
-		const sunPosition = this.environment.sky.userData.sunPosition;
-
-		if (!uniforms || !(sunPosition instanceof Vector3)) return;
-
-		const phi = MathUtils.degToRad(
-			90 - this.environment.sky.userData.elevation
-		);
-		const theta = MathUtils.degToRad(this.environment.sky.userData.azimuth);
-
-		if (uniforms["turbidity"])
-			uniforms["turbidity"].value = this.environment.sky.userData.turbidity;
-		if (uniforms["rayleigh"])
-			uniforms["rayleigh"].value = this.environment.sky.userData.rayleigh;
-		if (uniforms["mieCoefficient"])
-			uniforms["mieCoefficient"].value =
-				this.environment.sky.userData.mieCoefficient;
-		if (uniforms["mieDirectionalG"])
-			uniforms["mieDirectionalG"].value =
-				this.environment.sky.userData.mieDirectionalG;
+	private _updateSunPosition(): void {
+		const sunPosition = this.sun.position;
+		const phi = MathUtils.degToRad(90 - this.sun.elevation);
+		const theta = MathUtils.degToRad(this.sun.azimuth);
 
 		sunPosition.setFromSphericalCoords(1, phi, theta);
-
-		if (uniforms["sunPosition"])
-			uniforms["sunPosition"].value.copy(sunPosition);
 	}
 
-	private _updateSunPositionFromSky(invert?: boolean): void {
-		const sunPosition = this.environment.sky.userData.sunPosition;
-
-		if (!(sunPosition instanceof Vector3)) return;
+	private _updateSunLight(): void {
+		const sunPosition = this.sun.position;
 
 		this.lights.sun.position.x =
-			sunPosition.x * BOARD_RANGE_CELLS_SIZE * (invert ? -1 : 1);
+			sunPosition.x * BOARD_RANGE_CELLS_SIZE * (this.sun.isNight ? -1 : 1);
 		this.lights.sun.position.y =
-			sunPosition.y * BOARD_RANGE_CELLS_SIZE * (invert ? -1 : 1);
+			sunPosition.y * BOARD_RANGE_CELLS_SIZE * (this.sun.isNight ? -1 : 1);
 		this.lights.sun.position.z = sunPosition.z;
 	}
 
@@ -182,37 +141,22 @@ export class WorldService {
 
 	public resetEnvironment(): void {
 		const baseScene = this._app.world.scene();
-		baseScene.environment = this.environment.target.texture;
 		baseScene.environmentRotation.set(0, 0, 0, "XYZ");
 		baseScene.environmentIntensity = 1;
 
-		this.environment.sky.clear();
-		this.environment.sky.userData = {
-			turbidity: 10,
-			rayleigh: 3,
-			mieCoefficient: 0.005,
-			mieDirectionalG: 0.7,
-			elevation: 2,
-			azimuth: 90,
-			sunPosition: new Vector3()
-		};
-		this.environment.sky.scale.setScalar(450000);
-		this.environment.scene.clear();
-		this.environment.scene.add(this.environment.sky);
-		this.environment.target.depth = 0;
+		this.sun.elevation = 2;
+		this.sun.azimuth = 90;
+		this.sun.position.set(0, 0, 0);
 
-		this._updateEnvironmentSky();
+		this._updateSunPosition();
 	}
 
 	public resetLights(): void {
-		this.lights.sunPropagation.visible = true;
-		this.lights.sunPropagation.intensity = 0.1;
+		this.lights.sun.intensity = 0.8;
+		this.lights.sun.position.set(-1, 5, 1);
 
-		this.lights.sun.visible = true;
-		this.lights.sun.intensity = 0.5;
-		this.lights.sun.position.set(0, 5, 0);
-
-		this._updateSunPositionFromSky();
+		this.lights.sunPropagation.intensity = 0.4;
+		this.lights.sunPropagation.color = new Color("#fff3e2");
 	}
 
 	public resetShadow(): void {
@@ -431,51 +375,47 @@ export class WorldService {
 		this._app.camera
 			.instance()
 			?.position.set(
-				Math.sin(data.elapsedTime * 0.0001) * 10,
+				Math.sin(data.elapsed * 0.1) * 10,
 				12,
-				Math.cos(data.elapsedTime * 0.0001) * 10
+				Math.cos(data.elapsed * 0.1) * 10
 			);
 	}
 
+	// TODO: Improve for better lightning.
 	public handleDayCycle({
 		normalizedProgress,
 		progress
 	}: ObservablePayload<WorldController["dayCycle$"]>): void {
-		const isMidCycle = normalizedProgress >= 0.5;
+		if (!this.sun.enabled) return;
+
 		const sunAngle = progress * Math.PI * 2;
 		const dayFactor = Math.sin(sunAngle);
 		const toneAccent = Math.max(0.3, dayFactor * 0.8);
 		const floorShadow = this.floor.getObjectByName("floor-shadow") as
-			| Mesh<PlaneGeometry, ShadowMaterial, Object3DEventMap>
+			| Mesh<PlaneGeometry, ShadowMaterial>
 			| undefined;
 
 		this._app.world.scene().environmentIntensity = Math.max(0.2, -dayFactor);
-
+		this.sun.isNight = normalizedProgress >= 0.5;
 		this.lights.sun.color.set(
 			new Color(
-				isMidCycle ? toneAccent : 1,
+				this.sun.isNight ? toneAccent : 1,
 				Math.max(0.7, dayFactor),
-				isMidCycle ? 1 : toneAccent
+				this.sun.isNight ? 1 : toneAccent
 			)
 		);
-		this.lights.sun.intensity = 0.7 * dayFactor * (isMidCycle ? -1 : 1);
+		this.lights.sun.intensity = 0.7 * dayFactor * (this.sun.isNight ? -1 : 1);
 		this.lights.sunPropagation.intensity = Math.max(0.1, 0.2 * (1 - dayFactor));
 
 		if (floorShadow)
-			floorShadow.material.opacity = 0.2 * dayFactor * (isMidCycle ? -1 : 1);
+			floorShadow.material.opacity =
+				0.2 * dayFactor * (this.sun.isNight ? -1 : 1);
 
-		this.environment.sky.userData.elevation = normalizedProgress * 180 * 2;
-		this.environment.sky.userData.azimuth =
-			(Math.round(progress) % 2) * 70 + 90;
-
-		this._updateEnvironmentSky();
-		this._updateSunPositionFromSky(isMidCycle);
+		this.sun.elevation = normalizedProgress * 180 * 2;
+		this.sun.azimuth = (Math.round(progress) % 2) * 70 + 90;
 	}
 
 	public update(): void {
-		this.environment.camera?.update(
-			this._app.renderer.instance()!,
-			this.environment.scene
-		);
+		this._updateSunPosition();
 	}
 }

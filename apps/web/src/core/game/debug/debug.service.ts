@@ -83,34 +83,12 @@ export class DebugService {
 			if (props.type === "renderer-reset") this._worldService.resetRenderer();
 
 			// Environment
-			if (props.type === "environment-enable")
-				this._scene.environment = props.value
-					? this._worldService.environment.target.texture || null
-					: null;
 			if (props.type === "environment-intensity")
 				this._scene.environmentIntensity = Number(props.value) || 0;
 			if (props.type === "environment-rotation")
 				this._scene.environmentRotation.setFromQuaternion(
 					new Quaternion().copy(props.value as QuaternionLike)
 				);
-			if (props.type === "environment-skyTurbidity")
-				this._worldService.environment.sky.userData.turbidity =
-					Number(props.value) || 0;
-			if (props.type === "environment-skyRayleigh")
-				this._worldService.environment.sky.userData.rayleigh =
-					Number(props.value) || 0;
-			if (props.type === "environment-skyMieCoefficient")
-				this._worldService.environment.sky.userData.mieCoefficient =
-					Number(props.value) || 0;
-			if (props.type === "environment-skyMieDirectionalG")
-				this._worldService.environment.sky.userData.mieDirectionalG =
-					Number(props.value) || 0;
-			if (props.type === "environment-skyElevation")
-				this._worldService.environment.sky.userData.elevation =
-					Number(props.value) || 0;
-			if (props.type === "environment-skyAzimuth")
-				this._worldService.environment.sky.userData.azimuth =
-					Number(props.value) || 0;
 			if (props.type === "environment-reset")
 				this._worldService.resetEnvironment();
 
@@ -140,8 +118,18 @@ export class DebugService {
 			if (props.type === "lights-directionalColor")
 				this._worldService.lights.sun.color.set(props.value as string);
 
+			if (props.type === "lights-sunEnabled")
+				this._worldService.sun.enabled = !!props.value;
+			if (props.type === "lights-sunIsNight")
+				this._worldService.sun.isNight = !!props.value;
+			if (props.type === "lights-sunElevation")
+				this._worldService.sun.elevation = Number(props.value) || 0;
+			if (props.type === "lights-sunAzimuth")
+				this._worldService.sun.azimuth = Number(props.value) || 0;
+
 			if (props.type === "lights-reset") this._worldService.resetLights();
 
+			// Shadows
 			if (props.type === "shadows-shadowMap")
 				this._renderer.shadowMap.enabled = !!props.value;
 			if (props.type === "shadows-shadowMapAutoUpdate")

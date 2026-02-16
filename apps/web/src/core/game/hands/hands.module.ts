@@ -18,8 +18,8 @@ export class HandModule implements Module {
 		private readonly _piecesController: PiecesController
 	) {
 		this._subscriptions.push(
-			this._app.timer.step$().subscribe(({ deltaTime }) => {
-				this._service.update(deltaTime);
+			this._app.timer.step$().subscribe(({ delta }) => {
+				this._service.update(delta);
 			}),
 			this._chessboard.pieces
 				.getPieceSelected$()

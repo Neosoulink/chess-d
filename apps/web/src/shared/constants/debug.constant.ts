@@ -91,30 +91,6 @@ export const DEBUG_PARAMS_OPTIONS: Record<
 			default: { x: 0, y: 0, z: 0, w: 1 },
 			config: {}
 		},
-		skyTurbidity: {
-			default: 10,
-			config: { min: 0.0, max: 20.0, step: 0.001 }
-		},
-		skyRayleigh: {
-			default: 3,
-			config: { min: 0.0, max: 4, step: 0.001 }
-		},
-		skyMieCoefficient: {
-			default: 0.005,
-			config: { min: 0.0, max: 0.1, step: 0.001 }
-		},
-		skyMieDirectionalG: {
-			default: 0.7,
-			config: { min: 0.0, max: 1, step: 0.001 }
-		},
-		skyElevation: {
-			default: 2,
-			config: { min: 0, max: 90, step: 0.1 }
-		},
-		skyAzimuth: {
-			default: 90,
-			config: { min: -180, max: 180, step: 0.1 }
-		},
 		reset: {
 			default: "$button",
 			config: {}
@@ -151,7 +127,23 @@ export const DEBUG_PARAMS_OPTIONS: Record<
 			default: "#ffffff",
 			config: {}
 		},
-
+		// Sun
+		sunEnabled: {
+			default: true,
+			config: {}
+		},
+		sunIsNight: {
+			default: false,
+			config: {}
+		},
+		sunElevation: {
+			default: 2,
+			config: { min: 0, max: 90, step: 0.1 }
+		},
+		sunAzimuth: {
+			default: 90,
+			config: { min: -180, max: 180, step: 0.1 }
+		},
 		reset: {
 			default: "$button",
 			config: {}

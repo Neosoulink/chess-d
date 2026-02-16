@@ -206,9 +206,9 @@ export class HandService {
 
 	update(delta: number) {
 		if (this.hands[ColorSide.black]?.animation?.mixer)
-			this.hands[ColorSide.black].animation.mixer.update(delta * 0.001);
+			this.hands[ColorSide.black].animation.mixer.update(delta);
 
 		if (this.hands[ColorSide.white]?.animation?.mixer)
-			this.hands[ColorSide.white].animation.mixer.update(delta * 0.001);
+			this.hands[ColorSide.white].animation.mixer.update(delta);
 	}
 }

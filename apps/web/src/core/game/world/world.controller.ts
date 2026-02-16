@@ -1,6 +1,7 @@
 import { AppModule } from "@quick-threejs/reactive/worker";
 import { validateFen } from "chess.js";
 import { gsap } from "gsap";
+import type { TimerService } from "node_modules/@quick-threejs/reactive/dist/core/app/timer/timer.service";
 import {
 	BehaviorSubject,
 	filter,
@@ -31,15 +32,7 @@ export class WorldController {
 		totalDuration: number;
 	}>;
 	public readonly introAnimation$: Observable<number>;
-	public readonly idleAnimation$: Observable<{
-		frame: number;
-		initialTime: number;
-		currentTime: number;
-		deltaTime: number;
-		deltaRatio: number;
-		elapsedTime: number;
-		enabled: true;
-	}>;
+	public readonly idleAnimation$: Observable<TimerService>;
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
@@ -104,15 +97,15 @@ export class WorldController {
 		this.idleAnimation$ = this._gameController.reset$.pipe(
 			filter((data) => !validateFen(`${data?.fen}`).ok),
 			switchMap(() => {
-				return (
-					this._app.timer.step$() as WorldController["idleAnimation$"]
-				).pipe(
-					takeUntil(
-						this._gameController.reset$.pipe(
-							filter((data) => validateFen(`${data?.fen}`).ok)
+				return this._app.timer
+					.step$()
+					.pipe(
+						takeUntil(
+							this._gameController.reset$.pipe(
+								filter((data) => validateFen(`${data?.fen}`).ok)
+							)
 						)
-					)
-				);
+					);
 			})
 		);
 	}

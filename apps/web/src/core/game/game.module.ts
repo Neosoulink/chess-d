@@ -31,10 +31,10 @@ export class GameModule implements Module {
 			this._app
 				.mousemove$?.()
 				.subscribe(this._service.updateCursorPosition.bind(this._service)),
-			this._app.timer.step$().subscribe(({ deltaTime }) => {
+			this._app.timer.step$().subscribe(({ delta }) => {
 				this._chessboard.update({
 					cursor: this._service.cursor,
-					timestep: deltaTime * 0.0011
+					timestep: delta
 				});
 			}),
 			this._controller.reset$.subscribe(this._service.reset.bind(this))
