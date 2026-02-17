@@ -1,45 +1,35 @@
 import { AppModule } from "@quick-threejs/reactive/worker";
-import {
-	ColorManagement,
-	Quaternion,
-	QuaternionLike,
-	Scene,
-	ShadowMapType,
-	ToneMapping,
-	Vector3Like,
-	WebGLRenderer
-} from "three";
+import { Scene, WebGLRenderer } from "three";
+
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { inject, singleton } from "tsyringe";
 
+import { DEBUG_OPTIONS } from "../../../shared/constants";
 import { WorldService } from "../world/world.service";
 
 @singleton()
 export class DebugService {
-	private readonly _scene: Scene;
-	private readonly _renderer: WebGLRenderer;
+	public readonly scene: Scene;
+	public readonly renderer: WebGLRenderer;
 
-	public readonly enabled: boolean;
+	public enabled: boolean;
 
 	constructor(
-		@inject(AppModule) private readonly _app: AppModule,
-		@inject(WorldService) private readonly _worldService: WorldService
+		@inject(AppModule) public readonly app: AppModule,
+		@inject(WorldService) public readonly worldService: WorldService
 	) {
-		this.enabled = this._app.debug.enabled();
-		this._renderer = this._app.renderer.instance()!;
-		this._scene = this._app.world.scene();
+		this.enabled = this.app.debug.enabled();
+		this.renderer = this.app.renderer.instance()!;
+		this.scene = this.app.world.scene();
 	}
 
 	public reset(): void {
-		if (!this.enabled) return;
-
-		this._worldService.reset();
-
+		this.worldService.reset();
 		this.resetControls();
 	}
 
 	public resetControls(): void {
-		const appDebug = this._app.debug;
+		const appDebug = this.app.debug;
 		const orbitControls = appDebug.getCameraControls() as
 			| OrbitControls
 			| undefined;
@@ -60,120 +50,15 @@ export class DebugService {
 	}
 
 	public handlePaneChange(props: { type: string; value: unknown }): void {
-		// Global
-		if (props.type === "global-reset") this.reset();
+		const [folderTitle, bladeTitle] = props.type.split("~");
 
-		// Color Management
-		if (props.type === "colorManagement-enabled")
-			ColorManagement.enabled = !!props.value;
-
-		if (props.type === "colorManagement-reset")
-			this._worldService.resetColorManagement();
-
-		// Renderer
-		if (this._renderer instanceof WebGLRenderer) {
-			if (props.type === "renderer-autoClear")
-				this._renderer.autoClear = !!props.value;
-			if (props.type === "renderer-clearColor")
-				this._renderer.setClearColor(`${props.value}`, 1);
-			if (props.type === "renderer-toneMapping")
-				this._renderer.toneMapping = props.value as ToneMapping;
-			if (props.type === "renderer-toneExposure")
-				this._renderer.toneMappingExposure = props.value as ToneMapping;
-			if (props.type === "renderer-reset") this._worldService.resetRenderer();
-
-			// Environment
-			if (props.type === "environment-intensity")
-				this._scene.environmentIntensity = Number(props.value) || 0;
-			if (props.type === "environment-rotation")
-				this._scene.environmentRotation.setFromQuaternion(
-					new Quaternion().copy(props.value as QuaternionLike)
-				);
-			if (props.type === "environment-reset")
-				this._worldService.resetEnvironment();
-
-			// Lights
-			if (props.type === "lights-enableAmbient")
-				this._worldService.lights.sunPropagation.visible = !!props.value;
-			if (props.type === "lights-ambientIntensity")
-				this._worldService.lights.sunPropagation.intensity =
-					Number(props.value) || 0;
-			if (props.type === "lights-ambientColor")
-				this._worldService.lights.sunPropagation.color.set(
-					props.value as string
-				);
-
-			if (props.type === "lights-enableDirectional")
-				this._worldService.lights.sun.visible = !!props.value;
-			if (props.type === "lights-directionalIntensity")
-				this._worldService.lights.sun.intensity = Number(props.value) || 0;
-			if (props.type === "lights-directionalPosition")
-				this._worldService.lights.sun.position.copy({
-					...(props.value as Vector3Like)
-				});
-			if (props.type === "lights-directionalLookAt")
-				this._worldService.lights.sun.target.position.copy({
-					...(props.value as Vector3Like)
-				});
-			if (props.type === "lights-directionalColor")
-				this._worldService.lights.sun.color.set(props.value as string);
-
-			if (props.type === "lights-sunEnabled")
-				this._worldService.sun.enabled = !!props.value;
-			if (props.type === "lights-sunIsNight")
-				this._worldService.sun.isNight = !!props.value;
-			if (props.type === "lights-sunElevation")
-				this._worldService.sun.elevation = Number(props.value) || 0;
-			if (props.type === "lights-sunAzimuth")
-				this._worldService.sun.azimuth = Number(props.value) || 0;
-
-			if (props.type === "lights-reset") this._worldService.resetLights();
-
-			// Shadows
-			if (props.type === "shadows-shadowMap")
-				this._renderer.shadowMap.enabled = !!props.value;
-			if (props.type === "shadows-shadowMapAutoUpdate")
-				this._renderer.shadowMap.autoUpdate = !!props.value;
-			if (props.type === "shadows-shadowMapNeedsUpdate")
-				this._renderer.shadowMap.needsUpdate = !!props.value;
-			if (props.type === "shadows-shadowMapType")
-				this._renderer.shadowMap.type = props.value as ShadowMapType;
-			if (props.type === "shadows-outputColorSpace")
-				this._renderer.outputColorSpace = props.value as string;
-			if (props.type === "shadows-cast")
-				this._worldService.lights.sun.castShadow = !!props.value;
-			if (props.type === "shadows-bias")
-				this._worldService.lights.sun.shadow.bias = Number(props.value) || 0;
-			if (props.type === "shadows-mapSize") {
-				const mapSize = Number(props.value) || 0;
-				this._worldService.lights.sun.shadow.mapSize.set(mapSize, mapSize);
-				this._worldService.lights.sun.shadow.map?.setSize(mapSize, mapSize);
-			}
-			if (props.type === "shadows-near")
-				this._worldService.lights.sun.shadow.camera.near =
-					Number(props.value) || 0;
-			if (props.type === "shadows-far")
-				this._worldService.lights.sun.shadow.camera.far =
-					Number(props.value) || 0;
-			if (props.type === "shadows-top")
-				this._worldService.lights.sun.shadow.camera.top =
-					Number(props.value) || 0;
-			if (props.type === "shadows-bottom")
-				this._worldService.lights.sun.shadow.camera.bottom =
-					Number(props.value) || 0;
-			if (props.type === "shadows-left")
-				this._worldService.lights.sun.shadow.camera.left =
-					Number(props.value) || 0;
-			if (props.type === "shadows-right")
-				this._worldService.lights.sun.shadow.camera.right =
-					Number(props.value) || 0;
-			if (props.type === "shadows-normalBias")
-				this._worldService.lights.sun.shadow.normalBias =
-					Number(props.value) || 0;
-
-			if (props.type === "shadows-reset") this._worldService.resetShadow();
-		}
-
-		console.log(props);
+		if (
+			(this.enabled && folderTitle && bladeTitle) ||
+			(folderTitle === "Global" && bladeTitle === "Enable Debug")
+		)
+			DEBUG_OPTIONS[folderTitle]?.[bladeTitle]?.func({
+				...props,
+				self: this
+			});
 	}
 }

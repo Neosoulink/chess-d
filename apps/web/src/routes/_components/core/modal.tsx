@@ -18,7 +18,7 @@ export const Modal = forwardRef<HTMLElement, ModalProps>(
 		const [showClassNames, setShowClassNames] = useState("hidden");
 
 		useEffect(() => {
-			let timeout: NodeJS.Timeout;
+			let timeout: number;
 
 			if (show) {
 				setShowClassNames("opacity-0");

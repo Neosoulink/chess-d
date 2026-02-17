@@ -3,6 +3,7 @@ import {
 	AgXToneMapping,
 	BasicShadowMap,
 	CineonToneMapping,
+	ColorManagement,
 	CustomToneMapping,
 	LinearSRGBColorSpace,
 	LinearToneMapping,
@@ -10,51 +11,75 @@ import {
 	NoToneMapping,
 	PCFShadowMap,
 	PCFSoftShadowMap,
+	Quaternion,
+	QuaternionLike,
 	ReinhardToneMapping,
 	SRGBColorSpace,
 	VSMShadowMap
 } from "three";
 import { BindingParams } from "tweakpane";
 
-export const DEBUG_PARAMS_OPTIONS: Record<
+import { DebugService } from "../../core/game/debug/debug.service";
+
+export const DEBUG_OPTIONS: Record<
 	string,
-	Record<string, { default: unknown; config: BindingParams }>
+	Record<
+		string,
+		{
+			default: unknown;
+			config: BindingParams;
+			func: (props: {
+				self: DebugService;
+				type: string;
+				value: unknown;
+			}) => unknown;
+		}
+	>
 > = {
-	global: {
-		reset: {
+	Global: {
+		"Enable Debug": {
+			default: import.meta.env?.DEV,
+			config: {},
+			func: ({ self, value }) => (self.enabled = !!value)
+		},
+		Reset: {
 			default: "$button",
-			config: {}
+			config: {},
+			func: ({ self }) => self.reset()
 		}
 	},
-	colorManagement: {
-		enabled: {
+
+	"Color Management": {
+		Enabled: {
 			default: true,
-			config: {}
-		},
-		reset: {
-			default: "$button",
-			config: {}
+			config: {},
+			func: ({ value }) => (ColorManagement.enabled = !!value)
 		}
 	},
-	renderer: {
-		autoClear: {
+
+	Renderer: {
+		"Auto Clear": {
 			default: true,
-			config: {}
+			config: {},
+			func: ({ self, value }) => (self.renderer.autoClear = !!value)
 		},
-		clearColor: {
+		"Clear Color": {
 			default: "#262a2b",
-			config: {}
+			config: {},
+			func: ({ self, value }) =>
+				self.renderer.setClearColor(`${value}`, self.renderer.getClearAlpha())
 		},
-		outputColorSpace: {
+		"Output ColorSpace": {
 			default: SRGBColorSpace,
 			config: {
 				options: {
 					SRGBColorSpace,
 					LinearSRGBColorSpace
 				}
-			}
+			},
+			func: ({ self, value }) => (self.renderer.outputColorSpace = value as any)
 		},
-		toneMapping: {
+		"Tone Mapping": {
 			default: NoToneMapping,
 			config: {
 				options: {
@@ -67,103 +92,155 @@ export const DEBUG_PARAMS_OPTIONS: Record<
 					NeutralToneMapping,
 					CustomToneMapping
 				}
+			},
+			func: ({ self, value }) => {
+				const renderer = self.app.renderer.instance();
+				if (renderer) renderer.toneMapping = value as any;
 			}
 		},
-		toneExposure: {
+		"Tone Exposure": {
 			default: 1,
-			config: { min: 0, max: 1, step: 0.0001 }
+			config: { min: 0, max: 1, step: 0.0001 },
+			func: ({ self, value }) => {
+				const renderer = self.app.renderer.instance();
+				if (renderer) renderer.toneMappingExposure = value as number;
+			}
 		},
-		reset: {
+		Reset: {
 			default: "$button",
-			config: {}
+			config: {},
+			func: ({ self }) => self.worldService.resetRenderer()
 		}
 	},
-	environment: {
-		enable: {
-			default: true,
-			config: {}
-		},
-		intensity: {
+
+	Environment: {
+		Intensity: {
 			default: 1,
-			config: { min: 0, max: 5 }
+			config: { min: 0, max: 5 },
+			func: ({ self, value }) =>
+				(self.scene.environmentIntensity = Number(value) || 0)
 		},
-		rotation: {
+		Rotation: {
 			default: { x: 0, y: 0, z: 0, w: 1 },
-			config: {}
+			config: {},
+			func: ({ self, value }) =>
+				self.scene.environmentRotation.setFromQuaternion(
+					new Quaternion().copy(value as QuaternionLike)
+				)
 		},
-		reset: {
+		Reset: {
 			default: "$button",
-			config: {}
+			config: {},
+			func: ({ self }) => self.worldService.resetEnvironment()
 		}
 	},
 
-	lights: {
-		enableAmbient: {
+	Lights: {
+		"sun visible": {
 			default: true,
-			config: {}
+			config: {},
+			func: ({ self, value }) =>
+				(self.worldService.lights.sun.visible = !!value)
 		},
-		ambientIntensity: {
-			default: 0.1,
-			config: { min: 0, max: 5 }
+		"Sun Intensity": {
+			default: 0.5,
+			config: { min: 0, max: 5 },
+			func: ({ self, value }) =>
+				(self.worldService.lights.sun.intensity = Number(value) || 0)
 		},
-		ambientColor: {
+		"Sun Position": {
+			default: { x: 0, y: 5, z: 0 },
+			config: {},
+			func: ({ self, value }) =>
+				self.worldService.lights.sun.position.copy(value as any)
+		},
+		"Sun LookAt": {
+			default: { x: 0, y: 0, z: 0 },
+			config: {},
+			func: ({ self, value }) =>
+				self.worldService.lights.sun.lookAt(value as any)
+		},
+		"Sun Color": {
 			default: "#ffffff",
-			config: {}
+			config: {},
+			func: ({ self, value }) =>
+				self.worldService.lights.sun.color.set(value as string)
 		},
 
-		enableDirectional: {
+		"Reflection Visible": {
 			default: true,
-			config: {}
+			config: {},
+			func: ({ self, value }) =>
+				(self.worldService.lights.sunReflection.visible = !!value)
 		},
-		directionalIntensity: {
+		"Reflection Intensity": {
 			default: 0.5,
-			config: { min: 0, max: 5 }
+			config: { min: 0, max: 5 },
+			func: ({ self, value }) =>
+				(self.worldService.lights.sunReflection.intensity = Number(value) || 0)
 		},
-		directionalPosition: {
+		"Reflection Position": {
 			default: { x: 0, y: 5, z: 0 },
-			config: {}
+			config: {},
+			func: ({ self, value }) =>
+				self.worldService.lights.sun.position.copy(value as any)
 		},
-		directionalColor: {
+		"Reflection LookAt": {
+			default: { x: 0, y: 0, z: 0 },
+			config: {},
+			func: ({ self, value }) =>
+				self.worldService.lights.sun.lookAt(value as any)
+		},
+		"Reflection Color": {
 			default: "#ffffff",
-			config: {}
+			config: {},
+			func: ({ self, value }) =>
+				self.worldService.lights.sunReflection.color.set(value as string)
 		},
-		// Sun
-		sunEnabled: {
+
+		"Propagation Visible": {
 			default: true,
-			config: {}
+			config: {},
+			func: ({ self, value }) =>
+				(self.worldService.lights.sunPropagation.visible = !!value)
 		},
-		sunIsNight: {
-			default: false,
-			config: {}
+		"Propagation Intensity": {
+			default: 0.1,
+			config: { min: 0, max: 5 },
+			func: ({ self, value }) =>
+				(self.worldService.lights.sunPropagation.intensity = Number(value) || 0)
 		},
-		sunElevation: {
-			default: 2,
-			config: { min: 0, max: 90, step: 0.1 }
+		"Propagation Color": {
+			default: "#ffffff",
+			config: {},
+			func: ({ self, value }) =>
+				self.worldService.lights.sunPropagation.color.set(value as string)
 		},
-		sunAzimuth: {
-			default: 90,
-			config: { min: -180, max: 180, step: 0.1 }
-		},
-		reset: {
+
+		Reset: {
 			default: "$button",
-			config: {}
+			config: {},
+			func: ({ self }) => self.worldService.resetLights()
 		}
 	},
 
 	shadows: {
-		shadowMap: {
+		"Render Map": {
 			default: true,
-			config: {}
+			config: {},
+			func: ({ self, value }) => (self.renderer.shadowMap.enabled = !!value)
 		},
-		shadowMapAutoUpdate: {
+		"Render Map Auto Update": {
 			default: true,
-			config: {}
+			config: {},
+			func: ({ self, value }) => (self.renderer.shadowMap.autoUpdate = !!value)
 		},
-		shadowMapNeedsUpdate: {
+		"Render Map Needs Update": {
 			default: true,
-			config: {}
+			config: {},
+			func: ({ self, value }) => (self.renderer.shadowMap.needsUpdate = !!value)
 		},
-		shadowMapType: {
+		"Render Map Type": {
 			default: PCFSoftShadowMap,
 			config: {
 				options: {
@@ -172,21 +249,28 @@ export const DEBUG_PARAMS_OPTIONS: Record<
 					PCFShadowMap,
 					VSMShadowMap
 				}
-			}
+			},
+			func: ({ self, value }) => (self.renderer.shadowMap.type = value as any)
 		},
-		cast: {
+		Cast: {
 			default: true,
-			config: {}
+			config: {},
+			func: ({ self, value }) =>
+				(self.worldService.lights.sun.castShadow = !!value)
 		},
-		bias: {
+		Bias: {
 			default: 0,
-			config: { min: -0.05, max: 0.05, step: 0.001 }
+			config: { min: -0.05, max: 0.05, step: 0.001 },
+			func: ({ self, value }) =>
+				(self.worldService.lights.sun.shadow.bias = Number(value) || 0)
 		},
-		normalBias: {
+		"Normal Bias": {
 			default: 0.05,
-			config: { min: -0.05, max: 0.05, step: 0.001 }
+			config: { min: -0.05, max: 0.05, step: 0.001 },
+			func: ({ self, value }) =>
+				(self.worldService.lights.sun.shadow.normalBias = Number(value) || 0)
 		},
-		mapSize: {
+		"Map Size": {
 			default: 4096,
 			config: {
 				options: {
@@ -196,36 +280,54 @@ export const DEBUG_PARAMS_OPTIONS: Record<
 					High: 2048,
 					["Very High"]: 4096
 				}
+			},
+			func: ({ self, value }) => {
+				const mapSize = Number(value) || 0;
+				self.worldService.lights.sun.shadow.mapSize.set(mapSize, mapSize);
+				self.worldService.lights.sun.shadow.map?.setSize(mapSize, mapSize);
 			}
 		},
-		near: {
+		Near: {
 			default: 0.1,
-			config: { min: 0, max: 1 }
+			config: { min: 0, max: 1 },
+			func: ({ self, value }) =>
+				(self.worldService.lights.sun.shadow.camera.near = Number(value) || 0)
 		},
-		far: {
+		Far: {
 			default: 50,
-			config: { min: 0, max: 50 }
+			config: { min: 0, max: 50 },
+			func: ({ self, value }) =>
+				(self.worldService.lights.sun.shadow.camera.far = Number(value) || 0)
 		},
-		top: {
+		Top: {
 			default: 8,
-			config: { min: -20, max: 20 }
+			config: { min: -20, max: 20 },
+			func: ({ self, value }) =>
+				(self.worldService.lights.sun.shadow.camera.top = Number(value) || 0)
 		},
-		bottom: {
+		Bottom: {
 			default: -8,
-			config: { min: -20, max: 20 }
+			config: { min: -20, max: 20 },
+			func: ({ self, value }) =>
+				(self.worldService.lights.sun.shadow.camera.bottom = Number(value) || 0)
 		},
-		left: {
+		Left: {
 			default: -8,
-			config: { min: -20, max: 20 }
+			config: { min: -20, max: 20 },
+			func: ({ self, value }) =>
+				(self.worldService.lights.sun.shadow.camera.left = Number(value) || 0)
 		},
-		right: {
+		Right: {
 			default: 8,
-			config: { min: -20, max: 20 }
+			config: { min: -20, max: 20 },
+			func: ({ self, value }) =>
+				(self.worldService.lights.sun.shadow.camera.right = Number(value) || 0)
 		},
 
-		reset: {
+		Reset: {
 			default: "$button",
-			config: {}
+			config: {},
+			func: ({ self }) => self.worldService.resetShadows()
 		}
 	}
 };

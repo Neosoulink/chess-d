@@ -63,7 +63,7 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 		setIsResourcesLoaded(false);
 		register({
 			location: workerLocation,
-			enableDebug: false,
+			enableDebug: devMode,
 			enableControls: true,
 			axesSizes: 5,
 			withMiniCamera: false,

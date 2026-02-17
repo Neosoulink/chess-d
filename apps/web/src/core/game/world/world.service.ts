@@ -117,10 +117,12 @@ export class WorldService {
 	}
 
 	public resetLights(): void {
+		this.lights.sun.visible = true;
 		this.lights.sun.color = new Color("#fff");
 		this.lights.sun.intensity = 1.1;
 		this.lights.sun.position.set(-1, 4, 2);
 
+		this.lights.sunReflection.visible = true;
 		this.lights.sunReflection.color = this.lights.sun.color;
 		this.lights.sunReflection.intensity = 1;
 		this.lights.sunReflection.position.set(
@@ -129,11 +131,12 @@ export class WorldService {
 			this.lights.sun.position.z * -1
 		);
 
+		this.lights.sunReflection.visible = true;
 		this.lights.sunPropagation.color = this.lights.sun.color;
 		this.lights.sunPropagation.intensity = 1;
 	}
 
-	public resetShadow(): void {
+	public resetShadows(): void {
 		const renderer = this._app.renderer.instance();
 		if (renderer) {
 			renderer.shadowMap.enabled = true;
@@ -269,12 +272,15 @@ export class WorldService {
 		});
 	}
 
-	public resetScenes(): void {
-		const worldScene = this._app.world.scene();
-		const scene = this.scene;
+	public resetEnvironment(): void {
+		const scene = this._app.world.scene();
 
-		worldScene.environmentRotation.set(0, 0, 0, "XYZ");
-		worldScene.environmentIntensity = 1;
+		scene.environmentRotation.set(0, 0, 0, "XYZ");
+		scene.environmentIntensity = 1;
+	}
+
+	public resetScenes(): void {
+		const scene = this.scene;
 
 		scene.rotation.y = 0;
 		scene.clear();
@@ -291,7 +297,7 @@ export class WorldService {
 		this.resetRenderer();
 		this.resetCamera();
 		this.resetLights();
-		this.resetShadow();
+		this.resetShadows();
 		this.resetChessboard();
 		this.resetBoardSquareHints();
 		this.resetFloor();
