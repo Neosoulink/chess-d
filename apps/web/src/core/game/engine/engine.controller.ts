@@ -1,11 +1,11 @@
-import { inject, singleton } from "tsyringe";
-import { filter, fromEvent, map, merge, Observable, Subject } from "rxjs";
-import { Chess, Move } from "chess.js";
 import {
 	ChessboardModule,
 	PieceNotificationPayload
 } from "@chess-d/chessboard";
 import { coordToSquare, squareToCoord } from "@chess-d/shared";
+import { Chess } from "chess.js";
+import { inject, Lifecycle, scoped } from "tsyringe";
+import { filter, fromEvent, map, merge, Observable, Subject } from "rxjs";
 
 import {
 	EngineNotificationPayload,
@@ -17,7 +17,7 @@ import {
 	ENGINE_WILL_UNDO_TOKEN
 } from "../../../shared/tokens/engine.token";
 
-@singleton()
+@scoped(Lifecycle.ContainerScoped)
 export class EngineController {
 	public readonly undo$$ = new Subject();
 	public readonly redo$$ = new Subject();

@@ -1,3 +1,4 @@
+import { ObservablePayload } from "@chess-d/shared";
 import { AppModule } from "@quick-threejs/reactive/worker";
 import { validateFen } from "chess.js";
 import { gsap } from "gsap";
@@ -6,8 +7,9 @@ import {
 	filter,
 	map,
 	Observable,
-	switchMap,
-	takeUntil
+	share,
+	Subject,
+	switchMap
 } from "rxjs";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
@@ -15,11 +17,16 @@ import { GameController } from "../game.controller";
 
 @scoped(Lifecycle.ContainerScoped)
 export class WorldController {
+	public readonly resetDone$$ = new Subject<void>();
 	public readonly dayCycle$$ = new BehaviorSubject<{
 		duration: number;
 		progress?: number;
 	}>({ duration: 100, progress: 0.05 });
 
+	public readonly reset$: Observable<
+		ObservablePayload<GameController["reset$"]>
+	>;
+	public readonly step$: ReturnType<AppModule["timer"]["step$"]>;
 	public readonly dayCycle$: Observable<{
 		now: number;
 		deltaTime: number;
@@ -31,12 +38,13 @@ export class WorldController {
 		totalDuration: number;
 	}>;
 	public readonly introAnimation$: Observable<number>;
-	public readonly idleAnimation$: ReturnType<AppModule["timer"]["step$"]>;
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
 		@inject(GameController) private readonly _gameController: GameController
 	) {
+		this.step$ = this._app.timer.step$();
+		this.reset$ = this._gameController.reset$.pipe(share());
 		this.dayCycle$ = this.dayCycle$$.pipe(
 			switchMap(({ duration, progress: _baseProgress }) => {
 				const totalDuration = duration * 1000;
@@ -45,7 +53,7 @@ export class WorldController {
 
 				let currentTime = initialTime;
 
-				return this._app.timer.step$().pipe(
+				return this.step$.pipe(
 					map(() => {
 						const now = Date.now();
 						const deltaTime = now - currentTime;
@@ -91,21 +99,6 @@ export class WorldController {
 							});
 					})
 			)
-		);
-
-		this.idleAnimation$ = this._gameController.reset$.pipe(
-			filter((data) => !validateFen(`${data?.fen}`).ok),
-			switchMap(() => {
-				return this._app.timer
-					.step$()
-					.pipe(
-						takeUntil(
-							this._gameController.reset$.pipe(
-								filter((data) => validateFen(`${data?.fen}`).ok)
-							)
-						)
-					);
-			})
 		);
 	}
 }

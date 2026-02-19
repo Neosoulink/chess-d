@@ -10,7 +10,7 @@ import {
 
 import { EngineUpdatedMessageData, MoveLike } from "../../../shared/types";
 import { GAME_UPDATED_TOKEN } from "../../../shared/tokens";
-import { PiecesService } from "../pieces/pieces.service";
+import { PiecesService } from "../world/chessboard/pieces/pieces.service";
 import { GameController } from "../game.controller";
 import { EngineController } from "./engine.controller";
 
@@ -53,7 +53,8 @@ export class EngineService {
 	) {
 		const { possibleCoords, piece } = payload;
 
-		this._pieceService.resetPieces();
+		// TODO: The engine should not directly reset the positions! It should receive a signal from the pieces layer!
+		this._pieceService.resetPositions();
 
 		piece.physics?.rigidBody.setBodyType(0, true);
 		piece.physics?.collider.setMass(1);

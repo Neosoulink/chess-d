@@ -7,15 +7,18 @@ import {
 	AnimationClip,
 	AnimationMixer,
 	Group,
+	Material,
 	SkinnedMesh,
 	Vector3Like
 } from "three";
 import type { GLTF } from "three/examples/jsm/Addons.js";
-import { inject, singleton } from "tsyringe";
-import { PiecesController } from "../pieces/pieces.controller";
+import { inject, Lifecycle, scoped } from "tsyringe";
 
-@singleton()
-export class HandService {
+import { PiecesController } from "../chessboard/pieces/pieces.controller";
+import { WorldService } from "../world.service";
+
+@scoped(Lifecycle.ContainerScoped)
+export class HandsService {
 	static readonly INITIAL_HAND_POSITION: Vector3Like = { x: 0, y: 3, z: 6 };
 
 	private _gltf?: GLTF;
@@ -32,7 +35,10 @@ export class HandService {
 		}
 	>;
 
-	constructor(@inject(AppModule) private readonly _app: AppModule) {}
+	constructor(
+		@inject(AppModule) private readonly _app: AppModule,
+		@inject(WorldService) private readonly _world: WorldService
+	) {}
 
 	private _setupHand(colorSide: ColorSide) {
 		const modelGroup = this._gltf?.scene;
@@ -53,7 +59,7 @@ export class HandService {
 		scene.rotation.x = Math.PI / 2;
 		scene.rotation.y = Math.PI;
 		scene.scale.setScalar(0.05);
-		scene.position.copy(HandService.INITIAL_HAND_POSITION);
+		scene.position.copy(HandsService.INITIAL_HAND_POSITION);
 
 		if (colorSide === ColorSide.white) {
 			scene.position.z *= -1;
@@ -70,7 +76,33 @@ export class HandService {
 		};
 	}
 
-	public setup() {
+	public resetMaterials(): void {
+		Object.values(this.hands).forEach((side) => {
+			const mesh = side.scene.children[0]?.children[0] as
+				| SkinnedMesh
+				| undefined;
+
+			if (
+				mesh?.material instanceof Material &&
+				(mesh.material as Material).uuid !== this._world.defaultMaterial.uuid
+			) {
+				mesh.material.dispose();
+				mesh.material = this._world.defaultMaterial;
+			}
+		});
+	}
+
+	public resetScenes(): void {
+		const scene = this._world.scene;
+		scene.add(...Object.values(this.hands).map((side) => side.scene));
+	}
+
+	public reset() {
+		this.resetMaterials();
+		this.resetScenes();
+	}
+
+	public init() {
 		this._gltf = this._app.loader.getLoadedResources()["masterHand"] as GLTF;
 
 		this._setupHand(ColorSide.black);
@@ -200,7 +232,7 @@ export class HandService {
 		if (!hand) return;
 
 		hand.animation.action?.play();
-		hand.scene.position.copy(HandService.INITIAL_HAND_POSITION);
+		hand.scene.position.copy(HandsService.INITIAL_HAND_POSITION);
 		if (payload.colorSide === ColorSide.white) hand.scene.position.z *= -1;
 	}
 

@@ -11,12 +11,12 @@ export const configureTweakpane = (
 
 	paneFolder.expanded = true;
 
-	Object.keys(DEBUG_OPTIONS).forEach((folderTitle) => {
+	Object.keys(DEBUG_OPTIONS).forEach((folderTitle, index) => {
+		const folderParams = DEBUG_OPTIONS[folderTitle];
 		const folder = paneFolder.addFolder({
 			title: folderTitle,
-			expanded: false
+			expanded: index === 0
 		});
-		const folderParams = DEBUG_OPTIONS[folderTitle];
 
 		if (!folderParams) return;
 
@@ -30,14 +30,12 @@ export const configureTweakpane = (
 
 			return folder
 				.addBinding(params, bladeLabel, {
-					...folderParams[bladeLabel]!.config,
+					...folderParams[bladeLabel]?.config,
 					label: bladeLabel
 				})
 				.on("change", ({ value }) =>
 					onChange?.(`${folderTitle}~${bladeLabel}`, value)
 				);
 		});
-
-		folder.expanded = false;
 	});
 };

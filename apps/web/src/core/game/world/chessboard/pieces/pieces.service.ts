@@ -25,7 +25,7 @@ export class PiecesService {
 		this._chessboard.pieces.reset(fen);
 	}
 
-	public resetPieces() {
+	public resetPositions() {
 		for (const color of [ColorSide.white, ColorSide.black]) {
 			for (const pieceType of Object.values(PieceType).filter(
 				(type) => type.length === 1
@@ -50,7 +50,7 @@ export class PiecesService {
 	) {
 		const { start, piece, position, move, end } = payload;
 
-		if (start) this.resetPieces();
+		if (start) this.resetPositions();
 
 		this._chessboard.pieces.setPiecePosition(piece, position);
 
@@ -81,6 +81,7 @@ export class PiecesService {
 		piece.physics?.rigidBody.setBodyType(0, true);
 		piece.physics?.collider.setMass(1);
 
+		// setTimeout(() => {
 		this._chessboard.pieces.getPieceDeselected$$().next({
 			piece,
 			cell,
@@ -93,12 +94,11 @@ export class PiecesService {
 			instancedPiece,
 			pieceGeometry
 		});
+		// }, 0);
 	}
 
 	public handlePiecePromoted(
-		data: ObservablePayload<
-			ReturnType<ChessboardModule["pieces"]["getPiecePromoted$"]>
-		>
+		data: ObservablePayload<PiecesController["promoted$"]>
 	) {
 		const { piece, toPiece } = data;
 		const promotedPiece = this._chessboard.pieces.getPieceByCoord(

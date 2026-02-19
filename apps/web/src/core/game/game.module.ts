@@ -1,29 +1,29 @@
+import { ChessboardModule } from "@chess-d/chessboard";
 import { Module } from "@quick-threejs/reactive";
 import { AppModule } from "@quick-threejs/reactive/worker";
 import { Subscription } from "rxjs";
-import { inject, singleton } from "tsyringe";
+import { inject, Lifecycle, scoped } from "tsyringe";
 
 import { EngineModule } from "./engine/engine.module";
-import { HandModule } from "./hands/hands.module";
-import { PiecesModule } from "./pieces/pieces.module";
 import { GameController } from "./game.controller";
 import { GameService } from "./game.service";
-import { ChessboardModule } from "@chess-d/chessboard";
 import { WorldModule } from "./world/world.module";
 import { DebugModule } from "./debug/debug.module";
+import { RendererModule } from "./renderer/renderer.module";
+import { CameraModule } from "./camera/camera.module";
 
-@singleton()
+@scoped(Lifecycle.ContainerScoped)
 export class GameModule implements Module {
 	private _subscriptions: (Subscription | undefined)[] = [];
 
 	constructor(
-		@inject(AppModule) private readonly _app: AppModule,
-		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
 		@inject(GameController) private readonly _controller: GameController,
 		@inject(GameService) private readonly _service: GameService,
+		@inject(AppModule) private readonly _app: AppModule,
+		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
 		@inject(EngineModule) public readonly engine: EngineModule,
-		@inject(HandModule) public readonly hands: HandModule,
-		@inject(PiecesModule) public readonly pieces: PiecesModule,
+		@inject(CameraModule) public readonly camera: CameraModule,
+		@inject(RendererModule) public readonly renderer: RendererModule,
 		@inject(WorldModule) public readonly world: WorldModule,
 		@inject(DebugModule) public readonly debug: DebugModule
 	) {
@@ -43,17 +43,20 @@ export class GameModule implements Module {
 
 	public init(): void {
 		this.engine.init();
-		this.hands.init();
-		this.pieces.init();
+		this.camera.init();
+		this.renderer.init();
 		this.world.init();
 		this.debug.init();
 	}
 
 	public dispose(): void {
-		this._subscriptions.forEach((subscription) => subscription?.unsubscribe());
-		this.hands.dispose();
-		this.pieces.dispose();
+		this.camera.dispose();
+		this.renderer.dispose();
 		this.engine.dispose();
 		this.world.dispose();
+		this.debug.dispose();
+
+		this._subscriptions.forEach((subscription) => subscription?.unsubscribe());
+		this._subscriptions = [];
 	}
 }

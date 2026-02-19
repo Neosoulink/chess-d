@@ -27,7 +27,7 @@ export const DEBUG_OPTIONS: Record<
 		string,
 		{
 			default: unknown;
-			config: BindingParams;
+			config?: BindingParams;
 			func: (props: {
 				self: DebugService;
 				type: string;
@@ -39,12 +39,10 @@ export const DEBUG_OPTIONS: Record<
 	Global: {
 		"Enable Debug": {
 			default: import.meta.env?.DEV,
-			config: {},
 			func: ({ self, value }) => (self.enabled = !!value)
 		},
 		Reset: {
 			default: "$button",
-			config: {},
 			func: ({ self }) => self.reset()
 		}
 	},
@@ -52,7 +50,6 @@ export const DEBUG_OPTIONS: Record<
 	"Color Management": {
 		Enabled: {
 			default: true,
-			config: {},
 			func: ({ value }) => (ColorManagement.enabled = !!value)
 		}
 	},
@@ -60,12 +57,10 @@ export const DEBUG_OPTIONS: Record<
 	Renderer: {
 		"Auto Clear": {
 			default: true,
-			config: {},
 			func: ({ self, value }) => (self.renderer.autoClear = !!value)
 		},
 		"Clear Color": {
 			default: "#262a2b",
-			config: {},
 			func: ({ self, value }) =>
 				self.renderer.setClearColor(`${value}`, self.renderer.getClearAlpha())
 		},
@@ -108,7 +103,6 @@ export const DEBUG_OPTIONS: Record<
 		},
 		Reset: {
 			default: "$button",
-			config: {},
 			func: ({ self }) => self.worldService.resetRenderer()
 		}
 	},
@@ -122,7 +116,6 @@ export const DEBUG_OPTIONS: Record<
 		},
 		Rotation: {
 			default: { x: 0, y: 0, z: 0, w: 1 },
-			config: {},
 			func: ({ self, value }) =>
 				self.scene.environmentRotation.setFromQuaternion(
 					new Quaternion().copy(value as QuaternionLike)
@@ -130,7 +123,6 @@ export const DEBUG_OPTIONS: Record<
 		},
 		Reset: {
 			default: "$button",
-			config: {},
 			func: ({ self }) => self.worldService.resetEnvironment()
 		}
 	},
@@ -138,7 +130,6 @@ export const DEBUG_OPTIONS: Record<
 	Lights: {
 		"sun visible": {
 			default: true,
-			config: {},
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.visible = !!value)
 		},
@@ -150,26 +141,22 @@ export const DEBUG_OPTIONS: Record<
 		},
 		"Sun Position": {
 			default: { x: 0, y: 5, z: 0 },
-			config: {},
 			func: ({ self, value }) =>
 				self.worldService.lights.sun.position.copy(value as any)
 		},
 		"Sun LookAt": {
 			default: { x: 0, y: 0, z: 0 },
-			config: {},
 			func: ({ self, value }) =>
 				self.worldService.lights.sun.lookAt(value as any)
 		},
 		"Sun Color": {
 			default: "#ffffff",
-			config: {},
 			func: ({ self, value }) =>
 				self.worldService.lights.sun.color.set(value as string)
 		},
 
 		"Reflection Visible": {
 			default: true,
-			config: {},
 			func: ({ self, value }) =>
 				(self.worldService.lights.sunReflection.visible = !!value)
 		},
@@ -181,26 +168,22 @@ export const DEBUG_OPTIONS: Record<
 		},
 		"Reflection Position": {
 			default: { x: 0, y: 5, z: 0 },
-			config: {},
 			func: ({ self, value }) =>
 				self.worldService.lights.sun.position.copy(value as any)
 		},
 		"Reflection LookAt": {
 			default: { x: 0, y: 0, z: 0 },
-			config: {},
 			func: ({ self, value }) =>
 				self.worldService.lights.sun.lookAt(value as any)
 		},
 		"Reflection Color": {
 			default: "#ffffff",
-			config: {},
 			func: ({ self, value }) =>
 				self.worldService.lights.sunReflection.color.set(value as string)
 		},
 
 		"Propagation Visible": {
 			default: true,
-			config: {},
 			func: ({ self, value }) =>
 				(self.worldService.lights.sunPropagation.visible = !!value)
 		},
@@ -212,14 +195,12 @@ export const DEBUG_OPTIONS: Record<
 		},
 		"Propagation Color": {
 			default: "#ffffff",
-			config: {},
 			func: ({ self, value }) =>
 				self.worldService.lights.sunPropagation.color.set(value as string)
 		},
 
 		Reset: {
 			default: "$button",
-			config: {},
 			func: ({ self }) => self.worldService.resetLights()
 		}
 	},
@@ -227,17 +208,14 @@ export const DEBUG_OPTIONS: Record<
 	shadows: {
 		"Render Map": {
 			default: true,
-			config: {},
 			func: ({ self, value }) => (self.renderer.shadowMap.enabled = !!value)
 		},
 		"Render Map Auto Update": {
 			default: true,
-			config: {},
 			func: ({ self, value }) => (self.renderer.shadowMap.autoUpdate = !!value)
 		},
 		"Render Map Needs Update": {
 			default: true,
-			config: {},
 			func: ({ self, value }) => (self.renderer.shadowMap.needsUpdate = !!value)
 		},
 		"Render Map Type": {
@@ -254,7 +232,6 @@ export const DEBUG_OPTIONS: Record<
 		},
 		Cast: {
 			default: true,
-			config: {},
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.castShadow = !!value)
 		},
@@ -326,7 +303,6 @@ export const DEBUG_OPTIONS: Record<
 
 		Reset: {
 			default: "$button",
-			config: {},
 			func: ({ self }) => self.worldService.resetShadows()
 		}
 	}
