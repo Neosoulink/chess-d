@@ -15,7 +15,7 @@ export const configureTweakpane = (
 		const folderParams = DEBUG_OPTIONS[folderTitle];
 		const folder = paneFolder.addFolder({
 			title: folderTitle,
-			expanded: index === 0
+			expanded: true
 		});
 
 		if (!folderParams) return;

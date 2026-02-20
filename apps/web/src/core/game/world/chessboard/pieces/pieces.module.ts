@@ -14,7 +14,10 @@ export class PiecesModule implements Module {
 		@inject(PiecesController) private readonly _controller: PiecesController
 	) {
 		this._subscriptions.push(
-			this._controller.reset$?.subscribe((fen) => this._service.reset(fen)),
+			this._controller.resetFen$?.subscribe((fen) =>
+				this._service.resetFen(fen)
+			),
+			this._controller.reset$?.subscribe(() => this._service.reset()),
 			this._controller.animatedPlayerMovedPiece$?.subscribe(
 				this._service.handleAnimatedPlayerMovedPiece.bind(this._service)
 			),

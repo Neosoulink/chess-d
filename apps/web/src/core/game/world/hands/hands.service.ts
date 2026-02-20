@@ -6,8 +6,11 @@ import {
 	AnimationAction,
 	AnimationClip,
 	AnimationMixer,
+	Color,
+	DoubleSide,
 	Group,
 	Material,
+	MeshPhysicalMaterial,
 	SkinnedMesh,
 	Vector3Like
 } from "three";
@@ -34,6 +37,8 @@ export class HandsService {
 			};
 		}
 	>;
+
+	public material = new MeshPhysicalMaterial();
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
@@ -77,6 +82,14 @@ export class HandsService {
 	}
 
 	public resetMaterials(): void {
+		this.material.side = DoubleSide;
+		this.material.color = new Color("#fff");
+		this.material.transparent = true;
+		this.material.opacity = 1;
+		this.material.sheen = 2;
+		this.material.roughness = 0.45;
+		this.material.metalness = 0.02;
+
 		Object.values(this.hands).forEach((side) => {
 			const mesh = side.scene.children[0]?.children[0] as
 				| SkinnedMesh
@@ -84,10 +97,10 @@ export class HandsService {
 
 			if (
 				mesh?.material instanceof Material &&
-				(mesh.material as Material).uuid !== this._world.defaultMaterial.uuid
+				(mesh.material as Material).uuid !== this.material.uuid
 			) {
 				mesh.material.dispose();
-				mesh.material = this._world.defaultMaterial;
+				mesh.material = this.material;
 			}
 		});
 	}

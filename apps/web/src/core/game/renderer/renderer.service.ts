@@ -18,8 +18,8 @@ export class RendererService {
 
 		ColorManagement.enabled = true;
 		renderer.autoClear = true;
-		renderer.setClearAlpha(0);
-		renderer.setClearColor(new Color(0x000000), 0);
+		renderer.setClearColor(new Color("#262a2b"));
+		renderer.setClearAlpha(1);
 		renderer.outputColorSpace = SRGBColorSpace;
 		renderer.toneMapping = NoToneMapping;
 		renderer.toneMappingExposure = 1;

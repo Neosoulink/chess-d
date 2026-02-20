@@ -21,7 +21,7 @@ export class DebugModule implements Module {
 	}
 
 	init() {
-		this._service.resetControls();
+		this._service.handleDebugEnabledChange(this._service.enabled);
 	}
 
 	dispose() {

@@ -18,14 +18,9 @@ export class ChessboardService {
 	) {}
 
 	public resetMaterials(): void {
-		const chessboard = this._chessboard.world.getScene();
-
-		chessboard.traverseVisible((child) => {
+		this._chessboard.world.getScene().traverseVisible((child) => {
 			if (child instanceof InstancedCellModel)
-				return (child.material = this.defaultMaterial);
-			if (child instanceof Mesh)
-				return (child.material = this._world.defaultMaterial);
-			return;
+				child.material = this.defaultMaterial;
 		});
 	}
 

@@ -6,6 +6,7 @@ import {
 	BehaviorSubject,
 	filter,
 	map,
+	merge,
 	Observable,
 	share,
 	Subject,
@@ -17,6 +18,9 @@ import { GameController } from "../game.controller";
 
 @scoped(Lifecycle.ContainerScoped)
 export class WorldController {
+	public readonly reset$$ = new Subject<
+		ObservablePayload<GameController["reset$"]>
+	>();
 	public readonly resetDone$$ = new Subject<void>();
 	public readonly dayCycle$$ = new BehaviorSubject<{
 		duration: number;
@@ -44,7 +48,9 @@ export class WorldController {
 		@inject(GameController) private readonly _gameController: GameController
 	) {
 		this.step$ = this._app.timer.step$();
-		this.reset$ = this._gameController.reset$.pipe(share());
+		this.reset$ = merge(this.reset$$, this._gameController.reset$).pipe(
+			share()
+		);
 		this.dayCycle$ = this.dayCycle$$.pipe(
 			switchMap(({ duration, progress: _baseProgress }) => {
 				const totalDuration = duration * 1000;

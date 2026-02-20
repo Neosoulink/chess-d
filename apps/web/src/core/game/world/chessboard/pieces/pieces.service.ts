@@ -11,19 +11,18 @@ import {
 	squareToCoord
 } from "@chess-d/shared";
 import { Move } from "chess.js";
+import { Color, DoubleSide, Mesh, MeshPhysicalMaterial } from "three";
 import { inject, singleton } from "tsyringe";
 
 import { PiecesController } from "./pieces.controller";
 
 @singleton()
 export class PiecesService {
+	public material = new MeshPhysicalMaterial();
+
 	constructor(
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule
 	) {}
-
-	public reset(fen = DEFAULT_FEN) {
-		this._chessboard.pieces.reset(fen);
-	}
 
 	public resetPositions() {
 		for (const color of [ColorSide.white, ColorSide.black]) {
@@ -43,6 +42,29 @@ export class PiecesService {
 				}
 			}
 		}
+	}
+
+	public resetFen(fen = DEFAULT_FEN) {
+		this._chessboard.pieces.reset(fen);
+	}
+
+	public resetMaterials(): void {
+		this.material.side = DoubleSide;
+		this.material.color = new Color("#fff");
+		this.material.transparent = true;
+		this.material.opacity = 1;
+		this.material.sheen = 2;
+		this.material.roughness = 0.45;
+		this.material.metalness = 0.02;
+
+		this._chessboard.world.getScene().traverseVisible((child) => {
+			if (child instanceof Mesh) child.material = this.material;
+		});
+	}
+
+	public reset() {
+		this.resetMaterials();
+		this.resetPositions();
 	}
 
 	public handleAnimatedPlayerMovedPiece(

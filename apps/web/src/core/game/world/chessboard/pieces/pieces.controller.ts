@@ -28,10 +28,12 @@ import { MessageData } from "../../../../../shared/types";
 import { PIECE_WILL_MOVE_TOKEN } from "../../../../../shared/tokens";
 import { GameController } from "../../../game.controller";
 import { EngineController } from "../../../engine/engine.controller";
+import { WorldController } from "../../world.controller";
 
 @scoped(Lifecycle.ContainerScoped)
 export class PiecesController {
-	public readonly reset$: Observable<string>;
+	public readonly reset$: Observable<void>;
+	public readonly resetFen$: Observable<string>;
 	public readonly promoted$?: Observable<
 		ObservablePayload<
 			ReturnType<ChessboardModule["pieces"]["getPiecePromoted$"]>
@@ -52,10 +54,13 @@ export class PiecesController {
 		private readonly _game: Chess,
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
 		@inject(GameController) private readonly _gameController: GameController,
+		@inject(WorldController)
+		private readonly _worldController: WorldController,
 		@inject(EngineController)
 		private readonly _engineController: EngineController
 	) {
-		this.reset$ = merge(
+		this.reset$ = this._worldController.resetDone$$.pipe(share());
+		this.resetFen$ = merge(
 			this._gameController.reset$.pipe(map(() => undefined)),
 			this._engineController.undo$.pipe(map(() => undefined)),
 			this._engineController.redo$.pipe(map(() => undefined))

@@ -1,4 +1,4 @@
-import { BufferAttribute } from "three";
+import { Subscription } from "rxjs";
 import { inject, singleton } from "tsyringe";
 
 import { DebugService } from "./debug.service";
@@ -8,6 +8,8 @@ import { WorldService } from "../world/world.service";
 
 @singleton()
 export class DebugModule {
+	private _subscriptions: (Subscription | undefined)[] = [];
+
 	constructor(
 		@inject(DEBUG_MODE_TOKEN) private readonly _debugMode: boolean,
 		@inject(WorldService) private readonly _worldService: WorldService,
@@ -20,19 +22,17 @@ export class DebugModule {
 		if (this._service.enabled)
 			this._worldService.scene.add(this._service.lines);
 
-		this._controller.physicsDebugRendered$.subscribe({
-			next: (buffers) => {
-				this._service.lines.geometry.setAttribute(
-					"position",
-					new BufferAttribute(buffers.vertices, 3)
-				);
-				this._service.lines.geometry.setAttribute(
-					"color",
-					new BufferAttribute(buffers.colors, 4)
-				);
-			}
-		});
+		this._subscriptions.push(
+			this._controller.physicsDebugRendered$.subscribe(
+				this._service.handlePhysicsDebugRendered.bind(this._service)
+			)
+		);
 	}
 
-	public dispose(): void {}
+	public dispose(): void {
+		this._worldService.scene.remove(this._service.lines);
+
+		this._subscriptions.forEach((sub) => sub?.unsubscribe());
+		this._subscriptions = [];
+	}
 }

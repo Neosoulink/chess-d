@@ -1,18 +1,19 @@
 import {
 	ACESFilmicToneMapping,
 	AgXToneMapping,
+	BackSide,
 	BasicShadowMap,
 	CineonToneMapping,
 	ColorManagement,
 	CustomToneMapping,
+	DoubleSide,
+	FrontSide,
 	LinearSRGBColorSpace,
 	LinearToneMapping,
 	NeutralToneMapping,
 	NoToneMapping,
 	PCFShadowMap,
 	PCFSoftShadowMap,
-	Quaternion,
-	QuaternionLike,
 	ReinhardToneMapping,
 	SRGBColorSpace,
 	VSMShadowMap
@@ -36,33 +37,42 @@ export const DEBUG_OPTIONS: Record<
 		}
 	>
 > = {
-	Global: {
+	Base: {
 		"Enable Debug": {
 			default: import.meta.env?.DEV,
-			func: ({ self, value }) => (self.enabled = !!value)
+			func: ({ self, value }) => self.handleDebugEnabledChange(!!value)
 		},
-		Reset: {
-			default: "$button",
-			func: ({ self }) => self.reset()
-		}
-	},
-
-	"Color Management": {
-		Enabled: {
+		"Enable Controls": {
 			default: true,
-			func: ({ value }) => (ColorManagement.enabled = !!value)
+			func: ({ self, value }) => self.enableControls(!!value)
+		},
+		"Enable Axes Helper": {
+			default: true,
+			func: ({ self, value }) => self.enableAxesHelper(!!value)
+		},
+		"Enable Physics Lines": {
+			default: true,
+			func: ({ self, value }) => self.enablePhysicsLines(!!value)
 		}
 	},
-
 	Renderer: {
 		"Auto Clear": {
 			default: true,
-			func: ({ self, value }) => (self.renderer.autoClear = !!value)
+			func: ({ self, value }) => (self.rendererInstance.autoClear = !!value)
 		},
 		"Clear Color": {
 			default: "#262a2b",
 			func: ({ self, value }) =>
-				self.renderer.setClearColor(`${value}`, self.renderer.getClearAlpha())
+				self.rendererInstance.setClearColor(
+					`${value}`,
+					self.rendererInstance.getClearAlpha()
+				)
+		},
+		"Clear Alpha": {
+			default: 1,
+			config: { min: 0, max: 1, step: 0.0001 },
+			func: ({ self, value }) =>
+				self.rendererInstance.setClearAlpha(Number(value) || 0)
 		},
 		"Output ColorSpace": {
 			default: SRGBColorSpace,
@@ -72,7 +82,8 @@ export const DEBUG_OPTIONS: Record<
 					LinearSRGBColorSpace
 				}
 			},
-			func: ({ self, value }) => (self.renderer.outputColorSpace = value as any)
+			func: ({ self, value }) =>
+				(self.rendererInstance.outputColorSpace = value as any)
 		},
 		"Tone Mapping": {
 			default: NoToneMapping,
@@ -101,41 +112,58 @@ export const DEBUG_OPTIONS: Record<
 				if (renderer) renderer.toneMappingExposure = value as number;
 			}
 		},
+
+		"Color Management": {
+			default: true,
+			func: ({ value }) => (ColorManagement.enabled = !!value)
+		},
+
+		"Shadows Render Map": {
+			default: true,
+			func: ({ self, value }) =>
+				(self.rendererInstance.shadowMap.enabled = !!value)
+		},
+		"Shadows Auto Update": {
+			default: true,
+			func: ({ self, value }) =>
+				(self.rendererInstance.shadowMap.autoUpdate = !!value)
+		},
+		"Shadows Needs Update": {
+			default: true,
+			func: ({ self, value }) =>
+				(self.rendererInstance.shadowMap.needsUpdate = !!value)
+		},
+		"Shadows Type": {
+			default: PCFSoftShadowMap,
+			config: {
+				options: {
+					BasicShadowMap,
+					PCFSoftShadowMap,
+					PCFShadowMap,
+					VSMShadowMap
+				}
+			},
+			func: ({ self, value }) =>
+				(self.rendererInstance.shadowMap.type = value as any)
+		},
+
 		Reset: {
 			default: "$button",
-			func: ({ self }) => self.worldService.resetRenderer()
+			func: ({ self }) => self.rendererService.reset()
 		}
 	},
 
-	Environment: {
-		Intensity: {
-			default: 1,
-			config: { min: 0, max: 5 },
-			func: ({ self, value }) =>
-				(self.scene.environmentIntensity = Number(value) || 0)
-		},
-		Rotation: {
-			default: { x: 0, y: 0, z: 0, w: 1 },
-			func: ({ self, value }) =>
-				self.scene.environmentRotation.setFromQuaternion(
-					new Quaternion().copy(value as QuaternionLike)
-				)
-		},
-		Reset: {
-			default: "$button",
-			func: ({ self }) => self.worldService.resetEnvironment()
-		}
-	},
-
-	Lights: {
-		"sun visible": {
+	World: {
+		// LIGHTS
+		// SUN
+		"Sun visible": {
 			default: true,
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.visible = !!value)
 		},
 		"Sun Intensity": {
-			default: 0.5,
-			config: { min: 0, max: 5 },
+			default: 1.1,
+			config: { min: 0, max: 5, step: 0.1 },
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.intensity = Number(value) || 0)
 		},
@@ -155,100 +183,77 @@ export const DEBUG_OPTIONS: Record<
 				self.worldService.lights.sun.color.set(value as string)
 		},
 
-		"Reflection Visible": {
+		// SUN REFLECTION
+		"Sun reflection Visible": {
 			default: true,
 			func: ({ self, value }) =>
 				(self.worldService.lights.sunReflection.visible = !!value)
 		},
-		"Reflection Intensity": {
-			default: 0.5,
-			config: { min: 0, max: 5 },
+		"Sun reflection Intensity": {
+			default: 1,
+			config: { min: 0, max: 5, step: 0.1 },
 			func: ({ self, value }) =>
 				(self.worldService.lights.sunReflection.intensity = Number(value) || 0)
 		},
-		"Reflection Position": {
+		"Sun reflection Position": {
 			default: { x: 0, y: 5, z: 0 },
 			func: ({ self, value }) =>
-				self.worldService.lights.sun.position.copy(value as any)
+				self.worldService.lights.sunReflection.position.copy(value as any)
 		},
-		"Reflection LookAt": {
+		"Sun reflection LookAt": {
 			default: { x: 0, y: 0, z: 0 },
 			func: ({ self, value }) =>
-				self.worldService.lights.sun.lookAt(value as any)
+				self.worldService.lights.sunReflection.lookAt(value as any)
 		},
-		"Reflection Color": {
+		"Sun reflection Color": {
 			default: "#ffffff",
 			func: ({ self, value }) =>
 				self.worldService.lights.sunReflection.color.set(value as string)
 		},
 
-		"Propagation Visible": {
+		// SUN PROPAGATION
+		"Sun propagation Visible": {
 			default: true,
 			func: ({ self, value }) =>
 				(self.worldService.lights.sunPropagation.visible = !!value)
 		},
-		"Propagation Intensity": {
-			default: 0.1,
-			config: { min: 0, max: 5 },
+		"Sun propagation Intensity": {
+			default: 1,
+			config: { min: 0, max: 5, step: 0.1 },
 			func: ({ self, value }) =>
 				(self.worldService.lights.sunPropagation.intensity = Number(value) || 0)
 		},
-		"Propagation Color": {
+		"Sun propagation Color": {
 			default: "#ffffff",
 			func: ({ self, value }) =>
 				self.worldService.lights.sunPropagation.color.set(value as string)
 		},
 
-		Reset: {
+		"Reset Lights": {
 			default: "$button",
 			func: ({ self }) => self.worldService.resetLights()
-		}
-	},
+		},
 
-	shadows: {
-		"Render Map": {
-			default: true,
-			func: ({ self, value }) => (self.renderer.shadowMap.enabled = !!value)
-		},
-		"Render Map Auto Update": {
-			default: true,
-			func: ({ self, value }) => (self.renderer.shadowMap.autoUpdate = !!value)
-		},
-		"Render Map Needs Update": {
-			default: true,
-			func: ({ self, value }) => (self.renderer.shadowMap.needsUpdate = !!value)
-		},
-		"Render Map Type": {
-			default: PCFSoftShadowMap,
-			config: {
-				options: {
-					BasicShadowMap,
-					PCFSoftShadowMap,
-					PCFShadowMap,
-					VSMShadowMap
-				}
-			},
-			func: ({ self, value }) => (self.renderer.shadowMap.type = value as any)
-		},
-		Cast: {
+		// SHADOWS
+		"Shadows Cast": {
 			default: true,
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.castShadow = !!value)
 		},
-		Bias: {
+		"Shadows Bias": {
 			default: 0,
 			config: { min: -0.05, max: 0.05, step: 0.001 },
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.shadow.bias = Number(value) || 0)
 		},
-		"Normal Bias": {
+		"Shadows Normal Bias": {
 			default: 0.05,
 			config: { min: -0.05, max: 0.05, step: 0.001 },
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.shadow.normalBias = Number(value) || 0)
 		},
-		"Map Size": {
-			default: 4096,
+		"Shadows Map Size": {
+			default: 2048,
 			config: {
 				options: {
 					["Ultra Low"]: 256,
@@ -264,46 +269,203 @@ export const DEBUG_OPTIONS: Record<
 				self.worldService.lights.sun.shadow.map?.setSize(mapSize, mapSize);
 			}
 		},
-		Near: {
+		"Shadows Near": {
 			default: 0.1,
 			config: { min: 0, max: 1 },
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.shadow.camera.near = Number(value) || 0)
 		},
-		Far: {
+		"Shadows Far": {
 			default: 50,
 			config: { min: 0, max: 50 },
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.shadow.camera.far = Number(value) || 0)
 		},
-		Top: {
+		"Shadows Top": {
 			default: 8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.shadow.camera.top = Number(value) || 0)
 		},
-		Bottom: {
+		"Shadows Bottom": {
 			default: -8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.shadow.camera.bottom = Number(value) || 0)
 		},
-		Left: {
+		"Shadows Left": {
 			default: -8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.shadow.camera.left = Number(value) || 0)
 		},
-		Right: {
+		"Shadows Right": {
 			default: 8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
 				(self.worldService.lights.sun.shadow.camera.right = Number(value) || 0)
 		},
-
-		Reset: {
+		"Reset Shadows": {
 			default: "$button",
 			func: ({ self }) => self.worldService.resetShadows()
+		},
+
+		// MATERIALS
+		"Material Side": {
+			default: DoubleSide,
+			config: {
+				options: {
+					DoubleSide,
+					FrontSide,
+					BackSide
+				}
+			},
+			func: ({ self, value }) =>
+				(self.worldService.defaultMaterial.side = value as any)
+		},
+		"Material Color": {
+			default: "#ffffff",
+			func: ({ self, value }) =>
+				self.worldService.defaultMaterial.color.set(value as string)
+		},
+		"Material Transparent": {
+			default: true,
+			func: ({ self, value }) =>
+				(self.worldService.defaultMaterial.transparent = !!value)
+		},
+		"Material Opacity": {
+			default: 1,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.worldService.defaultMaterial.opacity = Number(value) || 0)
+		},
+		"Material Sheen": {
+			default: 2,
+			config: { min: 0, max: 5, step: 0.1 },
+			func: ({ self, value }) =>
+				(self.worldService.defaultMaterial.sheen = Number(value) || 0)
+		},
+		"Material Roughness": {
+			default: 0.45,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.worldService.defaultMaterial.roughness = Number(value) || 0)
+		},
+		"Material Metalness": {
+			default: 0.02,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.worldService.defaultMaterial.metalness = Number(value) || 0)
+		},
+		"Reset Material": {
+			default: "$button",
+			func: ({ self }) => self.worldService.resetMaterials()
+		}
+	},
+
+	Hands: {
+		"Material Side": {
+			default: DoubleSide,
+			config: {
+				options: {
+					DoubleSide,
+					FrontSide,
+					BackSide
+				}
+			},
+			func: ({ self, value }) =>
+				(self.handsService.material.side = value as any)
+		},
+		"Material Color": {
+			default: "#ffffff",
+			func: ({ self, value }) =>
+				self.handsService.material.color.set(value as string)
+		},
+		"Material Transparent": {
+			default: true,
+			func: ({ self, value }) =>
+				(self.handsService.material.transparent = !!value)
+		},
+		"Material Opacity": {
+			default: 1,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.handsService.material.opacity = Number(value) || 0)
+		},
+		"Material Sheen": {
+			default: 2,
+			config: { min: 0, max: 5, step: 0.1 },
+			func: ({ self, value }) =>
+				(self.handsService.material.sheen = Number(value) || 0)
+		},
+		"Material Roughness": {
+			default: 0.45,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.handsService.material.roughness = Number(value) || 0)
+		},
+		"Material Metalness": {
+			default: 0.02,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.handsService.material.metalness = Number(value) || 0)
+		},
+		"Reset Material": {
+			default: "$button",
+			func: ({ self }) => self.handsService.resetMaterials()
+		}
+	},
+
+	Pieces: {
+		"Pieces Side": {
+			default: DoubleSide,
+			config: {
+				options: {
+					DoubleSide,
+					FrontSide,
+					BackSide
+				}
+			},
+			func: ({ self, value }) =>
+				(self.piecesService.material.side = value as any)
+		},
+		"Pieces Color": {
+			default: "#ffffff",
+			func: ({ self, value }) =>
+				self.piecesService.material.color.set(value as string)
+		},
+		"Pieces Transparent": {
+			default: true,
+			func: ({ self, value }) =>
+				(self.piecesService.material.transparent = !!value)
+		},
+		"Pieces Opacity": {
+			default: 1,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.piecesService.material.opacity = Number(value) || 0)
+		},
+		"Pieces Sheen": {
+			default: 2,
+			config: { min: 0, max: 5, step: 0.1 },
+			func: ({ self, value }) =>
+				(self.piecesService.material.sheen = Number(value) || 0)
+		},
+		"Pieces Roughness": {
+			default: 0.45,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.piecesService.material.roughness = Number(value) || 0)
+		},
+		"Pieces Metalness": {
+			default: 0.02,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.piecesService.material.metalness = Number(value) || 0)
+		},
+		"Reset Materials": {
+			default: "$button",
+			func: ({ self }) => self.piecesService.resetMaterials()
 		}
 	}
 };

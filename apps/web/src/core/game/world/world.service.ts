@@ -26,12 +26,7 @@ export class WorldService {
 		sunPropagation: new AmbientLight()
 	};
 
-	public defaultMaterial = new MeshPhysicalMaterial({
-		side: DoubleSide,
-		sheen: 2,
-		roughness: 0.45,
-		metalness: 0.02
-	});
+	public defaultMaterial = new MeshPhysicalMaterial();
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
@@ -45,7 +40,7 @@ export class WorldService {
 		this.lights.sun.position.set(-1, 4, 2);
 
 		this.lights.sunReflection.visible = true;
-		this.lights.sunReflection.color = this.lights.sun.color;
+		this.lights.sunReflection.color = this.lights.sun.color.clone();
 		this.lights.sunReflection.intensity = 1;
 		this.lights.sunReflection.position.set(
 			this.lights.sun.position.x * -1,
@@ -53,8 +48,8 @@ export class WorldService {
 			this.lights.sun.position.z * -1
 		);
 
-		this.lights.sunReflection.visible = true;
-		this.lights.sunPropagation.color = this.lights.sun.color;
+		this.lights.sunPropagation.visible = true;
+		this.lights.sunPropagation.color = this.lights.sun.color.clone();
 		this.lights.sunPropagation.intensity = 1;
 	}
 
@@ -70,6 +65,16 @@ export class WorldService {
 		this.lights.sun.shadow.camera.bottom = -BOARD_RANGE_CELLS_SIZE;
 		this.lights.sun.shadow.camera.left = -BOARD_RANGE_CELLS_SIZE;
 		this.lights.sun.shadow.camera.right = BOARD_RANGE_CELLS_SIZE;
+	}
+
+	public resetMaterials(): void {
+		this.defaultMaterial.side = DoubleSide;
+		this.defaultMaterial.color = new Color("#fff");
+		this.defaultMaterial.transparent = true;
+		this.defaultMaterial.opacity = 1;
+		this.defaultMaterial.sheen = 2;
+		this.defaultMaterial.roughness = 0.45;
+		this.defaultMaterial.metalness = 0.02;
 	}
 
 	public resetEnvironment(): void {
@@ -89,6 +94,7 @@ export class WorldService {
 
 	public reset() {
 		this.resetLights();
+		this.resetMaterials();
 		this.resetShadows();
 		this.resetScenes();
 	}
