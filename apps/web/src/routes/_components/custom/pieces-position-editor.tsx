@@ -1,37 +1,69 @@
 import { ColorSide, DEFAULT_FEN } from "@chess-d/shared";
 import { Chessboard2 } from "@chrisoakman/chessboard2/dist/chessboard2.min.js";
-
-import { Button, Icon, Input, InputProps } from "../core";
-import {
-	ChangeEventHandler,
-	useCallback,
-	useEffect,
-	useRef,
-	useState
-} from "react";
 import { validateFen } from "chess.js";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { useGameStore } from "../../_stores";
+import { Button, Icon, Input } from "../core";
 
 export const PiecesPositionEditor = () => {
 	const { initialGameState, setInitialGameState } = useGameStore();
-	const { fen } = initialGameState || {};
+	const { fen, playerSide } = initialGameState || {};
+
 	const [inputFen, setInputFen] = useState(fen || DEFAULT_FEN);
 	const [showMap, setShowMap] = useState(false);
+
+	const startSide = useMemo(
+		() => (inputFen?.split(" ")[1] as ColorSide) || ColorSide.white,
+		[inputFen]
+	);
 
 	const defaultFen = useRef(fen || DEFAULT_FEN);
 	const mapWrapperRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<Chessboard2>(null);
 
-	const changeSide = useCallback(
+	const changeStartSide = useCallback(
 		(side: ColorSide) => {
-			const newFen = `${fen?.split(" ")[0]} ${side} KQkq - 0 1`;
+			const safeFen = fen || defaultFen.current;
+			const [positions, _startSide, ...rest] = safeFen.split(" ");
+			const newFen = `${positions} ${side} ${rest.join(" ")}`;
 
 			if (!validateFen(newFen).ok) return;
 
 			setInputFen(newFen);
-			setInitialGameState({ fen: newFen });
+			setInitialGameState({ ...initialGameState, fen: newFen });
 		},
-		[fen, setInitialGameState]
+		[initialGameState, fen, defaultFen, setInitialGameState]
+	);
+
+	const changePlayerSide = useCallback(
+		(side: ColorSide) => {
+			setInitialGameState({ ...initialGameState, playerSide: side });
+		},
+		[initialGameState, setInitialGameState]
+	);
+
+	const changeInputFen = useCallback(
+		(newFen: string) => {
+			setInputFen(newFen);
+			if (validateFen(newFen).ok)
+				setInitialGameState({ ...initialGameState, fen: newFen });
+		},
+		[initialGameState, setInitialGameState]
+	);
+
+	const changeMapFen = useCallback(
+		(mapBoard: Chessboard2) => {
+			const safeFen = fen || defaultFen.current;
+			const [positions, startSide, ...rest] = safeFen.split(" ");
+			const newFen = `${mapBoard?.fen() || positions} ${startSide} ${rest.join(" ")}`;
+
+			if (!newFen || !validateFen(newFen).ok) return;
+
+			setInitialGameState({ ...initialGameState, fen: newFen });
+			setInputFen(newFen);
+		},
+		[initialGameState, fen, defaultFen, setInitialGameState]
 	);
 
 	const reset = useCallback(() => {
@@ -51,16 +83,8 @@ export const PiecesPositionEditor = () => {
 			if (mapParentElement) {
 				mapBoard = Chessboard2(mapElement, {
 					draggable: true,
-					onChange: () => {
-						const newFen = `${mapBoard?.fen()} w KQkq - 0 1`;
-
-						if (!newFen || !validateFen(newFen).ok) return;
-
-						setInitialGameState({ fen: newFen });
-						setInputFen(newFen);
-					}
+					onChange: () => mapBoard && changeMapFen(mapBoard)
 				});
-
 				mapBoard.position(defaultFen.current, true);
 				mapRef.current = mapBoard;
 			}
@@ -70,7 +94,7 @@ export const PiecesPositionEditor = () => {
 			mapBoard?.destroy();
 			mapElement.remove();
 		};
-	}, [setInitialGameState, showMap]);
+	}, [setInitialGameState, showMap, changeMapFen]);
 
 	useEffect(() => {
 		if (fen && validateFen(fen).ok) {
@@ -84,21 +108,37 @@ export const PiecesPositionEditor = () => {
 	return (
 		<div className="flex flex-col gap-2 items-center">
 			<div className="flex gap-2 items-end w-full">
-				<div className="flex-1 flex gap-4">
-					<div>
-						<label htmlFor="fen" className="block mb-2 font-medium">
-							Your side
-						</label>
+				<div className="flex-1 flex flex-col gap-4">
+					<div className="flex gap-4">
+						<div className="flex-1">
+							<label htmlFor="fen" className="block mb-2 font-medium">
+								Start Side
+							</label>
 
-						<Input
-							asSelect
-							onChange={(e) => {
-								changeSide(e.target.value as ColorSide);
-							}}
-						>
-							<option value={ColorSide.white}>White</option>
-							<option value={ColorSide.black}>Black</option>
-						</Input>
+							<Input
+								asSelect
+								value={startSide}
+								onChange={(e) => changeStartSide(e.target.value as ColorSide)}
+							>
+								<option value={ColorSide.white}>White</option>
+								<option value={ColorSide.black}>Black</option>
+							</Input>
+						</div>
+
+						<div className="flex-1">
+							<label htmlFor="fen" className="block mb-2 font-medium">
+								Your side
+							</label>
+
+							<Input
+								asSelect
+								value={playerSide}
+								onChange={(e) => changePlayerSide(e.target.value as ColorSide)}
+							>
+								<option value={ColorSide.white}>White</option>
+								<option value={ColorSide.black}>Black</option>
+							</Input>
+						</div>
 					</div>
 
 					<div className="flex-1">
@@ -108,15 +148,7 @@ export const PiecesPositionEditor = () => {
 
 						<Input
 							value={inputFen}
-							onChange={
-								((e: Parameters<ChangeEventHandler<HTMLInputElement>>[0]) => {
-									const newFen = e.target.value;
-									setInputFen(newFen);
-
-									if (validateFen(newFen).ok)
-										setInitialGameState({ fen: newFen });
-								}) as InputProps["onChange"]
-							}
+							onChange={(e) => changeInputFen(e.target.value)}
 						/>
 					</div>
 				</div>

@@ -1,20 +1,11 @@
 import { Move, Square } from "chess.js";
 import { PieceNotificationPayload } from "@chess-d/chessboard";
-import { BoardCoord, GameUpdatedPayload } from "@chess-d/shared";
+import { BoardCoord } from "@chess-d/shared";
 
 import { MessageData } from "./events.type";
-import { MoveLike, TransferableChessData } from "./chess.type";
+import { GameState } from "./game.type";
 
-export type EngineGameState = GameUpdatedPayload &
-	TransferableChessData & { history: Move[]; redoHistory: MoveLike[] };
-
-export interface EngineResetGameState {
-	fen?: string;
-	pgn?: string;
-	redoHistory?: MoveLike[];
-}
-
-export type EngineUpdatedMessageData = MessageData<EngineGameState>;
+export type EngineUpdatedMessageData = MessageData<GameState>;
 
 export interface EngineNotificationPayload extends PieceNotificationPayload {
 	pgnSquare: Square;

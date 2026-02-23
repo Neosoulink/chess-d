@@ -1,13 +1,12 @@
 import { ObservablePayload } from "@chess-d/shared";
 import { AppModule } from "@quick-threejs/reactive/worker";
 import { Vector2Like } from "three";
-import { singleton } from "tsyringe";
+import { Lifecycle, scoped } from "tsyringe";
 
 import { GAME_RESET_TOKEN } from "../../shared/tokens";
-import { MessageData } from "../../shared/types";
-import { GameController } from "./game.controller";
+import { GameResetState, MessageData } from "../../shared/types";
 
-@singleton()
+@scoped(Lifecycle.ContainerScoped)
 export class GameService {
 	public readonly cursor = { x: 0, y: 0 } satisfies Vector2Like;
 
@@ -20,10 +19,8 @@ export class GameService {
 		this.cursor.y = -(payload.clientY / payload.height) * 2 + 1;
 	}
 
-	public reset(value?: ObservablePayload<GameController["reset$"]>) {
-		self.postMessage({
-			token: GAME_RESET_TOKEN,
-			value
-		} satisfies MessageData);
+	public reset(value?: GameResetState) {
+		console.log("reset", value);
+		self.postMessage({ token: GAME_RESET_TOKEN, value } satisfies MessageData);
 	}
 }

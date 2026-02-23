@@ -1,35 +1,38 @@
-import { create } from "zustand";
+import { ColorSide } from "@chess-d/shared";
 import { ContainerizedApp, RegisterModule } from "@quick-threejs/reactive";
 import { Properties } from "@quick-threejs/utils";
+import { Move, validateFen } from "chess.js";
+import { create } from "zustand";
+
 import {
 	GAME_RESET_TOKEN,
 	GAME_UPDATED_TOKEN,
 	PIECE_WILL_MOVE_TOKEN
 } from "../../shared/tokens";
 import {
-	EngineGameState,
-	EngineResetGameState,
 	EngineUpdatedMessageData,
+	GameResetState,
 	GameSave,
+	GameState,
 	MessageData
 } from "../../shared/types";
-import { Move, validateFen } from "chess.js";
-import { ColorSide } from "@chess-d/shared";
 import { getGameModeFromUrl } from "../../shared/utils";
 import { SupportedSaveSlots } from "../../shared/enum";
 
 export interface GameStore {
 	app?: ContainerizedApp<RegisterModule>;
-	initialGameState?: EngineResetGameState;
-	gameState?: EngineGameState;
+	initialGameState?: GameResetState;
+	gameState?: GameState;
 	isResourcesLoaded: boolean;
+	playerSide: ColorSide;
 	setApp: (app?: ContainerizedApp<RegisterModule> | undefined) => void;
-	setInitialGameState: (state?: EngineResetGameState) => void;
-	setGameState: (state?: EngineGameState) => void;
+	setInitialGameState: (state?: GameResetState) => void;
+	setGameState: (state?: GameState) => void;
 	setIsResourcesLoaded: (bool: boolean) => void;
+	setPlayerSide: (side: ColorSide) => void;
 	performPieceMove: (move: Move) => void;
 	resetGame: () => void;
-	getSaves(): (GameSave | undefined)[];
+	getSaves: () => (GameSave | undefined)[];
 	saveState: (slot: SupportedSaveSlots) => undefined | GameSave;
 	eraseStateSave: (slot: SupportedSaveSlots) => void;
 	reset: () => void;
@@ -39,7 +42,8 @@ export const gameStoreInitialState: Properties<GameStore> = {
 	app: undefined,
 	initialGameState: undefined,
 	gameState: undefined,
-	isResourcesLoaded: false
+	isResourcesLoaded: false,
+	playerSide: ColorSide.white
 };
 
 /** @internal */
@@ -50,7 +54,7 @@ const getSaves = () => {
 		const rawSaves = JSON.parse(localStorage.getItem("game-saves") || "");
 
 		if (Array.isArray(rawSaves)) saves = rawSaves;
-	} catch (error) {
+	} catch {
 		// do nothing...
 	}
 
@@ -81,6 +85,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 		setInitialGameState: (state) => set(() => ({ initialGameState: state })),
 		setIsResourcesLoaded: (bool) => set(() => ({ isResourcesLoaded: bool })),
 		setGameState,
+		setPlayerSide: (playerSide) => set(() => ({ playerSide })),
 		getSaves,
 		saveState: (slot) => {
 			const state = get().gameState;

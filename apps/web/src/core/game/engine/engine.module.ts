@@ -1,12 +1,12 @@
-import { inject, singleton } from "tsyringe";
-import { Subscription } from "rxjs";
 import { Module } from "@quick-threejs/reactive";
+import { inject, Lifecycle, scoped } from "tsyringe";
+import { Subscription } from "rxjs";
 
 import { EngineService } from "./engine.service";
 import { EngineController } from "./engine.controller";
 import { GameController } from "../game.controller";
 
-@singleton()
+@scoped(Lifecycle.ContainerScoped)
 export class EngineModule implements Module {
 	private subscriptions: (Subscription | undefined)[] = [];
 

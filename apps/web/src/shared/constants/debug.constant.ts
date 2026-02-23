@@ -55,6 +55,12 @@ export const DEBUG_OPTIONS: Record<
 			func: ({ self, value }) => self.enablePhysicsLines(!!value)
 		}
 	},
+	Camera: {
+		Reset: {
+			default: "$button",
+			func: ({ self }) => self.cameraService.reset()
+		}
+	},
 	Renderer: {
 		"Auto Clear": {
 			default: true,

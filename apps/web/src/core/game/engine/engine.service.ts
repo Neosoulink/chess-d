@@ -2,20 +2,25 @@ import { Chess, Move, validateFen } from "chess.js";
 import { inject, singleton } from "tsyringe";
 import { ChessboardModule, MatrixPieceModel } from "@chess-d/chessboard";
 import {
+	ColorSide,
 	getOppositeColorSide,
 	MoveFlags,
 	ObservablePayload,
 	PieceType
 } from "@chess-d/shared";
 
-import { EngineUpdatedMessageData, MoveLike } from "../../../shared/types";
+import {
+	EngineUpdatedMessageData,
+	GameResetState,
+	MoveLike
+} from "../../../shared/types";
 import { GAME_UPDATED_TOKEN } from "../../../shared/tokens";
 import { PiecesService } from "../world/chessboard/pieces/pieces.service";
-import { GameController } from "../game.controller";
 import { EngineController } from "./engine.controller";
 
 @singleton()
 export class EngineService {
+	public readonly player = { side: ColorSide.white };
 	public redoHistory: MoveLike[] = [];
 
 	constructor(
@@ -43,7 +48,8 @@ export class EngineService {
 				isStalemate: this._game.isStalemate(),
 				isThreefoldRepetition: this._game.isThreefoldRepetition(),
 				pgn: this._game.pgn(),
-				turn: this._game.turn()
+				turn: this._game.turn(),
+				playerSide: this.player.side
 			}
 		} satisfies EngineUpdatedMessageData);
 	}
@@ -161,11 +167,12 @@ export class EngineService {
 		return move;
 	}
 
-	public reset(data: ObservablePayload<GameController["reset$"]>) {
-		const { fen, pgn, redoHistory } = data || {};
+	public reset(data: GameResetState) {
+		const { fen, pgn, redoHistory, playerSide } = data || {};
 
 		this._game.reset();
 		this.redoHistory = [];
+		this.player.side = playerSide || ColorSide.white;
 
 		if (fen && validateFen(fen).ok) this._game.load(fen);
 		if (pgn) this._game.loadPgn(pgn);
