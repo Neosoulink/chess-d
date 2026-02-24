@@ -8,6 +8,7 @@ export type GameState = GameUpdatedPayload &
 		history: Move[];
 		redoHistory: MoveLike[];
 		playerSide: ColorSide;
+		startSide: ColorSide;
 	};
 
 export interface GameResetState {
@@ -15,4 +16,5 @@ export interface GameResetState {
 	pgn?: string;
 	redoHistory?: MoveLike[];
 	playerSide?: ColorSide;
+	startSide?: ColorSide;
 }

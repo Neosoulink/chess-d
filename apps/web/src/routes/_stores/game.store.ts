@@ -25,6 +25,7 @@ export interface GameStore {
 	gameState?: GameState;
 	isResourcesLoaded: boolean;
 	playerSide: ColorSide;
+	startSide: ColorSide;
 	setApp: (app?: ContainerizedApp<RegisterModule> | undefined) => void;
 	setInitialGameState: (state?: GameResetState) => void;
 	setGameState: (state?: GameState) => void;
@@ -43,7 +44,8 @@ export const gameStoreInitialState: Properties<GameStore> = {
 	initialGameState: undefined,
 	gameState: undefined,
 	isResourcesLoaded: false,
-	playerSide: ColorSide.white
+	playerSide: ColorSide.white,
+	startSide: ColorSide.white
 };
 
 /** @internal */
@@ -130,7 +132,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 			appModule?.getWorker()?.postMessage({
 				token: GAME_RESET_TOKEN,
 				value: state
-			} satisfies MessageData);
+			} satisfies MessageData<GameResetState>);
 
 			set(() => ({ initialGameState: undefined }));
 		},

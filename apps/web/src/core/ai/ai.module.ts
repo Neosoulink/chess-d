@@ -1,13 +1,13 @@
 import { WorkerThreadModule } from "@quick-threejs/worker";
 import { Module } from "@quick-threejs/reactive";
-import { inject, singleton } from "tsyringe";
+import { inject, Lifecycle, scoped } from "tsyringe";
 import { Subscription } from "rxjs";
 
 import { AiController } from "./ai.controller";
 import { AiService } from "./ai.service";
 import { AI_PERFORMED_MOVE_TOKEN } from "../../shared/tokens";
 
-@singleton()
+@scoped(Lifecycle.ContainerScoped)
 export class AiModule implements Module, WorkerThreadModule {
 	private _subscriptions: Subscription[] = [];
 

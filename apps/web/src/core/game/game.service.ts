@@ -20,7 +20,6 @@ export class GameService {
 	}
 
 	public reset(value?: GameResetState) {
-		console.log("reset", value);
 		self.postMessage({ token: GAME_RESET_TOKEN, value } satisfies MessageData);
 	}
 }

@@ -24,22 +24,28 @@ export const PiecesPositionEditor = () => {
 
 	const changeStartSide = useCallback(
 		(side: ColorSide) => {
-			const safeFen = fen || defaultFen.current;
-			const [positions, _startSide, ...rest] = safeFen.split(" ");
+			const [positions, _, ...rest] = defaultFen.current.split(" ");
 			const newFen = `${positions} ${side} ${rest.join(" ")}`;
 
 			if (!validateFen(newFen).ok) return;
 
 			setInputFen(newFen);
-			setInitialGameState({ ...initialGameState, fen: newFen });
+			setInitialGameState({
+				...initialGameState,
+				fen: newFen,
+				startSide: side
+			});
 		},
-		[initialGameState, fen, defaultFen, setInitialGameState]
+		[initialGameState, defaultFen, setInitialGameState]
 	);
 
 	const changePlayerSide = useCallback(
-		(side: ColorSide) => {
-			setInitialGameState({ ...initialGameState, playerSide: side });
-		},
+		(side: ColorSide) =>
+			setInitialGameState({
+				...initialGameState,
+				fen: initialGameState?.fen || DEFAULT_FEN,
+				playerSide: side
+			}),
 		[initialGameState, setInitialGameState]
 	);
 
@@ -54,8 +60,7 @@ export const PiecesPositionEditor = () => {
 
 	const changeMapFen = useCallback(
 		(mapBoard: Chessboard2) => {
-			const safeFen = fen || defaultFen.current;
-			const [positions, startSide, ...rest] = safeFen.split(" ");
+			const [positions, startSide, ...rest] = defaultFen.current.split(" ");
 			const newFen = `${mapBoard?.fen() || positions} ${startSide} ${rest.join(" ")}`;
 
 			if (!newFen || !validateFen(newFen).ok) return;
@@ -63,7 +68,7 @@ export const PiecesPositionEditor = () => {
 			setInitialGameState({ ...initialGameState, fen: newFen });
 			setInputFen(newFen);
 		},
-		[initialGameState, fen, defaultFen, setInitialGameState]
+		[initialGameState, defaultFen, setInitialGameState]
 	);
 
 	const reset = useCallback(() => {
@@ -94,7 +99,7 @@ export const PiecesPositionEditor = () => {
 			mapBoard?.destroy();
 			mapElement.remove();
 		};
-	}, [setInitialGameState, showMap, changeMapFen]);
+	}, [setInitialGameState, showMap]);
 
 	useEffect(() => {
 		if (fen && validateFen(fen).ok) {
