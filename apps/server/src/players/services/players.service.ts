@@ -14,7 +14,7 @@ import type { Socket } from "socket.io";
 export class PlayersService {
 	private readonly rooms: Record<
 		UUID,
-		{ fen: string; players: PlayerEntity[] }
+		{ fen: string; players: PlayerEntity[]; startSide: ColorSide }
 	> = {};
 	private readonly randomGameRoomsPool: UUID[] = [];
 
@@ -28,9 +28,10 @@ export class PlayersService {
 		const {
 			roomID: playerRoomID,
 			side: playerColor,
+			startSide: playerStartSide,
 			fen: initialFen,
 			random: randomGame
-		} = socket.handshake.auth as SocketAuthInterface;
+		}: SocketAuthInterface = socket.handshake.auth;
 		const fen =
 			typeof initialFen === "string" && validateFen(initialFen)
 				? initialFen
@@ -46,7 +47,7 @@ export class PlayersService {
 
 		const player: PlayerEntity = {
 			id: socket.id,
-			color: playerColor ?? ColorSide.black,
+			color: playerColor ?? ColorSide.white,
 			connectedAt: new Date().getTime(),
 			host: true
 		};
@@ -100,7 +101,11 @@ export class PlayersService {
 
 		if (!roomID) {
 			roomID = randomUUID();
-			this.rooms[roomID] = { fen, players: [player] };
+			this.rooms[roomID] = {
+				fen,
+				players: [player],
+				startSide: playerStartSide ?? ColorSide.white
+			};
 
 			if (randomGame === "true") this.randomGameRoomsPool.push(roomID);
 		}

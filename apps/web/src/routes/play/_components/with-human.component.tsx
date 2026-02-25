@@ -10,7 +10,7 @@ import {
 	SocketAuthInterface
 } from "@chess-d/shared";
 import { Move } from "chess.js";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "react-router";
 import { merge } from "rxjs";
 import { io } from "socket.io-client";
@@ -25,7 +25,7 @@ import { useGameStore, useLoaderStore } from "../../_stores";
 
 /** @internal */
 interface SocketPayload {
-	room: { fen: string; players: PlayerEntity[] };
+	room: { fen: string; players: PlayerEntity[]; startSide: ColorSide };
 	player: PlayerEntity;
 	roomID: string;
 }
@@ -33,7 +33,8 @@ interface SocketPayload {
 export interface WithHumanComponentProps {}
 
 export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
-	const { app, setInitialGameState, resetGame } = useGameStore();
+	const { app, initialGameState, setInitialGameState, resetGame } =
+		useGameStore();
 	const { setIsLoading } = useLoaderStore();
 	const location = useLocation();
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -51,17 +52,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		[]
 	);
 
-	const locationKey = location.key;
-
-	const moveBoardPiece = useCallback(
-		(move: Move) => {
-			app?.module?.getWorker()?.postMessage?.({
-				token: PIECE_WILL_MOVE_TOKEN,
-				value: move
-			} satisfies MessageData<Move>);
-		},
-		[app?.module]
-	);
+	const locationKey = useMemo(() => location.key, [location.key]);
 
 	const onRoomCreated = useCallback(
 		(data: SocketPayload) => {
@@ -72,6 +63,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 			socket.auth = {
 				...socket.auth,
+				startSide: data?.room?.startSide,
 				roomID: data.roomID,
 				side: player.color,
 				fen: data.room.fen
@@ -79,7 +71,11 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 			setCurrentPlayer(player);
 			setSearchParams((prev) => [...prev, ["roomID", data.roomID]]);
-			setInitialGameState({ fen: data.room.fen });
+			setInitialGameState({
+				playerSide: player.color,
+				startSide: player.color,
+				fen: data.room.fen
+			});
 			resetGame();
 
 			setTimeout(() => setIsLoading(false), 100);
@@ -90,10 +86,16 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 	const onJoinedRoom = useCallback(
 		(data: SocketPayload) => {
 			const player = new PlayerModel();
+			const socketAuth = socket.auth as SocketAuthInterface;
+
 			player.setEntity(data.player);
 
 			if (!currentPlayer) {
 				const [opponentEntity] = data.room.players;
+				socketAuth.roomID = data.roomID;
+				socketAuth.fen = data.room.fen;
+				socketAuth.side = player.color;
+				socketAuth.startSide = data.room.startSide;
 
 				if (opponentEntity) {
 					const opponent = new PlayerModel();
@@ -103,17 +105,14 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 				}
 
 				setCurrentPlayer(player);
-				socket.auth = {
-					...socket.auth,
-					roomID: data.roomID,
-					side: player.color,
-					fen: data.room.fen
-				};
-				setInitialGameState({ fen: data.room.fen });
+				setInitialGameState({
+					fen: socketAuth.fen,
+					startSide: socketAuth.startSide,
+					playerSide: socketAuth.side
+				});
 				resetGame();
 				setSearchParams((_urlSearchParams) => {
 					_urlSearchParams.set("roomID", data.roomID);
-
 					return _urlSearchParams;
 				});
 			} else {
@@ -159,9 +158,21 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 				socket.auth = { ...socket.auth, roomID: undefined };
 			}
 
+			if (error.cause === "ROOM_FULL") return;
+
 			setTimeout(() => socket.connect(), 1000);
 		},
 		[setSearchParams, socket]
+	);
+
+	const moveBoardPiece = useCallback(
+		(move: Move) => {
+			app?.module?.getWorker()?.postMessage?.({
+				token: PIECE_WILL_MOVE_TOKEN,
+				value: move
+			} satisfies MessageData<Move>);
+		},
+		[app?.module]
 	);
 
 	const onMovePerformed = useCallback(
@@ -189,9 +200,11 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 		if (!socket.connected) {
 			socket.auth = {
+				...socket.auth,
 				roomID: searchParams.get("roomID"),
-				side: ColorSide.white,
-				fen: DEFAULT_FEN,
+				side: initialGameState?.playerSide,
+				startSide: initialGameState?.startSide,
+				fen: initialGameState?.fen,
 				random: searchParams.get("random")
 			} satisfies SocketAuthInterface;
 
