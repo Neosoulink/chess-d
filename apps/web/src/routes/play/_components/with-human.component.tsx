@@ -278,14 +278,11 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		if (roomId === auth?.roomID) return;
 
 		socket.disconnect();
-		onDisconnect();
-		console.log("Socket disconnected.");
 	}, [location, locationKey, onDisconnect, searchParams, socket]);
 
 	useEffect(() => {
 		return () => {
 			socket.disconnect();
-			onDisconnect();
 		};
 	}, [onDisconnect, socket]);
 

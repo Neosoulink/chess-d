@@ -1,10 +1,10 @@
+import { SupportedAiModel } from "@chess-d/ai";
+import type { Move } from "chess.js";
 import { Lifecycle, scoped } from "tsyringe";
 import { filter, fromEvent, Subject } from "rxjs";
-import type { Move } from "chess.js";
 
 import { AI_WILL_PERFORM_MOVE_TOKEN } from "../../shared/tokens";
 import type { MessageData } from "../../shared/types";
-import { SupportedAiModel } from "@chess-d/ai";
 
 @scoped(Lifecycle.ContainerScoped)
 export class AiController {

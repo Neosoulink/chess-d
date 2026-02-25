@@ -3,6 +3,7 @@ import { container as parentContainer, DependencyContainer } from "tsyringe";
 
 import { AiModel, SupportedAiModel } from "../shared";
 import { ZeyuModule } from "./zeyu/zeyu.module";
+import { BasicBotModule } from "./basic-bot/basic-bot.module";
 
 export interface RegisterReturn {
 	container: DependencyContainer;
@@ -26,6 +27,9 @@ export const register = (
 
 	if (aiModel === SupportedAiModel.zeyu)
 		model = container.resolve<AiModel>(ZeyuModule);
+
+	if (aiModel === SupportedAiModel.basicBot)
+		model = container.resolve<AiModel>(BasicBotModule);
 
 	return {
 		container,

@@ -7,9 +7,7 @@ import { ExposedAppModule } from "@quick-threejs/reactive/worker";
 
 import { AiModule } from "./ai.module";
 
-const game = new Chess(
-	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"
-);
+const game = new Chess();
 
 container.register(Chess, { useValue: game });
 
