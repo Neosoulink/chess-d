@@ -20,7 +20,11 @@ import { EngineController } from "./engine.controller";
 
 @singleton()
 export class EngineService {
-	public readonly player = { side: ColorSide.white };
+	public readonly state = {
+		playerSide: ColorSide.white,
+		startSide: ColorSide.white
+	};
+	/** @todo Move this to the state object. */
 	public redoHistory: MoveLike[] = [];
 
 	constructor(
@@ -49,7 +53,8 @@ export class EngineService {
 				isThreefoldRepetition: this._game.isThreefoldRepetition(),
 				pgn: this._game.pgn(),
 				turn: this._game.turn(),
-				playerSide: this.player.side
+				startSide: this.state.startSide,
+				playerSide: this.state.playerSide
 			}
 		} satisfies EngineUpdatedMessageData);
 	}
@@ -59,7 +64,7 @@ export class EngineService {
 	) {
 		const { possibleCoords, piece } = payload;
 
-		// TODO: The engine should not directly reset the positions! It should receive a signal from the pieces layer!
+		// TODO: The engine should not directly reset the pieces' positions! It should receive a signal from the pieces layer!
 		this._pieceService.resetPositions();
 
 		piece.physics?.rigidBody.setBodyType(0, true);
@@ -168,11 +173,12 @@ export class EngineService {
 	}
 
 	public reset(data: GameResetState) {
-		const { fen, pgn, redoHistory, playerSide } = data || {};
+		const { fen, pgn, redoHistory, playerSide, startSide } = data || {};
 
 		this._game.reset();
 		this.redoHistory = [];
-		this.player.side = playerSide || ColorSide.white;
+		this.state.playerSide = playerSide || ColorSide.white;
+		this.state.startSide = startSide || ColorSide.white;
 
 		if (fen && validateFen(fen).ok) this._game.load(fen);
 		if (pgn) this._game.loadPgn(pgn);

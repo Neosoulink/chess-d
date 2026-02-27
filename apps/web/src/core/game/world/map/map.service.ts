@@ -2,6 +2,7 @@ import {
 	BOARD_CELL_SIZE,
 	BOARD_MATRIX_RANGE_SIZE,
 	BOARD_RANGE_CELLS_HALF_SIZE,
+	ColorSide,
 	ObservablePayload
 } from "@chess-d/shared";
 import { AppModule } from "@quick-threejs/reactive/worker";
@@ -23,15 +24,17 @@ import { inject, Lifecycle, scoped } from "tsyringe";
 import { InfiniteGridHelper } from "../../../../shared/meshes";
 import { WorldService } from "../world.service";
 import { WorldController } from "../world.controller";
+import { EngineService } from "../../engine/engine.service";
 
 @scoped(Lifecycle.ContainerScoped)
 export class MapService {
 	public readonly floor = new Group();
-	public readonly defaultGridsLabels = new Group();
+	public readonly gridLabels = new Group();
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
-		@inject(WorldService) private readonly _world: WorldService
+		@inject(WorldService) private readonly _world: WorldService,
+		@inject(EngineService) private readonly _engine: EngineService
 	) {
 		const floorGrid = new InfiniteGridHelper(
 			BOARD_CELL_SIZE,
@@ -80,70 +83,81 @@ export class MapService {
 		const font = this._app.loader.getLoadedResources()["helvetikerFont"] as
 			| Font
 			| undefined;
-
 		if (!font) return;
 
-		if (!this.defaultGridsLabels.children.length)
-			Array.from(Array(BOARD_MATRIX_RANGE_SIZE).keys()).forEach((i) => {
-				const geometryParams: TextGeometryParameters = {
-					font,
-					size: 0.35,
-					height: 0.1,
-					depth: 0.01,
-					bevelSize: 0.01,
-					bevelThickness: 0.01,
-					bevelEnabled: true
-				};
-				const letterGeometry = new TextGeometry(
-					(i + 10).toString(36).toUpperCase(),
-					geometryParams
-				);
-				letterGeometry.center();
-				letterGeometry.rotateX(-Math.PI / 2);
-				letterGeometry.rotateY(Math.PI);
+		const boardMatrixKeys = Array.from(Array(BOARD_MATRIX_RANGE_SIZE).keys());
+		const isPlayerSideWhite = this._engine.state.playerSide === ColorSide.white;
+		const lettersGroup = new Group();
+		const numbersGroup = new Group();
 
-				const numberGeometry = new TextGeometry(`${i + 1}`, geometryParams);
-				numberGeometry.center();
-				numberGeometry.rotateX(-Math.PI / 2);
-				numberGeometry.rotateY(Math.PI);
+		lettersGroup.name = "letters-group";
+		numbersGroup.name = "numbers-group";
 
-				const letterMesh = new Mesh(
-					letterGeometry,
-					this._world.defaultMaterial
-				);
-				letterMesh.castShadow = true;
-				letterMesh.receiveShadow = true;
-				letterMesh.position.set(
-					BOARD_RANGE_CELLS_HALF_SIZE - BOARD_CELL_SIZE - i,
-					0,
-					-BOARD_RANGE_CELLS_HALF_SIZE
-				);
-				letterMesh.scale.setScalar(0);
+		this.gridLabels.clear();
 
-				const numberMesh = new Mesh(
-					numberGeometry,
-					this._world.defaultMaterial
-				);
-				numberMesh.castShadow = true;
-				numberMesh.receiveShadow = true;
-				numberMesh.position.set(
-					BOARD_RANGE_CELLS_HALF_SIZE,
-					0,
-					-BOARD_RANGE_CELLS_HALF_SIZE + BOARD_CELL_SIZE + i
-				);
+		boardMatrixKeys.forEach((i) => {
+			const geometryParams: TextGeometryParameters = {
+				font,
+				size: 0.35,
+				height: 0.1,
+				depth: 0.01,
+				bevelSize: 0.01,
+				bevelThickness: 0.01,
+				bevelEnabled: true
+			};
+			const letterGeometry = new TextGeometry(
+				(i + 10).toString(36).toUpperCase(),
+				geometryParams
+			);
+			letterGeometry.center();
+			letterGeometry.rotateX(-Math.PI / 2);
+			letterGeometry.rotateY(Math.PI);
 
-				this.defaultGridsLabels.position.setY(-0.1);
-				this.defaultGridsLabels.add(letterMesh, numberMesh);
-			});
+			const numberGeometry = new TextGeometry(`${i + 1}`, geometryParams);
+			numberGeometry.center();
+			numberGeometry.rotateX(-Math.PI / 2);
+			numberGeometry.rotateY(Math.PI);
 
-		this.defaultGridsLabels.traverse((child) => {
+			const letterMesh = new Mesh(letterGeometry, this._world.defaultMaterial);
+			letterMesh.name = `letter-${i}`;
+			letterMesh.castShadow = true;
+			letterMesh.receiveShadow = true;
+			letterMesh.position.set(
+				isPlayerSideWhite
+					? BOARD_RANGE_CELLS_HALF_SIZE - BOARD_CELL_SIZE - i
+					: -BOARD_RANGE_CELLS_HALF_SIZE + BOARD_CELL_SIZE + i,
+				0,
+				-BOARD_RANGE_CELLS_HALF_SIZE
+			);
+			letterMesh.scale.setScalar(0);
+
+			const numberMesh = new Mesh(numberGeometry, this._world.defaultMaterial);
+			numberMesh.name = `number-${i}`;
+			numberMesh.castShadow = true;
+			numberMesh.receiveShadow = true;
+			numberMesh.position.set(
+				BOARD_RANGE_CELLS_HALF_SIZE,
+				0,
+				isPlayerSideWhite
+					? -BOARD_RANGE_CELLS_HALF_SIZE + BOARD_CELL_SIZE + i
+					: BOARD_RANGE_CELLS_HALF_SIZE - BOARD_CELL_SIZE - i
+			);
+
+			lettersGroup.add(letterMesh);
+			numbersGroup.add(numberMesh);
+		});
+
+		this.gridLabels.add(lettersGroup, numbersGroup);
+		this.gridLabels.position.setY(-0.1);
+		if (!isPlayerSideWhite) this.gridLabels.rotation.y = Math.PI;
+		this.gridLabels.traverse((child) => {
 			if (child instanceof Mesh) child.scale.setScalar(0);
 		});
 	}
 
 	public resetScenes(): void {
 		const scene = this._world.scene;
-		scene.add(this.floor, this.defaultGridsLabels);
+		scene.add(this.floor, this.gridLabels);
 	}
 
 	public reset() {
@@ -160,7 +174,7 @@ export class MapService {
 		if (typeof floorGrid.material.uniforms.uDistance?.value === "number")
 			floorGrid.material.uniforms.uDistance.value = progress * 40;
 
-		this.defaultGridsLabels.traverseVisible((child) => {
+		this.gridLabels.traverseVisible((child) => {
 			if (child instanceof Mesh) child.scale.setScalar(progress);
 		});
 	}

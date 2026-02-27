@@ -194,7 +194,7 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 						fen: string;
 						ai: SupportedAiModel;
 					}>);
-				}, 500);
+				}, 1500);
 		} else {
 			const searchedAIParam = searchParams.get("ai");
 			const aiKey =
@@ -227,7 +227,7 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 						fen: string;
 						ai: SupportedAiModelKey;
 					}>);
-				}, 500);
+				}, 1500);
 		}
 
 		const handleMessages = (

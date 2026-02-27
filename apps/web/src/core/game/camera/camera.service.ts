@@ -18,7 +18,7 @@ export class CameraService {
 
 		const camera = this._app.camera.instance() as PerspectiveCamera;
 		const debugCamera = appDebug.miniCamera();
-		const playerSide = this._engineService.player.side;
+		const playerSide = this._engineService.state.playerSide;
 
 		camera.position.set(0, 12, (playerSide === ColorSide.white ? -1 : 1) * 9);
 		camera.lookAt(0, 0, 0);
@@ -32,7 +32,7 @@ export class CameraService {
 	public handleIntroAnimation(
 		progress: ObservablePayload<CameraController["introAnimation$"]>
 	) {
-		const playerSide = this._engineService.player.side;
+		const playerSide = this._engineService.state.playerSide;
 		const camera = this._app.camera.instance();
 		camera?.position.copy({
 			x: -20 + progress * 20,
