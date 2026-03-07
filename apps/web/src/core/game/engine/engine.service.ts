@@ -1,5 +1,3 @@
-import { Chess, Move, validateFen } from "chess.js";
-import { inject, singleton } from "tsyringe";
 import { ChessboardModule, MatrixPieceModel } from "@chess-d/chessboard";
 import {
 	ColorSide,
@@ -8,28 +6,39 @@ import {
 	ObservablePayload,
 	PieceType
 } from "@chess-d/shared";
+import { Chess, Move, validateFen } from "chess.js";
+import { Color } from "three";
+import { inject, Lifecycle, scoped } from "tsyringe";
 
 import {
 	EngineUpdatedMessageData,
 	GameResetState,
 	MoveLike
 } from "../../../shared/types";
+import {
+	OPPONENT_CAPTURE_COLOR,
+	OPPONENT_MOVE_COLOR,
+	PLAYER_CAPTURE_COLOR,
+	PLAYER_MOVE_COLOR
+} from "../../../shared/constants";
 import { GAME_UPDATED_TOKEN } from "../../../shared/tokens";
 import { PiecesService } from "../world/chessboard/pieces/pieces.service";
 import { EngineController } from "./engine.controller";
-
-@singleton()
+import { ChessboardService } from "../world/chessboard/chessboard.service";
+@scoped(Lifecycle.ContainerScoped)
 export class EngineService {
 	public readonly state = {
 		playerSide: ColorSide.white,
 		startSide: ColorSide.white
 	};
-	/** @todo Move this to the state object. */
+	/** @todo Move this to the {@link EngineService["state"]} property. */
 	public redoHistory: MoveLike[] = [];
 
 	constructor(
 		@inject(Chess) private readonly _game: Chess,
 		@inject(ChessboardModule) private readonly chessboard: ChessboardModule,
+		@inject(ChessboardService)
+		private readonly chessboardService: ChessboardService,
 		@inject(PiecesService) private readonly _pieceService: PiecesService
 	) {}
 
@@ -63,6 +72,7 @@ export class EngineService {
 		payload: ObservablePayload<EngineController["pieceSelected$"]>
 	) {
 		const { possibleCoords, piece } = payload;
+		const isPlayerMove = this.state.playerSide === piece.color;
 
 		// TODO: The engine should not directly reset the pieces' positions! It should receive a signal from the pieces layer!
 		this._pieceService.resetPositions();
@@ -70,15 +80,23 @@ export class EngineService {
 		piece.physics?.rigidBody.setBodyType(0, true);
 		piece.physics?.collider.setMass(1);
 
-		this.chessboard.board.setMarkers(possibleCoords);
+		this.chessboardService.setNextMovesMarker(possibleCoords);
+		this.chessboardService.nextMovesMarker.setAccentColor(
+			new Color(isPlayerMove ? PLAYER_MOVE_COLOR : OPPONENT_MOVE_COLOR)
+		);
 	}
 
+	// TODO: Move checks logic to the controller
 	public handlePieceMoved(
 		payload: ObservablePayload<EngineController["pieceMoved$"]>
 	) {
 		const { piece, startCoord, endCoord, nextMoveIndex, nextMove } = payload;
-		const flags = nextMove?.flags as MoveFlags;
+		const isPlayerMove = this.state.playerSide === piece.color;
 		const oppositeColor = getOppositeColorSide(piece.color);
+		const oppositeKingCoord =
+			this.chessboard.pieces.getGroups()[oppositeColor][PieceType.king]
+				?.pieces[0]?.coord;
+		const flags = nextMove?.flags as MoveFlags;
 		const positionOffset = { x: 0, y: 0.5, z: 0 };
 
 		let pieceToDrop: MatrixPieceModel | undefined = undefined;
@@ -90,7 +108,7 @@ export class EngineService {
 				positionOffset
 			);
 
-		if (nextMove.captured)
+		if (nextMove.captured) {
 			pieceToDrop = this.chessboard.pieces.getPieceByCoord(
 				nextMove.captured as PieceType,
 				oppositeColor,
@@ -101,6 +119,7 @@ export class EngineService {
 						}
 					: endCoord
 			);
+		}
 
 		if (
 			flags === MoveFlags.kingside_castle ||
@@ -146,6 +165,34 @@ export class EngineService {
 		this._game.move(nextMove);
 		this.redoHistory = [];
 		this._postState(payload.nextMove);
+
+		// TODO: This should be handled by the chessboard service.
+		this.chessboardService.setPreviousMovesMarker([
+			{ col: startCoord.col, row: startCoord.row },
+			{ col: endCoord.col, row: endCoord.row }
+		]);
+		this.chessboardService.setNextMovesMarker([]);
+		this.chessboardService.setInDangerMarker([]);
+		this.chessboardService.previousMovesMarker.setAccentColor(
+			new Color(
+				this.state.playerSide === piece.color
+					? PLAYER_MOVE_COLOR
+					: OPPONENT_MOVE_COLOR
+			)
+		);
+
+		if (nextMove?.captured)
+			this.chessboardService.previousMovesMarker.setColorAt(
+				1,
+				new Color(isPlayerMove ? PLAYER_CAPTURE_COLOR : OPPONENT_CAPTURE_COLOR)
+			);
+
+		if ((this._game.inCheck() || this._game.isCheck()) && oppositeKingCoord) {
+			this.chessboardService.setInDangerMarker([oppositeKingCoord]);
+			this.chessboardService.inDangerMarker.setAccentColor(
+				new Color(isPlayerMove ? PLAYER_CAPTURE_COLOR : OPPONENT_CAPTURE_COLOR)
+			);
+		}
 	}
 
 	public handleUndo(): Move | null {

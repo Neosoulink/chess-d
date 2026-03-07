@@ -1,4 +1,4 @@
-import { inject, singleton } from "tsyringe";
+import { inject, Lifecycle, scoped } from "tsyringe";
 import { DynamicDrawUsage, Euler } from "three";
 import {
 	BOARD_CELL_SIZE,
@@ -12,21 +12,23 @@ import { Physics } from "@chess-d/rapier";
 
 import {
 	InstancedCellModel,
-	CellsMakerGroupModel,
 	MATRIX,
 	QUATERNION,
 	SCALE,
 	VECTOR,
 	MatrixCellModel
 } from "../../shared";
+import { WorldService } from "../world/world.service";
 
-@singleton()
+@scoped(Lifecycle.ContainerScoped)
 export class BoardService {
 	public readonly instancedCell = new InstancedCellModel();
-	public markersGroup = new CellsMakerGroupModel(this.instancedCell);
 	public physics!: PhysicsProperties;
 
-	constructor(@inject(Physics) private readonly _physics: Physics) {}
+	constructor(
+		@inject(Physics) private readonly _physics: Physics,
+		@inject(WorldService) private readonly _worldService: WorldService
+	) {}
 
 	public initCells() {
 		const _QUATERNION = QUATERNION.clone().setFromEuler(
@@ -93,8 +95,15 @@ export class BoardService {
 		this.physics.collider.setRestitution(0.55);
 	}
 
-	public setMarkers(coord: BoardCoord[]) {
-		const newGroup = this.markersGroup.set(coord);
-		this.markersGroup = newGroup;
+	initScene() {
+		this._worldService.scene.add(this.instancedCell);
+	}
+
+	public disposePhysics() {
+		this._physics.removeFromWorld(this.instancedCell);
+	}
+
+	public disposeScene() {
+		this._worldService.scene.remove(this.instancedCell);
 	}
 }

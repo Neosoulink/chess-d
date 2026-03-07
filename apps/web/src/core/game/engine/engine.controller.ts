@@ -5,7 +5,15 @@ import {
 import { coordToSquare, squareToCoord } from "@chess-d/shared";
 import { Chess } from "chess.js";
 import { inject, Lifecycle, scoped } from "tsyringe";
-import { filter, fromEvent, map, merge, Observable, Subject } from "rxjs";
+import {
+	filter,
+	fromEvent,
+	map,
+	merge,
+	Observable,
+	share,
+	Subject
+} from "rxjs";
 
 import {
 	EngineNotificationPayload,
@@ -55,7 +63,8 @@ export class EngineController {
 					nextMoveIndex,
 					nextMove
 				};
-			})
+			}),
+			share()
 		);
 
 		this.undo$ = merge(

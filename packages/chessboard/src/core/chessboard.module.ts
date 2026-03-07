@@ -44,6 +44,10 @@ export class ChessboardModule {
 		);
 	}
 
+	public getIntersections() {
+		return this._service.getIntersections();
+	}
+
 	public update(payload: ObservablePayload<ChessboardController["update$$"]>) {
 		this._controller.update$$.next(payload);
 	}

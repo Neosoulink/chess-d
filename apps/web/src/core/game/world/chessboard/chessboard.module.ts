@@ -27,6 +27,18 @@ export class ChessboardModule implements Module {
 			this._controller.reset$.subscribe(
 				this._service.reset.bind(this._service)
 			),
+			this._controller.cursorCoord$?.subscribe((position) => {
+				if (!position) return (this._service.cursorCoordMarker.visible = false);
+
+				this._service.cursorCoordMarker.visible = true;
+				this._service.cursorCoordMarker.position.copy(position).add({
+					x: 0,
+					y: 0.06,
+					z: 0
+				});
+
+				return true;
+			}),
 			this._chessboard.pieces
 				.getPieceDropped$()
 				?.subscribe(this._service.resetVisual.bind(this._service)),

@@ -50,7 +50,7 @@ export class PiecesService {
 
 	public resetMaterials(): void {
 		this.material.side = DoubleSide;
-		this.material.color = new Color("#fff");
+		this.material.color.set(0xffffff);
 		this.material.transparent = true;
 		this.material.opacity = 1;
 		this.material.sheen = 2;
@@ -58,7 +58,7 @@ export class PiecesService {
 		this.material.metalness = 0.02;
 
 		this._chessboard.world.getScene().traverseVisible((child) => {
-			if (child instanceof Mesh) child.material = this.material;
+			if (child instanceof InstancedPieceModel) child.material = this.material;
 		});
 	}
 

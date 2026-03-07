@@ -1,48 +1,40 @@
-import { inject, singleton } from "tsyringe";
+import { Subscription } from "rxjs";
+import { inject, Lifecycle, scoped } from "tsyringe";
 
 import { BoardService } from "./board.service";
-import { PiecesController } from "../pieces/pieces.controller";
 import { WorldService } from "../world/world.service";
+import { BoardController } from "./board.controller";
 
-@singleton()
+@scoped(Lifecycle.ContainerScoped)
 export class BoardModule {
+	private _subscriptions: (Subscription | undefined)[] = [];
+
 	constructor(
 		@inject(WorldService) private readonly _worldService: WorldService,
 		@inject(BoardService)
 		public readonly _service: BoardService,
-		@inject(PiecesController)
-		private readonly _piecesController: PiecesController
-	) {
-		this._piecesController.pieceDeselected$?.subscribe(() => {
-			this._service.setMarkers([]);
-		});
-	}
+		@inject(BoardController)
+		private readonly _boardController: BoardController
+	) {}
 
 	public getInstancedCell() {
 		return this._service.instancedCell;
-	}
-
-	public getMarkersGroup() {
-		return this._service.markersGroup;
 	}
 
 	public getPhysics() {
 		return this._service.physics;
 	}
 
-	public setMarkers(...props: Parameters<BoardService["setMarkers"]>) {
-		this._service.setMarkers(...props);
-	}
-
 	public init() {
 		this._service.initCells();
 		this._service.initPhysics();
-
-		this._worldService.scene.add(
-			this._service.instancedCell,
-			this._service.markersGroup
-		);
+		this._service.initScene();
 	}
 
-	public dispose() {}
+	public dispose() {
+		this._service.disposePhysics();
+		this._service.disposeScene();
+		this._subscriptions.forEach((sub) => sub?.unsubscribe());
+		this._subscriptions = [];
+	}
 }

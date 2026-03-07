@@ -1,6 +1,6 @@
 import {
-	BufferGeometry,
 	CircleGeometry,
+	Color,
 	DynamicDrawUsage,
 	Euler,
 	InstancedMesh,
@@ -10,29 +10,34 @@ import { BOARD_CELL_SIZE, BoardCoord } from "@chess-d/shared";
 
 import { MATRIX, QUATERNION, SCALE, VECTOR } from "../../constants";
 
-export class CellsMakerGroupModel extends InstancedMesh {
+export class InstancedCellMakerModel extends InstancedMesh {
 	constructor(
 		private readonly parentGroup: InstancedMesh,
 		public cellsCoords: BoardCoord[] = [],
-		geometry: BufferGeometry = new CircleGeometry(BOARD_CELL_SIZE / 2, 20)
+		public geometry: InstancedMesh["geometry"] = new CircleGeometry(
+			BOARD_CELL_SIZE / 2,
+			20
+		),
+		public material: InstancedMesh["material"] = new MeshBasicMaterial({
+			transparent: true,
+			opacity: 0.45
+		}),
+		public accentColor: Color = new Color()
 	) {
-		super(
-			geometry,
-			new MeshBasicMaterial({ color: 0xffff00 }),
-			cellsCoords.length
-		);
+		super(geometry, material, cellsCoords.length);
 
-		this.name = CellsMakerGroupModel.name;
+		this.name = InstancedCellMakerModel.name;
 
 		this.instanceMatrix.setUsage(DynamicDrawUsage);
 		this._placeMarkers(this, cellsCoords);
+		this.renderOrder = 4;
 	}
 
 	private _placeMarkers(
-		object: CellsMakerGroupModel,
+		object: InstancedCellMakerModel,
 		cellsCoords: BoardCoord[]
 	): void {
-		if (typeof cellsCoords.length !== "number") return;
+		if (!Array.isArray(cellsCoords)) return;
 
 		const _QUATERNION = QUATERNION.clone().setFromEuler(
 			new Euler(Math.PI / -2, 0, Math.PI / -2)
@@ -46,23 +51,38 @@ export class CellsMakerGroupModel extends InstancedMesh {
 
 			MATRIX.decompose(VECTOR, QUATERNION, SCALE);
 			VECTOR.add(object.parentGroup.position);
-			VECTOR.setY(VECTOR.y + 0.08);
+			VECTOR.setY(VECTOR.y + 0.07);
 
 			object.getMatrixAt(i, MATRIX);
 
 			MATRIX.compose(VECTOR, _QUATERNION, SCALE);
 			object.setMatrixAt(i, MATRIX);
+			object.setColorAt(i, object.accentColor);
 		});
 
 		this.instanceMatrix.needsUpdate = true;
 		this.computeBoundingSphere();
 	}
 
-	public set(cellsCoords: BoardCoord[]): CellsMakerGroupModel {
-		const newGroup = new CellsMakerGroupModel(
+	public setAccentColor(color: Color): InstancedCellMakerModel {
+		this.accentColor = color;
+		this.cellsCoords.forEach((_, i) => {
+			this.setColorAt(i, color);
+		});
+
+		this.instanceMatrix.needsUpdate = true;
+		this.computeBoundingSphere();
+
+		return this;
+	}
+
+	public set(cellsCoords: BoardCoord[]): InstancedCellMakerModel {
+		const newGroup = new InstancedCellMakerModel(
 			this.parentGroup,
 			cellsCoords,
-			this.geometry
+			this.geometry,
+			this.material,
+			this.accentColor
 		);
 		const parent = this.parent;
 
