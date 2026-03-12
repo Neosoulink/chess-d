@@ -1,0 +1,1 @@
+export const HAND_WILL_EMOTE_TOKEN = "HAND_WILL_EMOTE";

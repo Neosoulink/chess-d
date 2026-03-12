@@ -4,6 +4,7 @@ import { Subscription } from "rxjs";
 
 import { HandsService } from "./hands.service";
 import { HandsController } from "./hands.controller";
+import { ColorSide } from "@chess-d/shared";
 
 @singleton()
 export class HandsModule implements Module {
@@ -16,9 +17,6 @@ export class HandsModule implements Module {
 			this._controller.reset$.subscribe(
 				this._service.reset.bind(this._service)
 			),
-			this._controller.step$.subscribe(({ delta }) => {
-				this._service.update(delta);
-			}),
 			this._controller.pieceSelected$?.subscribe(
 				this._service.handlePieceSelected.bind(this._service)
 			),
@@ -30,7 +28,19 @@ export class HandsModule implements Module {
 			),
 			this._controller.pieceDeselected$?.subscribe(
 				this._service.handlePieceDeselected.bind(this._service)
-			)
+			),
+			this._controller.emoteStarted$?.subscribe(
+				this._service.handleEmoteStarted.bind(this._service)
+			),
+			this._controller.emoteProgress$?.subscribe(
+				this._service.handleEmoteProgress.bind(this._service)
+			),
+			this._controller.emoteEnded$?.subscribe(
+				this._service.handleEmoteEnded.bind(this._service)
+			),
+			this._controller.step$.subscribe(({ delta }) => {
+				this._service.update(delta);
+			})
 		);
 	}
 

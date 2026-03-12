@@ -6,7 +6,6 @@ import {
 	AnimationAction,
 	AnimationClip,
 	AnimationMixer,
-	Color,
 	DoubleSide,
 	Group,
 	Material,
@@ -19,6 +18,7 @@ import { inject, Lifecycle, scoped } from "tsyringe";
 
 import { PiecesController } from "../chessboard/pieces/pieces.controller";
 import { WorldService } from "../world.service";
+import { HandsController } from "./hands.controller";
 
 @scoped(Lifecycle.ContainerScoped)
 export class HandsService {
@@ -32,12 +32,13 @@ export class HandsService {
 			scene: Group;
 			animation: {
 				mixer?: AnimationMixer;
-				clip?: AnimationClip;
-				action?: AnimationAction;
+				idleAction?: AnimationAction;
+				idleClip?: AnimationClip;
 			};
 		}
 	>;
 
+	public animationClips?: AnimationClip[];
 	public material = new MeshPhysicalMaterial();
 
 	constructor(
@@ -45,45 +46,50 @@ export class HandsService {
 		@inject(WorldService) private readonly _world: WorldService
 	) {}
 
-	private _setupHand(colorSide: ColorSide) {
+	private _setupHands() {
+		this.animationClips = this._gltf?.animations || [];
+
 		const modelGroup = this._gltf?.scene;
-		const animationClips = this._gltf?.animations || [];
-		const idleClip = AnimationClip.findByName(animationClips, "idle");
+		const idleClip = AnimationClip.findByName(this.animationClips, "idle");
 
 		if (!(modelGroup instanceof Group)) throw new Error("Invalid hand model");
-		if (!idleClip) throw new Error("Invalid idle clip");
+		if (!idleClip) throw new Error("Invalid or missing idle clip");
 
-		const scene =
-			colorSide === ColorSide.white
-				? modelGroup
-				: (deserializeObject3D(serializeObject3D(modelGroup)) as Group);
-		const mixer = new AnimationMixer(scene);
-		const action = mixer.clipAction(idleClip).play();
-
-		scene.name = `master-hand-${colorSide}`;
-		scene.rotation.x = Math.PI / 2;
-		scene.rotation.y = Math.PI;
-		scene.scale.setScalar(0.05);
-		scene.position.copy(HandsService.INITIAL_HAND_POSITION);
-
-		if (colorSide === ColorSide.white) {
-			scene.position.z *= -1;
-			scene.rotation.z = Math.PI;
-		}
-
-		this.hands[colorSide] = {
-			scene,
-			animation: {
-				action,
-				clip: idleClip,
-				mixer
+		[
+			{ scene: modelGroup, colorSide: ColorSide.white },
+			{
+				scene: deserializeObject3D(serializeObject3D(modelGroup)) as Group,
+				colorSide: ColorSide.black
 			}
-		};
+		].forEach(({ scene, colorSide }) => {
+			const mixer = new AnimationMixer(scene);
+			const idleAction = mixer.clipAction(idleClip).play();
+
+			scene.name = `master-hand-${colorSide}`;
+			scene.rotation.x = Math.PI / 2;
+			scene.rotation.y = Math.PI;
+			scene.scale.setScalar(0.05);
+			scene.position.copy(HandsService.INITIAL_HAND_POSITION);
+
+			if (colorSide === ColorSide.white) {
+				scene.position.z *= -1;
+				scene.rotation.z = Math.PI;
+			}
+
+			this.hands[colorSide] = {
+				scene,
+				animation: {
+					idleAction,
+					idleClip,
+					mixer
+				}
+			};
+		});
 	}
 
 	public resetMaterials(): void {
 		this.material.side = DoubleSide;
-		this.material.color = new Color("#fff");
+		this.material.color.set("#ffffff");
 		this.material.transparent = true;
 		this.material.opacity = 1;
 		this.material.sheen = 2;
@@ -118,8 +124,7 @@ export class HandsService {
 	public init() {
 		this._gltf = this._app.loader.getLoadedResources()["masterHand"] as GLTF;
 
-		this._setupHand(ColorSide.black);
-		this._setupHand(ColorSide.white);
+		this._setupHands();
 	}
 
 	public handlePieceSelected(
@@ -141,10 +146,11 @@ export class HandsService {
 			ringz: -0.22,
 			pinkyz: -0.52
 		};
+		const hand = this.hands[payload.colorSide];
 
 		if (!(mesh instanceof SkinnedMesh)) return;
 
-		this.hands[payload.colorSide].animation.action?.stop();
+		hand.animation.mixer?.stopAllAction();
 
 		const wrist = mesh.skeleton.bones[0]!;
 		const wrist1 = mesh.skeleton.bones[1]!;
@@ -244,16 +250,62 @@ export class HandsService {
 		const hand = this.hands[payload.colorSide];
 		if (!hand) return;
 
-		hand.animation.action?.play();
+		hand.animation.idleAction?.play();
+
 		hand.scene.position.copy(HandsService.INITIAL_HAND_POSITION);
 		if (payload.colorSide === ColorSide.white) hand.scene.position.z *= -1;
 	}
 
-	update(delta: number) {
-		if (this.hands[ColorSide.black]?.animation?.mixer)
-			this.hands[ColorSide.black].animation.mixer.update(delta);
+	public handleEmoteStarted(
+		payload: ObservablePayload<HandsController["emoteStarted$"]>
+	) {
+		const { idleAction, emoteAction, side } = payload;
+		const hand = this.hands[side];
+		const existingActions = (
+			hand.animation.mixer as AnimationMixer & { _actions: AnimationAction[] }
+		)?._actions;
 
-		if (this.hands[ColorSide.white]?.animation?.mixer)
-			this.hands[ColorSide.white].animation.mixer.update(delta);
+		existingActions?.forEach(
+			(action) => !["idle"].includes(action.getClip().name) && action.stop()
+		);
+
+		emoteAction.reset();
+		emoteAction.paused = true;
+		emoteAction.setEffectiveWeight(1);
+		emoteAction.play();
+
+		idleAction.crossFadeTo(emoteAction, 0.4, true);
+	}
+
+	public handleEmoteProgress(
+		payload: ObservablePayload<HandsController["emoteProgress$"]>
+	) {
+		const { progress, emoteAction } = payload;
+
+		if (emoteAction)
+			emoteAction.time = progress * emoteAction.getClip().duration;
+	}
+
+	public handleEmoteEnded(
+		payload: ObservablePayload<HandsController["emoteEnded$"]>
+	) {
+		const { idleAction, emoteAction, mixer } = payload;
+
+		if (!emoteAction.isScheduled()) return;
+
+		idleAction.reset();
+		idleAction.setEffectiveWeight(1);
+		idleAction.play();
+		emoteAction.crossFadeTo(idleAction, 0.4, true);
+
+		setTimeout(() => {
+			emoteAction.stop();
+			mixer.uncacheAction(emoteAction.getClip());
+		}, 400);
+	}
+
+	update(delta: number) {
+		const sides = Object.values(this.hands);
+		sides.forEach((side) => side.animation.mixer?.update(delta));
 	}
 }

@@ -21,6 +21,7 @@ import {
 import { BindingParams } from "tweakpane";
 
 import { DebugService } from "../../core/game/debug/debug.service";
+import { ColorSide } from "@chess-d/shared";
 
 export const DEBUG_OPTIONS: Record<
 	string,
@@ -370,6 +371,33 @@ export const DEBUG_OPTIONS: Record<
 	},
 
 	Hands: {
+		"Emote Ok": {
+			default: "$button",
+			func: ({ self }) =>
+				self.handsController.emote$$.next({
+					side: ColorSide.white,
+					duration: 3,
+					emote: "ok"
+				})
+		},
+		"Emote Not-Ok": {
+			default: "$button",
+			func: ({ self }) =>
+				self.handsController.emote$$.next({
+					side: ColorSide.white,
+					duration: 3,
+					emote: "not-ok"
+				})
+		},
+		"Emote Shot": {
+			default: "$button",
+			func: ({ self }) =>
+				self.handsController.emote$$.next({
+					side: ColorSide.white,
+					duration: 3,
+					emote: "shot"
+				})
+		},
 		"Material Side": {
 			default: DoubleSide,
 			config: {

@@ -4,6 +4,7 @@ import {
 	DEFAULT_FEN,
 	getOppositeColorSide,
 	PlayerEntity,
+	SocketActionMessagePayload,
 	SocketAuthInterface
 } from "@chess-d/shared";
 import { randomUUID, UUID } from "crypto";
@@ -160,5 +161,26 @@ export class PlayersService {
 		this.rooms[roomID].fen = move.after;
 
 		return this.rooms[roomID].fen;
+	}
+
+	handleActionMessage(
+		socket: Socket,
+		payload: SocketActionMessagePayload
+	): SocketActionMessagePayload | Error {
+		const roomID = socket.data?.roomID;
+		const room = this.rooms[roomID];
+
+		if (!roomID || !room)
+			return new Error("Action message desynchronized.", {
+				cause: "ROOM_NOT_FOUND"
+			});
+
+		return {
+			roomID,
+			player: payload.player,
+			side: payload.side,
+			message: payload.message,
+			emote: payload.emote
+		};
 	}
 }

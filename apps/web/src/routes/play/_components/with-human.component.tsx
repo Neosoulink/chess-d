@@ -1,23 +1,25 @@
 import {
 	ColorSide,
-	DEFAULT_FEN,
 	GameUpdatedPayload,
 	PlayerEntity,
+	SOCKET_ACTION_MESSAGE_TOKEN,
 	SOCKET_JOINED_ROOM_TOKEN,
 	SOCKET_LEFT_ROOM_TOKEN,
 	SOCKET_MOVE_PERFORMED_TOKEN,
 	SOCKET_ROOM_CREATED_TOKEN,
+	SocketActionMessagePayload,
 	SocketAuthInterface
 } from "@chess-d/shared";
 import { Move } from "chess.js";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useSearchParams } from "react-router";
+import { data, useLocation, useSearchParams } from "react-router";
 import { merge } from "rxjs";
 import { io } from "socket.io-client";
 
 import { PlayerModel } from "../../../shared/models";
 import {
 	GAME_UPDATED_TOKEN,
+	HAND_WILL_EMOTE_TOKEN,
 	PIECE_WILL_MOVE_TOKEN
 } from "../../../shared/tokens";
 import { EngineUpdatedMessageData, MessageData } from "../../../shared/types";
@@ -186,6 +188,20 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		[opponentPlayer]
 	);
 
+	const onActionMessage = useCallback((data: SocketActionMessagePayload) => {
+		if (data.player.id === currentPlayer?.getEntity()?.id) return;
+
+		if (data.emote)
+			app?.module?.getWorker()?.postMessage?.({
+				token: HAND_WILL_EMOTE_TOKEN,
+				value: {
+					side: data.side,
+					emote: data.emote,
+					duration: 3
+				}
+			});
+	}, []);
+
 	useEffect(() => {
 		setIsLoading(true);
 	}, [location, currentPlayer, setIsLoading, socket]);
@@ -195,6 +211,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		socket.on(SOCKET_JOINED_ROOM_TOKEN, onJoinedRoom);
 		socket.on(SOCKET_MOVE_PERFORMED_TOKEN, onMovePerformed);
 		socket.on(SOCKET_LEFT_ROOM_TOKEN, onLeftRoom);
+		socket.on(SOCKET_ACTION_MESSAGE_TOKEN, onActionMessage);
 		socket.on("disconnect", onDisconnect);
 		socket.on("error", onError);
 
@@ -216,6 +233,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 			socket.off(SOCKET_JOINED_ROOM_TOKEN, onJoinedRoom);
 			socket.off(SOCKET_MOVE_PERFORMED_TOKEN, onMovePerformed);
 			socket.off(SOCKET_LEFT_ROOM_TOKEN, onLeftRoom);
+			socket.off(SOCKET_ACTION_MESSAGE_TOKEN, onActionMessage);
 			socket.off("disconnect", onDisconnect);
 			socket.off("error", onError);
 		};

@@ -15,7 +15,9 @@ import {
 	SOCKET_JOINED_ROOM_TOKEN,
 	SOCKET_LEFT_ROOM_TOKEN,
 	SOCKET_MOVE_PERFORMED_TOKEN,
-	type GameUpdatedPayload
+	SOCKET_ACTION_MESSAGE_TOKEN,
+	type GameUpdatedPayload,
+	type SocketActionMessagePayload
 } from "@chess-d/shared";
 
 @WebSocketGateway({
@@ -93,10 +95,26 @@ export class PlayersGateway
 		if (data instanceof Error) return this.handleError(data, socket);
 
 		this.server
-			.in(socket.data?.roomID)
+			.in(socket.data.roomID)
 			.except(socket.id)
 			.emit(SOCKET_MOVE_PERFORMED_TOKEN, payload);
 
 		console.log("\nMove performed", socket.id, payload);
+	}
+
+	@SubscribeMessage(SOCKET_ACTION_MESSAGE_TOKEN)
+	handleActionMessage(
+		@ConnectedSocket() socket: Socket,
+		@MessageBody() payload: SocketActionMessagePayload
+	): void {
+		const data = this.playersService.handleActionMessage(socket, payload);
+		if (data instanceof Error) return this.handleError(data, socket);
+
+		console.log("\nAction message", socket.id, data);
+
+		this.server
+			.in(socket.data.roomID)
+			.except(socket.id)
+			.emit(SOCKET_ACTION_MESSAGE_TOKEN, data);
 	}
 }
