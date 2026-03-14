@@ -1,4 +1,12 @@
-import { BISHOP, KING, KNIGHT, PAWN, PieceSymbol, QUEEN, ROOK } from "chess.js";
+import {
+	BISHOP,
+	KING,
+	KNIGHT,
+	PAWN,
+	type PieceSymbol,
+	QUEEN,
+	ROOK
+} from "chess.js";
 
 /**  @description Piece type based on the {@link PieceSymbol ChessJs.PieceSymbol}. */
 export enum PieceType {

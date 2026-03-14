@@ -27,7 +27,7 @@ export const ModalSection: FC<ModalSectionProps> = ({
 
 				{children}
 
-				<hr className="h-0.5 w-full border-none bg-gradient-to-r from-white/0 via-white to-white/0" />
+				<hr className="h-0.5 w-full border-none bg-linear-to-r from-white/0 via-white to-white/0" />
 
 				<div className="flex justify-between items-center">
 					{!!onGoBack && (

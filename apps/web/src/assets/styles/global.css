@@ -37,8 +37,13 @@
 }
 
 @theme {
-	--color-light: #cfcfcf;
-	--color-dark: #262a2b;
+	--color-light: #f8f9fa;
+	--color-dark: #1a1a1a;
+	--color-deep-space: "#141726";
+	--color-neon-cyan: "#4deeea";
+	--color-neon-purple: "#7400b8";
+	--color-neon-magenta: "#f72585";
+	--color-neon-gold: "#ffcc33";
 
 	--font-kelly-slab: "Kelly Slab";
 	--font-comic-neue: "Comic Neue";

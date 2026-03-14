@@ -8,6 +8,6 @@
 		"./vite/*"
 	],
 	"devDependencies": {
-		"@quick-threejs/config": "^0.1.13"
+		"@quick-threejs/config": "^0.1.14"
 	}
 }

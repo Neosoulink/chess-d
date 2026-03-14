@@ -67,7 +67,7 @@ export const MainMenu: FC<MainMenuProps> = () => {
 	return (
 		<>
 			<Button
-				className="fixed top-12 right-12 z-[60]"
+				className="fixed top-12 right-12 z-60"
 				onClick={handleBurgerClick}
 			>
 				{isOpen ? <Icon.Cross size={32} /> : <Icon.Menu size={32} />}

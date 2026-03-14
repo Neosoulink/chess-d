@@ -75,7 +75,7 @@ const GameSaveItem: FC<{
 	return (
 		<div className="rounded overflow-hidden flex">
 			<Button
-				className={`flex flex-1 bg-black/30 w-full !gap-0 !h-30 !rounded-none ${deactivate ? "!pointer-events-none" : ""}`}
+				className={`flex flex-1 bg-black/30 w-full gap-0! h-30! rounded-none! ${deactivate ? "pointer-events-none!" : ""}`}
 				onClick={onClick}
 			>
 				<div ref={mapWrapperRef} className="bg-black/30 h-30 w-30" />
@@ -106,7 +106,7 @@ const GameSaveItem: FC<{
 
 			{!!onErase && (
 				<Button
-					className="bg-red-500/30 p-2 !gap-0 !rounded-none"
+					className="bg-red-500/30 p-2 gap-0! rounded-none!"
 					disabled={deactivate}
 					onClick={onErase}
 				>

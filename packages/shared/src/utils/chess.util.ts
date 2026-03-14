@@ -1,4 +1,4 @@
-import { PieceSymbol, Square, validateFen } from "chess.js";
+import { Square, validateFen } from "chess.js";
 
 import {
 	CHESS_SQUARE_KEY_NUMBERS,

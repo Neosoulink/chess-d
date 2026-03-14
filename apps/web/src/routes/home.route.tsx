@@ -17,8 +17,8 @@ export const HomeRoute = () => {
 			</Button>
 
 			<small>
-				Open the main menu with{" "}
-				<code className="border rounded p-[1px]">Esc</code> or the{" "}
+				Open the main menu with <code className="border rounded p-px">Esc</code>{" "}
+				or the{" "}
 				<code className="border rounded p-[2px] inline-block -mb-1">
 					<Icon.Menu size={10} />
 				</code>{" "}

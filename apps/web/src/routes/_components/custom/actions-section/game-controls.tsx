@@ -88,7 +88,7 @@ export const ActionsSectionGameControls: FC = () => {
 
 				{status?.turn && (
 					<Button
-						className={`h-7 w-7 !p-0  rounded-full opacity-100 font-black text-gray-400 uppercase ${status.turn === ColorSide.white ? "text-sm bg-white" : "text-lg bg-black"}`}
+						className={`h-7 w-7 p-0!  rounded-full opacity-100 font-black text-gray-400 uppercase ${status.turn === ColorSide.white ? "text-sm bg-white" : "text-lg bg-black"}`}
 					>
 						{status.turn}
 					</Button>

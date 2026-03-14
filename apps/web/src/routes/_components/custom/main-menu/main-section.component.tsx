@@ -1,9 +1,9 @@
 import { FC, PropsWithChildren } from "react";
 
-import { MainMenuSection } from "../../../../shared/enum";
-import { useMainMenuStore } from "../../../_stores";
-import { Button } from "../../core";
+import { MainMenuSection } from "@/shared/enum";
+import { useMainMenuStore } from "@/routes/_stores";
 import { Icon } from "../../core/icon";
+import { MainMenuButton } from "./button";
 
 /** @internal */
 const LogoTitle: FC = () => (
@@ -25,7 +25,7 @@ const OptionItem: FC<
 	}>
 > = ({ asLink, disabled, children, action }) => {
 	return (
-		<Button
+		<MainMenuButton
 			{...{
 				asLink,
 				disabled,
@@ -34,7 +34,7 @@ const OptionItem: FC<
 			}}
 			className="py-4 px-2 overflow-hidden justify-start group relative"
 		>
-			<div className="group-hover:bg-gradient-to-r from-30% from-black/50 to-black/0 transition-all duration-500 h-full absolute top-0 left-0 w-0 group-hover:w-full " />
+			<div className="group-hover:bg-linear-to-r from-30% from-light/50 to-light/0 transition-all duration-500 h-full absolute top-0 left-0 w-0 group-hover:w-full " />
 
 			<span className="opacity-0 group-hover:opacity-100 transition-opacity z-10">
 				<Icon.Pawn size={32} />
@@ -43,14 +43,14 @@ const OptionItem: FC<
 			<span className="z-10 group-hover:pl-2 transition-all">{children}</span>
 
 			{disabled && <span>(Coming Soon)</span>}
-		</Button>
+		</MainMenuButton>
 	);
 };
 
 export const MainSection: FC = () => {
 	const { setSection, close } = useMainMenuStore();
 
-	const options: Parameters<typeof OptionItem>[0][] = [
+	const options = [
 		{
 			children: "New Game",
 			action: () => setSection(MainMenuSection.newGame)

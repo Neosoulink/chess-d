@@ -24,11 +24,11 @@ import {
 } from "rxjs";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
-import { MessageData } from "../../../../../shared/types";
-import { PIECE_WILL_MOVE_TOKEN } from "../../../../../shared/tokens";
-import { GameController } from "../../../game.controller";
-import { EngineController } from "../../../engine/engine.controller";
-import { WorldController } from "../../world.controller";
+import { MessageData } from "@/shared/types";
+import { PIECE_WILL_MOVE_TOKEN } from "@/shared/tokens";
+import { GameController } from "@/core/game/game.controller";
+import { EngineController } from "@/core/game/engine/engine.controller";
+import { WorldController } from "@/core/game/world/world.controller";
 
 @scoped(Lifecycle.ContainerScoped)
 export class PiecesController {

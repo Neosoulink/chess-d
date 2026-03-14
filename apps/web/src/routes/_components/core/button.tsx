@@ -29,7 +29,7 @@ export const Button = forwardRef<ButtonRef, ButtonProps>(
 		const [pressed, setPressed] = useState(false);
 
 		const disabledClassNames = useMemo(
-			() => (disabled ? "!opacity-30 !pointer-events-none !select-none" : ""),
+			() => (disabled ? "opacity-30! pointer-events-none! select-none!" : ""),
 			[disabled]
 		);
 		const Comp = useMemo(() => (asLink ? Link : "button"), [asLink]);
