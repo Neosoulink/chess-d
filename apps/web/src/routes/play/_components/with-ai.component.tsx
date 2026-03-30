@@ -7,17 +7,17 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "react-router";
 import { merge, Subscription } from "rxjs";
 
-import { GameMode } from "../../../shared/enum";
-import { PlayerModel } from "../../../shared/models";
-import { EngineUpdatedMessageData, MessageData } from "../../../shared/types";
+import { GameMode } from "@/shared/enum";
+import { PlayerModel } from "@/shared/models";
+import { EngineUpdatedMessageData, MessageData } from "@/shared/types";
 import {
 	AI_PERFORMED_MOVE_TOKEN,
 	AI_WILL_PERFORM_MOVE_TOKEN,
 	GAME_RESET_TOKEN,
 	GAME_UPDATED_TOKEN,
 	PIECE_WILL_MOVE_TOKEN
-} from "../../../shared/tokens";
-import { getGameModeFromUrl } from "../../../shared/utils";
+} from "@/shared/tokens";
+import { getGameModeFromUrl } from "@/shared/utils";
 import { useGameStore, useLoaderStore } from "../../_stores";
 
 export interface WithAIComponentProps {}

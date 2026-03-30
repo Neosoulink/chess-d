@@ -24,7 +24,7 @@ export const MainMenuSettingsSection: FC = () => {
 	}[] = [
 		{
 			title: "Visual & Theme",
-			icon: "Export",
+			icon: "Picture",
 			inputs: [
 				{
 					id: "settings-general-primary-theme",
@@ -91,7 +91,7 @@ export const MainMenuSettingsSection: FC = () => {
 		},
 		{
 			title: "Camera",
-			icon: "Hint",
+			icon: "Camera",
 			inputs: [
 				{
 					id: "settings-camera-fov",
@@ -120,7 +120,7 @@ export const MainMenuSettingsSection: FC = () => {
 		},
 		{
 			title: "Audio",
-			icon: "Hint",
+			icon: "VolumeOn",
 			inputs: [
 				{
 					id: "settings-enable-audio",
@@ -156,7 +156,7 @@ export const MainMenuSettingsSection: FC = () => {
 		},
 		{
 			title: "Lights & Shadows",
-			icon: "Hint",
+			icon: "Sun",
 			inputs: [
 				{
 					id: "settings-lights-shadows-intensity",
@@ -225,7 +225,7 @@ export const MainMenuSettingsSection: FC = () => {
 		},
 		{
 			title: "Pieces",
-			icon: "Pawn",
+			icon: "ChessPawn",
 			inputs: [
 				{
 					id: "settings-pieces-theme",
@@ -270,7 +270,7 @@ export const MainMenuSettingsSection: FC = () => {
 		},
 		{
 			title: "Hands",
-			icon: "Popup",
+			icon: "HandSign",
 			inputs: [
 				{
 					id: "settings-hands-visible",
@@ -320,7 +320,7 @@ export const MainMenuSettingsSection: FC = () => {
 			footerOptions={[
 				{
 					label: "Back",
-					icon: "ArrowBackward",
+					icon: "ActionUndo",
 					action: () => setSections(MAIN_MENU_SECTIONS.main)
 				},
 				{

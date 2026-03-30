@@ -81,12 +81,12 @@ export const MainMenuNewGameSection = () => {
 		<ModalSection
 			header={{
 				title: "New Game Options",
-				icon: "Knight"
+				icon: "Flag"
 			}}
 			footerOptions={[
 				{
 					label: "Back",
-					icon: "ArrowBackward",
+					icon: "ActionUndo",
 					action: () => setSections(MAIN_MENU_SECTIONS.main)
 				},
 				...(gameModeConfigs.gameMode === GameMode.human
@@ -132,7 +132,7 @@ export const MainMenuNewGameSection = () => {
 			<NewGameChessConfig />
 
 			<div className="flex flex-col gap-2">
-				<TitleDivider title="Game mode" icon="Hint" heading="3" />
+				<TitleDivider title="Game mode" icon="Processor" heading="3" />
 
 				<MainMenuLabelInput
 					id="game-mode"

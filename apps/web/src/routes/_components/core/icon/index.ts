@@ -1,43 +1,73 @@
-import { ArrowBackwardIcon } from "./arrow-backward";
-import { ArrowForwardIcon } from "./arrow-forward";
-import { BishopIcon } from "./bishop";
+import { ActionRedoIcon } from "./action-redo";
+import { ActionUndoIcon } from "./action-undo";
+import { CameraIcon } from "./camera";
+import { ChatIcon } from "./chat";
+import { ChessBishopIcon } from "./chess-bishop";
 import { ChessboardIcon } from "./chessboard";
+import { ChessKingIcon } from "./chess-king";
+import { ChessKnightIcon } from "./chess-knight";
+import { ChessPawnIcon } from "./chess-pawn";
+import { ChessQueenIcon } from "./chess-queen";
+import { ChessRookIcon } from "./chess-rook";
 import { CrossIcon } from "./cross";
 import { ExportIcon } from "./export";
+import { FlagIcon } from "./flag";
+import { GlobeIcon } from "./globe";
+import { HandSignIcon } from "./hand-sign";
 import { HintIcon } from "./hint";
+import { HomeIcon } from "./home";
 import { HourglassIcon } from "./hourglass";
-import { KingIcon } from "./king";
-import { KnightIcon } from "./knight";
+import { LinkIcon } from "./link";
 import { MenuIcon } from "./menu";
-import { PawnIcon } from "./pawn";
+import { PictureIcon } from "./picture";
 import { PopupIcon } from "./popup";
-import { QueenIcon } from "./queen";
+import { ProcessorIcon } from "./processor";
 import { RefreshIcon } from "./refresh";
 import { ReloadIcon } from "./reload";
-import { RookIcon } from "./rook";
+import { RocketIcon } from "./rocket";
 import { SaveIcon } from "./save";
+import { SettingIcon } from "./setting";
 import { ShareIcon } from "./share";
+import { SunIcon } from "./sun";
+import { TrashIcon } from "./trash";
+import { VolumeOffIcon } from "./volume-off";
+import { VolumeOnIcon } from "./volume-on";
 
 export const Icon = {
-	ArrowBackward: ArrowBackwardIcon,
-	ArrowForward: ArrowForwardIcon,
-	Bishop: BishopIcon,
+	ActionRedo: ActionRedoIcon,
+	ActionUndo: ActionUndoIcon,
+	Camera: CameraIcon,
+	Chat: ChatIcon,
+	ChessBishop: ChessBishopIcon,
 	Chessboard: ChessboardIcon,
+	ChessKing: ChessKingIcon,
+	ChessKnight: ChessKnightIcon,
+	ChessPawn: ChessPawnIcon,
+	ChessQueen: ChessQueenIcon,
+	ChessRook: ChessRookIcon,
 	Cross: CrossIcon,
 	Export: ExportIcon,
+	Flag: FlagIcon,
+	Globe: GlobeIcon,
+	HandSign: HandSignIcon,
 	Hint: HintIcon,
+	Home: HomeIcon,
 	Hourglass: HourglassIcon,
-	king: KingIcon,
-	Knight: KnightIcon,
+	Link: LinkIcon,
 	Menu: MenuIcon,
-	Pawn: PawnIcon,
+	Picture: PictureIcon,
 	Popup: PopupIcon,
-	Queen: QueenIcon,
+	Processor: ProcessorIcon,
 	Refresh: RefreshIcon,
 	Reload: ReloadIcon,
-	Rook: RookIcon,
+	Rocket: RocketIcon,
 	Save: SaveIcon,
-	Share: ShareIcon
+	Setting: SettingIcon,
+	Sun: SunIcon,
+	Share: ShareIcon,
+	Trash: TrashIcon,
+	VolumeOff: VolumeOffIcon,
+	VolumeOn: VolumeOnIcon
 } as const;
 
 export * from "./context";

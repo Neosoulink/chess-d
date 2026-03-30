@@ -144,7 +144,7 @@ export const MainMenuComponent = (props: MainMenuComponentProps) => {
 			>
 				{(() => {
 					const OpenIcon = isOpen ? Icon.Cross : Icon.Menu;
-					return <OpenIcon size={isOpen ? 24 : 18} />;
+					return <OpenIcon size={isOpen ? 16 : 18} />;
 				})()}
 			</Button>
 

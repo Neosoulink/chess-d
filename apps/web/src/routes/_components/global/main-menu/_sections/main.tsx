@@ -5,8 +5,7 @@ import { ComponentPropsWithRef, FC, useEffect, useRef } from "react";
 import { MAIN_MENU_SECTIONS } from "@/shared/constants";
 import { useMainMenuStore } from "@/routes/_stores";
 import { cn } from "@/shared/utils";
-import { Icon } from "@/routes/_components/core/icon";
-import { MainMenuButton } from "../_components/button";
+import { Button, Icon } from "@/routes/_components/core";
 import { MainMenuSection } from "../_components/section";
 
 /** @internal */
@@ -57,7 +56,7 @@ const LogoTitle: FC = () => {
 
 	return (
 		<section className="flex -ml-4 pointer-events-none select-none relative z-10 w-fit">
-			<Icon.Knight
+			<Icon.ChessKnight
 				ref={logoRef}
 				withGradientStroke
 				size={190}
@@ -83,23 +82,54 @@ const OptionItem = ({
 	asLink,
 	disabled,
 	action,
+	icon,
+	children,
 	...props
 }: ComponentPropsWithRef<"button"> & {
 	asLink?: boolean;
 	disabled?: boolean;
+	icon?: keyof typeof Icon;
 	action?: string | (() => unknown);
 }) => {
+	const baseGradientClassNames =
+		"bg-linear-to-r from-neon-cyan/80 from-30% to-neon-purple/80";
+
 	return (
-		<MainMenuButton
+		<Button
 			{...{
 				asLink,
 				disabled,
+				className: cn(
+					"justify-start group relative rounded-4xl p-0.5 transition-all duration-300 w-full",
+					disabled ? "bg-light/10" : baseGradientClassNames
+				),
 				...(asLink && typeof action === "string" ? { to: action } : {}),
 				...(typeof action === "function" ? { onClick: action } : {})
 			}}
-			className={cn("w-full")}
 			{...props}
-		/>
+		>
+			<div
+				className={cn(
+					baseGradientClassNames,
+					"transition-all duration-300 h-full absolute top-0 left-0 w-0 group-hover:w-full group-hover:opacity-100 opacity-0 rounded-4xl"
+				)}
+			/>
+
+			<div
+				className={cn(
+					"flex items-center gap-3 px-5 py-1.5 rounded-4xl w-full justify-start h-full",
+					"bg-linear-to-b from-deep-space/40 via-deep-space/40 to-deep-space/40 text-light"
+				)}
+			>
+				<span className="opacity-0 group-hover:opacity-100 transition-opacity z-10">
+					<Icon.ChessPawn size={25} />
+				</span>
+
+				<span className="z-10 group-hover:pl-2 transition-all text-shadow-neon-gold/70 text-shadow-[0_0_2px_var(--color-neon-gold)]">
+					{children}
+				</span>
+			</div>
+		</Button>
 	);
 };
 
@@ -108,7 +138,12 @@ export const MainMenuMainSection: FC = () => {
 
 	const optionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
 
-	const options = [
+	const options: {
+		children: string;
+		action: string | (() => unknown);
+		asLink?: boolean;
+		icon?: keyof typeof Icon;
+	}[] = [
 		{
 			children: "New Game",
 			action: () => setSections(MAIN_MENU_SECTIONS.newGame)

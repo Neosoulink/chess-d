@@ -1,7 +1,6 @@
 import { FC } from "react";
 import { Button, Modal } from "../core";
 import { useHistoryModalStore } from "../../_stores";
-import { Icon } from "../core/icon";
 
 export interface HistoryModalProps {}
 

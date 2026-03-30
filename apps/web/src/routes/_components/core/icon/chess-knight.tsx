@@ -3,7 +3,7 @@ import { forwardRef } from "react";
 import { IconBase } from "./icon-base";
 import { IconBaseProps } from "./context";
 
-export const KnightIcon = forwardRef<
+export const ChessKnightIcon = forwardRef<
 	SVGSVGElement,
 	IconBaseProps & { withGradientStroke?: boolean }
 >(({ withGradientStroke = false, ...props }, ref) => (

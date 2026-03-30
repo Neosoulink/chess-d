@@ -92,11 +92,11 @@ export const GameOverviewControls: FC = () => {
 	return (
 		<div className="flex gap-1 items-center justify-center">
 			<ControlButton onClick={undoMove}>
-				<Icon.ArrowBackward />
+				<Icon.ActionUndo />
 			</ControlButton>
 
 			<ControlButton onClick={redoMove}>
-				<Icon.ArrowForward />
+				<Icon.ActionRedo />
 			</ControlButton>
 
 			<ControlButton>

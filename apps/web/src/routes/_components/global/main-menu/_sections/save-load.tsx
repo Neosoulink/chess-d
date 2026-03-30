@@ -81,7 +81,7 @@ const GameSaveItem: FC<{
 				<div className="flex flex-col justify-center gap-1 flex-1 p-2 size-full">
 					{!!save && (
 						<>
-							<h4 className=" font-semibold whitespace-nowrap">
+							<h4 className="font-semibold whitespace-nowrap">
 								{(title || save.id).split(".")[0]}
 							</h4>
 
@@ -90,7 +90,7 @@ const GameSaveItem: FC<{
 								value={`${save.fen}\n${save.pgn}`}
 								className="text-xs no-scrollbar resize-none flex-1"
 								contentEditable={false}
-								onClick={(e) => e.stopPropagation()}
+								readOnly
 							/>
 
 							<small className="bg-black/30 px-2 w-fit">
@@ -106,10 +106,10 @@ const GameSaveItem: FC<{
 			<div className="flex w-full text-sm ">
 				<Button
 					className="bg-negative/30 hover:bg-negative/50 h-6 flex-1"
-					disabled={disabled}
+					disabled={disabled || !save}
 					onClick={onErase}
 				>
-					<Icon.Cross />
+					<Icon.Trash />
 					Erase
 				</Button>
 
@@ -197,7 +197,7 @@ export const MainMenuSaveLoadSection: FC = () => {
 					: [
 							{
 								label: "Back",
-								icon: "ArrowBackward",
+								icon: "ActionUndo",
 								action: () => setSections(MAIN_MENU_SECTIONS.main)
 							}
 						]

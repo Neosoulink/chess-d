@@ -78,12 +78,12 @@ export const GameOverviewMap: FC = () => {
 
 			<Button
 				className={cn(
-					"absolute top-0 right-0 size-8 p-0 bg-dark/80 opacity-0 group-hover:opacity-30 hover:bg-dark hover:opacity-100",
+					"absolute bottom-0 right-0 size-8 p-0 bg-dark/80 opacity-0 group-hover:opacity-30 hover:bg-dark hover:opacity-100",
 					!showMap && "opacity-100! relative"
 				)}
 				onClick={() => setShowMap(!showMap)}
 			>
-				{showMap ? <Icon.Cross /> : <Icon.Chessboard />}
+				{showMap ? <Icon.Cross size={14} /> : <Icon.Chessboard size={16} />}
 			</Button>
 		</div>
 	);

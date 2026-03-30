@@ -1,13 +1,13 @@
 import { ColorSide, DEFAULT_FEN, PlayerEntity } from "@chess-d/shared";
+import { validateFen } from "chess.js";
 import { FC, Fragment, useCallback, useEffect, useRef } from "react";
 import { merge } from "rxjs";
+import { useLocation } from "react-router";
 
 import { useGameStore, useLoaderStore } from "../../_stores";
-import { PlayerModel } from "../../../shared/models";
-import { GAME_UPDATED_TOKEN } from "../../../shared/tokens";
-import { EngineUpdatedMessageData } from "../../../shared/types";
-import { useLocation } from "react-router";
-import { validateFen } from "chess.js";
+import { PlayerModel } from "@/shared/models";
+import { GAME_UPDATED_TOKEN } from "@/shared/tokens";
+import { EngineUpdatedMessageData } from "@/shared/types";
 
 export const FreeModeComponent: FC = () => {
 	const location = useLocation();

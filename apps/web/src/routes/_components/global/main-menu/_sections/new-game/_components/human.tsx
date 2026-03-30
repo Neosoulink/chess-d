@@ -29,7 +29,7 @@ export const MainMenuNewGameMultiplayer: FC<{
 				extraActions={[
 					{
 						label: "Random",
-						icon: joinRoom ? "ArrowBackward" : "ArrowForward",
+						icon: joinRoom ? "Link" : "Globe",
 						action: toggleJoin
 					}
 				]}

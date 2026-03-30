@@ -1,8 +1,8 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
-import { GAME_UPDATED_TOKEN } from "../../../../shared/tokens";
-import { useGameStore } from "../../../_stores";
-import { EngineUpdatedMessageData } from "../../../../shared/types";
+import { GAME_UPDATED_TOKEN } from "../../../../../shared/tokens";
+import { useGameStore } from "../../../../_stores";
+import { EngineUpdatedMessageData } from "../../../../../shared/types";
 import { Button } from "@/routes/_components/core";
 import { ColorSide } from "@chess-d/shared";
 import { cn } from "@/shared/utils";
