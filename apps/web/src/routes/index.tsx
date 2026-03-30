@@ -4,12 +4,8 @@ import { Routes, Route, Outlet } from "react-router";
 import { HomeRoute } from "./home.route";
 import { PlayRoute } from "./play";
 import { GameProvider } from "./_providers";
-import {
-	ActionsSection,
-	HistoryModal,
-	Loader,
-	MainMenu
-} from "./_components/custom";
+import { Loader } from "./_components/custom";
+import { MainMenuComponent } from "./_components/global";
 
 export const Router: FC = () => (
 	<Routes>
@@ -18,9 +14,7 @@ export const Router: FC = () => (
 				<GameProvider>
 					<Outlet />
 					<Loader />
-					<ActionsSection />
-					<HistoryModal />
-					<MainMenu />
+					<MainMenuComponent />
 				</GameProvider>
 			}
 		>

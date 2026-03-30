@@ -79,7 +79,9 @@ export const useGameStore = create<GameStore>((set, get) => {
 	return {
 		...gameStoreInitialState,
 		setApp: (app) => {
-			const appWorker = app?.module?.getWorker() as Worker | undefined;
+			const appWorker = app?.module?.getWorkerThread()?.worker as
+				| Worker
+				| undefined;
 			appWorker?.removeEventListener("message", handleAppMessages);
 			appWorker?.addEventListener("message", handleAppMessages);
 			return set(() => ({ app }));
@@ -119,8 +121,11 @@ export const useGameStore = create<GameStore>((set, get) => {
 		},
 		performPieceMove: (move: Move) => {
 			const appModule = get().app?.module;
+			const appWorker = appModule?.getWorkerThread()?.worker as
+				| Worker
+				| undefined;
 
-			appModule?.getWorker()?.postMessage?.({
+			appWorker?.postMessage?.({
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
 			} satisfies MessageData<Move>);
@@ -128,8 +133,11 @@ export const useGameStore = create<GameStore>((set, get) => {
 		resetGame: () => {
 			const appModule = get().app?.module;
 			const state = get().initialGameState;
+			const appWorker = appModule?.getWorkerThread()?.worker as
+				| Worker
+				| undefined;
 
-			appModule?.getWorker()?.postMessage({
+			appWorker?.postMessage({
 				token: GAME_RESET_TOKEN,
 				value: state
 			} satisfies MessageData<GameResetState>);
@@ -137,7 +145,9 @@ export const useGameStore = create<GameStore>((set, get) => {
 			set(() => ({ initialGameState: undefined }));
 		},
 		reset: () => {
-			const appWorker = get().app?.module?.getWorker() as Worker | undefined;
+			const appWorker = get().app?.module?.getWorkerThread()?.worker as
+				| Worker
+				| undefined;
 			appWorker?.removeEventListener("message", handleAppMessages);
 
 			return set(() => ({ ...gameStoreInitialState }));

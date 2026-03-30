@@ -74,7 +74,9 @@ export const FreeModeComponent: FC = () => {
 				return performPieceMove(payload.value?.move);
 		});
 
-		appModule?.getWorker()?.addEventListener("message", handleMessages);
+		appModule
+			?.getWorkerThread()
+			?.worker?.addEventListener("message", handleMessages);
 
 		setTimeout(() => setIsLoading(false), 100);
 
@@ -85,7 +87,9 @@ export const FreeModeComponent: FC = () => {
 				player.unsubscribe();
 				players.shift();
 			});
-			appModule?.getWorker()?.removeEventListener("message", handleMessages);
+			appModule
+				?.getWorkerThread()
+				?.worker?.removeEventListener("message", handleMessages);
 		};
 	}, [
 		app,

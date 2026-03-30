@@ -3,7 +3,7 @@ import {
 	Color,
 	ColorManagement,
 	NoToneMapping,
-	PCFSoftShadowMap,
+	PCFShadowMap,
 	SRGBColorSpace
 } from "three";
 import { inject, Lifecycle, scoped } from "tsyringe";
@@ -34,7 +34,7 @@ export class RendererService {
 		renderer.shadowMap.enabled = true;
 		renderer.shadowMap.autoUpdate = true;
 		renderer.shadowMap.needsUpdate = true;
-		renderer.shadowMap.type = PCFSoftShadowMap;
+		renderer.shadowMap.type = PCFShadowMap;
 	}
 
 	public reset() {

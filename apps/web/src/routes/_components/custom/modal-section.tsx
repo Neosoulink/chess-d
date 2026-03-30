@@ -1,54 +1,84 @@
+import { cn } from "@/shared/utils";
 import { FC, MouseEventHandler, PropsWithChildren } from "react";
 
-import { Button } from "../core";
-import { Icon } from "../core/icon";
-import { PiecesPositionEditor } from "./pieces-position-editor";
+import { Button, Divider, Icon } from "../core";
+import { TitleDivider } from "./title-divider";
 
 export interface ModalSectionProps extends PropsWithChildren {
-	title?: string;
-	editPiecesPosition?: boolean;
-	onGoBack?: MouseEventHandler<HTMLButtonElement>;
-	onClose?: MouseEventHandler<HTMLButtonElement>;
+	header?: {
+		title: string;
+		icon?: keyof typeof Icon;
+	};
+	footerOptions?: {
+		label: string;
+		icon?: keyof typeof Icon;
+		disabled?: boolean;
+		action?: MouseEventHandler<HTMLButtonElement>;
+	}[];
+	contentClassName?: string;
 }
 
 export const ModalSection: FC<ModalSectionProps> = ({
-	title,
+	header,
 	children,
-	editPiecesPosition = true,
-	onGoBack,
-	onClose
+	footerOptions,
+	contentClassName
 }) => {
 	return (
-		<section className="flex items-center justify-center w-dvw h-dvh">
-			<div className="flex flex-col gap-10 w-[584px]">
-				{!!title && <h1 className="text-6xl text-center">{title}</h1>}
+		<section className="flex items-center justify-center size-full z-0 py-5 relative">
+			<div className="absolute top-0 left-0 w-full h-full bg-[image:url('https://cdn.vectorstock.com/i/1000v/87/38/chess-pieces-seamless-background-vector-23378738.jpg')] bg-cover bg-center opacity-5 pointer-events-none" />
 
-				{editPiecesPosition && <PiecesPositionEditor />}
+			<div
+				className={cn(
+					"w-full max-w-10/12 min-w-fit h-full max-h-[700px]",
+					"flex flex-col items-center gap-5 p-5 z-1"
+				)}
+			>
+				{!!header && (
+					<TitleDivider
+						title={header.title}
+						icon={header.icon}
+						className="max-w-96 w-full"
+					/>
+				)}
 
-				{children}
-
-				<hr className="h-0.5 w-full border-none bg-linear-to-r from-white/0 via-white to-white/0" />
-
-				<div className="flex justify-between items-center">
-					{!!onGoBack && (
-						<Button
-							className="p-2 rounded font-kelly-slab text-xl shadow-none bg-black/20 hover:bg-black/30 text-shadow"
-							onClick={onGoBack}
+				<div className="flex flex-col items-center w-full flex-1 max-h-10/12 gap-2">
+					<Divider variant="light" />
+					<div className="flex justify-center w-full overflow-y-scroll flex-1 pl-2">
+						<div
+							className={cn(
+								"flex flex-col gap-5 pb-4 px-1 flex-1",
+								"max-w-96 w-full",
+								contentClassName
+							)}
 						>
-							<Icon.ArrowBackward />
-							Go Back
-						</Button>
-					)}
-
-					{!!onClose && (
-						<Button
-							className="p-2 rounded font-kelly-slab text-xl shadow-none bg-black/20 hover:bg-black/30 text-shadow"
-							onClick={onClose}
-						>
-							Close
-						</Button>
-					)}
+							{children}
+						</div>
+					</div>
+					<Divider variant="light" />
 				</div>
+
+				{!!footerOptions?.length && (
+					<div className="flex flex-col gap-2">
+						<div className="flex items-center justify-center gap-2">
+							{footerOptions.map(({ label, icon, disabled, action }, index) => {
+								const IconComponent = icon ? Icon[icon] : null;
+
+								return (
+									<Button
+										key={`${label}-${index}`}
+										onClick={action}
+										disabled={disabled}
+										className="text-xl capitalize"
+									>
+										{!!IconComponent && <IconComponent />}
+										{label}
+									</Button>
+								);
+							})}
+						</div>
+					</div>
+				)}
 			</div>
 		</section>
 	);

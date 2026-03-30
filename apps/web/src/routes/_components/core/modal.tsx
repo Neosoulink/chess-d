@@ -1,53 +1,41 @@
-import {
-	forwardRef,
-	HTMLAttributes,
-	MouseEventHandler,
-	useEffect,
-	useState
-} from "react";
+import { ComponentPropsWithRef, MouseEventHandler } from "react";
+
+import { cn } from "@/shared/utils";
 import { Icon } from "./icon";
 import { Button } from "./button";
 
-export interface ModalProps extends HTMLAttributes<HTMLElement> {
+export interface ModalProps extends ComponentPropsWithRef<"section"> {
 	show?: boolean;
 	onClose?: MouseEventHandler<HTMLButtonElement>;
 }
 
-export const Modal = forwardRef<HTMLElement, ModalProps>(
-	({ show, onClose, children, className, ...props }, ref) => {
-		const [showClassNames, setShowClassNames] = useState("hidden");
+export const Modal = ({
+	show,
+	onClose,
+	children,
+	className,
+	...props
+}: ModalProps) => {
+	return (
+		<section
+			data-name="modal"
+			className={cn(
+				"fixed h-dvh w-dvw z-50 top-0 left-0 transition-opacity duration-300 overflow-hidden",
+				"bg-linear-to-b from-neon-cyan/60 to-neon-purple/60 backdrop-blur-xs",
+				show ? "opacity-100" : "opacity-0 pointer-events-none",
+				className
+			)}
+			{...props}
+		>
+			{onClose && (
+				<Button className="absolute top-5 right-5 h-10 w-10" onClick={onClose}>
+					<Icon.Cross />
+				</Button>
+			)}
 
-		useEffect(() => {
-			let timeout: number;
+			<div className="absolute top-0 left-0 w-full h-full bg-black/80 z-0" />
 
-			if (show) {
-				setShowClassNames("opacity-0");
-				timeout = setTimeout(() => setShowClassNames("opacity-100"), 100);
-			} else {
-				setShowClassNames("opacity-0");
-				timeout = setTimeout(() => setShowClassNames("hidden"), 300);
-			}
-
-			return () => clearTimeout(timeout);
-		}, [show]);
-
-		return (
-			<section
-				ref={ref}
-				className={`fixed h-dvh w-dvw flex flex-col z-50 top-0 left-0 p-4 bg-black/50 transition-opacity duration-300 overflow-hidden ${showClassNames} ${className}`}
-				{...props}
-			>
-				{onClose && (
-					<Button
-						className="absolute top-5 right-5 h-10 w-10"
-						onClick={onClose}
-					>
-						<Icon.Cross />
-					</Button>
-				)}
-
-				{children}
-			</section>
-		);
-	}
-);
+			{children}
+		</section>
+	);
+};

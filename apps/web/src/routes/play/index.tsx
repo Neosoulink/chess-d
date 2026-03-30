@@ -1,6 +1,8 @@
 import { FC, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router";
+
 import {
+	GameOverview,
 	FreeModeComponent,
 	WithAIComponent,
 	WithHumanComponent
@@ -17,16 +19,18 @@ export const PlayRoute: FC = () => {
 		[searchParams]
 	);
 
-	const renderGameMode = useCallback(() => {
-		if (gameMode === GameMode.ai || gameMode === GameMode.simulation)
-			return <WithAIComponent />;
-
-		if (gameMode === GameMode.human) return <WithHumanComponent />;
-
-		return <FreeModeComponent />;
-	}, [gameMode]);
-
 	if (!app || !isResourcesLoaded) return null;
 
-	return renderGameMode();
+	return (
+		<>
+			<GameOverview />
+			{gameMode === GameMode.ai || gameMode === GameMode.simulation ? (
+				<WithAIComponent />
+			) : gameMode === GameMode.human ? (
+				<WithHumanComponent />
+			) : (
+				<FreeModeComponent />
+			)}
+		</>
+	);
 };

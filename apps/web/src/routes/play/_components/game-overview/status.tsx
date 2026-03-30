@@ -1,8 +1,11 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { GAME_UPDATED_TOKEN } from "../../../../shared/tokens";
 import { useGameStore } from "../../../_stores";
 import { EngineUpdatedMessageData } from "../../../../shared/types";
+import { Button } from "@/routes/_components/core";
+import { ColorSide } from "@chess-d/shared";
+import { cn } from "@/shared/utils";
 
 /** @internal */
 const getStatusMsg = (status?: EngineUpdatedMessageData["value"]) => {
@@ -23,22 +26,31 @@ const getStatusMsg = (status?: EngineUpdatedMessageData["value"]) => {
 
 	if (status?.isGameOver) return "Game over";
 
-	return "Game is in progress";
+	return "Game in progress";
 };
 
-export const ActionsSectionGameStatus: FC = () => {
-	const { app } = useGameStore();
+export const GameOverviewStatus: FC = () => {
+	const { app, playerSide } = useGameStore();
 
-	const [statusMsg, setStatusMsg] = useState<string>(getStatusMsg());
+	const [status, setStatus] = useState<EngineUpdatedMessageData["value"]>();
+
+	const statusMsg = useMemo(() => {
+		return getStatusMsg(status);
+	}, [status]);
+	const currentTurn = useMemo(() => {
+		return status?.turn ?? "";
+	}, [status?.turn]);
 
 	useEffect(() => {
 		const appModule = app?.module;
-		const appWorker = appModule?.getWorker() as Worker | undefined;
+		const appWorker = appModule?.getWorkerThread()?.worker as
+			| Worker
+			| undefined;
 
 		const handleMessages = (e: MessageEvent<EngineUpdatedMessageData>) => {
 			if (e.data?.token !== GAME_UPDATED_TOKEN || !e.data?.value) return;
 
-			setStatusMsg(getStatusMsg(e.data.value));
+			setStatus(e.data.value);
 		};
 
 		appWorker?.addEventListener("message", handleMessages);
@@ -48,5 +60,17 @@ export const ActionsSectionGameStatus: FC = () => {
 		};
 	}, [app]);
 
-	return <h3 className="text-gray-50">{statusMsg}</h3>;
+	return (
+		<div className="flex gap-1 items-center justify-end text-sm">
+			{!!currentTurn && (
+				<p className="h-8 px-2 flex items-center justify-center bg-dark/80">
+					{currentTurn === playerSide ? "Your" : "Opponent's"} turn
+				</p>
+			)}
+
+			<p className="h-8 px-2 flex items-center justify-center bg-dark/80">
+				{statusMsg}
+			</p>
+		</div>
+	);
 };

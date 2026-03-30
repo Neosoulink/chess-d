@@ -11,17 +11,16 @@ import { useLocation } from "react-router";
 import Stats from "stats-gl";
 import { Pane } from "tweakpane";
 
-import { configureTweakpane } from "../../shared/utils";
+import pawnPiece from "@/assets/3D/pieces/pawn.glb?url";
+import rookPiece from "@/assets/3D/pieces/rook.glb?url";
+import knightPiece from "@/assets/3D/pieces/knight.glb?url";
+import bishopPiece from "@/assets/3D/pieces/bishop.glb?url";
+import queenPiece from "@/assets/3D/pieces/queen.glb?url";
+import kingPiece from "@/assets/3D/pieces/king.glb?url";
+import masterHand from "@/assets/3D/master-hand.glb?url";
+import helvetikerFont from "@/assets/fonts/typefaces/helvetiker_regular.typeface.json?url";
+import { configureTweakpane } from "@/shared/utils";
 import { useGameStore, useLoaderStore } from "../_stores";
-
-import pawnPiece from "../../assets/3D/pieces/pawn.glb?url";
-import rookPiece from "../../assets/3D/pieces/rook.glb?url";
-import knightPiece from "../../assets/3D/pieces/knight.glb?url";
-import bishopPiece from "../../assets/3D/pieces/bishop.glb?url";
-import queenPiece from "../../assets/3D/pieces/queen.glb?url";
-import kingPiece from "../../assets/3D/pieces/king.glb?url";
-import masterHand from "../../assets/3D/master-hand.glb?url";
-import helvetikerFont from "../../assets/fonts/typefaces/helvetiker_regular.typeface.json?url";
 
 /** @internal */
 const devMode = import.meta.env?.DEV;
@@ -47,6 +46,7 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 
 	const rootDom = useMemo(() => document.getElementById("root"), []);
 
+	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const paneRef = useRef<Pane>(null);
 	const statsRef = useRef<Stats>(null);
 	const stateRef = useRef<{
@@ -55,7 +55,12 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 	}>({ isPending: false, isReady: false });
 
 	const init = useCallback(async () => {
-		if (stateRef.current.isPending || stateRef.current.isReady) return;
+		if (
+			stateRef.current.isPending ||
+			stateRef.current.isReady ||
+			!canvasRef.current
+		)
+			return;
 
 		stateRef.current.isPending = true;
 
@@ -63,10 +68,15 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 		setIsResourcesLoaded(false);
 		register({
 			location: workerLocation,
-			enableDebug: devMode,
-			enableControls: true,
-			axesSizes: 5,
-			withMiniCamera: false,
+			canvas: canvasRef.current,
+			canvasWrapper: "parent",
+			fullScreen: false,
+			debug: {
+				enabled: devMode,
+				axesSizes: 5,
+				withMiniCamera: false,
+				enableControls: true
+			},
 			loaderDataSources: [
 				{
 					name: "pawnPiece",
@@ -113,8 +123,8 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 				stateRef.current.isPending = false;
 				stateRef.current.isReady = true;
 
-				const appWorker: Worker | undefined = _app.module.getWorker();
-				const appThread = _app.module.getThread();
+				const { worker: appWorker, thread: appThread } =
+					_app.module.getWorkerThread() || {};
 				const appLoader = _app.module.loader;
 
 				const loadSub = appLoader.getLoadCompleted$().subscribe(() => {
@@ -186,5 +196,10 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 		setIsLoading
 	]);
 
-	return children;
+	return (
+		<section className="relative flex size-full">
+			<canvas ref={canvasRef} className="absolute inset-0" />
+			{children}
+		</section>
+	);
 };

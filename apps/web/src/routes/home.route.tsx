@@ -1,26 +1,22 @@
-import { MainMenuSection } from "../shared/enum";
-import { Button, Icon } from "./_components/core";
+import { Icon } from "./_components/core";
 import { useMainMenuStore } from "./_stores";
+import { cn } from "@/shared/utils";
 
 export const HomeRoute = () => {
-	const { open: openMenu } = useMainMenuStore();
+	const { isOpen } = useMainMenuStore();
 
 	return (
-		<section className="fixed left-1/2 -translate-x-1/2 bottom-4 flex flex-col justify-center items-center w-fit gap-4 py-6 px-20 backdrop-blur-xs bg-black/30 rounded-xl">
-			<h1 className="text-4xl"> Chess Dimension </h1>
-
-			<Button
-				className="bg-black/30 font-bold py-2 px-4 uppercase"
-				onClick={() => openMenu(MainMenuSection.newGame)}
-			>
-				Start a new game
-			</Button>
-
+		<section
+			className={cn(
+				"fixed left-1/2 -translate-x-1/2 bottom-10 flex flex-col justify-center items-center w-fit gap-4 py-2 px-8 backdrop-blur-xs bg-black/30 rounded-xl pointer-events-none transition-opacity duration-300",
+				isOpen && "opacity-0"
+			)}
+		>
 			<small>
-				Open the main menu with <code className="border rounded p-px">Esc</code>{" "}
-				or the{" "}
+				Open main menu with the <code className="border rounded p-px">Esc</code>{" "}
+				key or press the{" "}
 				<code className="border rounded p-[2px] inline-block -mb-1">
-					<Icon.Menu size={10} />
+					<Icon.Menu size={12} />
 				</code>{" "}
 				button
 			</small>

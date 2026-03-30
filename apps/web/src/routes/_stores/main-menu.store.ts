@@ -1,29 +1,28 @@
 import { create } from "zustand";
 import { Properties } from "@quick-threejs/utils";
 
-import { MainMenuSection } from "../../shared/enum";
-
 export interface MainMenuStore {
 	isOpen: boolean;
-	currentSection: MainMenuSection;
-	open: (section?: MainMenuSection) => void;
-	close: () => void;
-	setSection: (section: MainMenuSection) => void;
+	currentSections?: string[];
+	setOpen: (isOpen: boolean) => void;
+	setSections: (sections: string | string[]) => void;
+	toggleOpen: () => void;
 	reset: () => void;
-	toggle: () => void;
 }
 
 export const mainMenuInitialState: Properties<MainMenuStore> = {
-	isOpen: false,
-	currentSection: MainMenuSection.main
+	isOpen: false
 };
 
 export const useMainMenuStore = create<MainMenuStore>((set) => ({
 	...mainMenuInitialState,
-	open: (section = MainMenuSection.main) =>
-		set(() => ({ isOpen: true, currentSection: section })),
-	close: () => set(() => ({ isOpen: false })),
-	setSection: (section) => set(() => ({ currentSection: section })),
-	reset: () => set(() => ({ ...mainMenuInitialState })),
-	toggle: () => set((state) => ({ isOpen: !state.isOpen }))
+	setOpen: (isOpen: boolean) => set(() => ({ isOpen })),
+	setSections: (currentSections: string | string[]) =>
+		set(() => ({
+			currentSections: Array.isArray(currentSections)
+				? currentSections
+				: [currentSections]
+		})),
+	toggleOpen: () => set((state) => ({ isOpen: !state.isOpen })),
+	reset: () => set(mainMenuInitialState)
 }));

@@ -1,5 +1,6 @@
 import { forwardRef, JSX } from "react";
 import { DefaultContext, IconBaseProps, IconContext } from "./context";
+import { cn } from "@/shared/utils";
 
 /**
  * @author kamijin-fanta <https://github.com/kamijin-fanta>
@@ -11,13 +12,9 @@ export const IconBase = forwardRef<
 	IconBaseProps & { attr?: Record<string, string> }
 >((props, ref): JSX.Element => {
 	const elem = (conf: IconContext) => {
-		const { attr, size, title, ...svgProps } = props;
+		const { attr, size, title, width, height, ...svgProps } = props;
 		const computedSize = size || conf.size || "1em";
-		let className: string | undefined;
-
-		if (conf.className) className = conf.className;
-		if (props.className)
-			className = (className ? className + " " : "") + props.className;
+		const className = cn(conf.className, svgProps.className);
 
 		return (
 			<svg
@@ -25,18 +22,20 @@ export const IconBase = forwardRef<
 				stroke="currentColor"
 				fill="currentColor"
 				strokeWidth="0"
-				{...conf.attr}
-				{...attr}
-				{...svgProps}
-				className={className}
-				style={{
-					color: props.color || conf.color,
-					...conf.style,
-					...props.style
-				}}
-				height={computedSize}
-				width={computedSize}
+				height={height ?? computedSize}
+				width={width ?? computedSize}
 				xmlns="http://www.w3.org/2000/svg"
+				{...{
+					...conf.attr,
+					...attr,
+					...svgProps,
+					className,
+					style: {
+						color: props.color ?? conf.color,
+						...conf.style,
+						...props.style
+					}
+				}}
 			>
 				{title && <title>{title}</title>}
 				{props.children}

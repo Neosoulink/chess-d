@@ -1,0 +1,55 @@
+:root {
+	--font-kelly-slab: "Kelly Slab", arial;
+	--font-comic-neue: "Comic Neue", sans-serif;
+
+	--color-light: #f8f9fa;
+	--color-dark: #1a1a1a;
+	--color-positions: #2dfc49;
+	--color-negative: #fc4949;
+	--color-deep-space: #141726;
+	--color-neon-cyan: #4deeea;
+	--color-neon-purple: #a553fc;
+	--color-neon-magenta: #f72585;
+	--color-neon-gold: #ffcc33;
+
+	--tp-base-background-color: var(--color-dark);
+	--tp-base-shadow-color: var(--color-deep-space);
+	--tp-button-background-color: var(--color-neon-cyan);
+	--tp-button-background-color-active: var(--color-light);
+	--tp-button-background-color-focus: var(--color-light);
+	--tp-button-background-color-hover: var(--color-light);
+	--tp-button-foreground-color: var(--color-dark);
+	--tp-container-background-color: var(--color-dark);
+	--tp-container-background-color-active: var(--color-dark);
+	--tp-container-background-color-focus: var(--color-dark);
+	--tp-container-background-color-hover: var(--color-dark);
+	--tp-container-foreground-color: var(--color-light);
+	--tp-groove-foreground-color: var(--color-dark);
+	--tp-input-background-color: color-mix(
+		in srgb,
+		var(--color-light) 15%,
+		transparent
+	);
+	--tp-input-background-color-active: var(--color-dark);
+	--tp-input-background-color-focus: var(--color-dark);
+	--tp-input-background-color-hover: var(--color-dark);
+	--tp-input-foreground-color: var(--color-light);
+	--tp-label-foreground-color: var(--color-light);
+	--tp-monitor-background-color: var(--color-dark);
+	--tp-monitor-foreground-color: var(--color-light);
+}
+
+@theme {
+	--font-kelly-slab: var(--font-kelly-slab);
+	--font-comic-neue: var(--font-comic-neue);
+
+	--color-light: var(--color-light);
+	--color-dark: var(--color-dark);
+	--color-positions: var(--color-positions);
+	--color-negative: var(--color-negative);
+	--color-deep-space: var(--color-deep-space);
+	--color-neon-cyan: var(--color-neon-cyan);
+	--color-neon-purple: var(--color-neon-purple);
+	--color-neon-magenta: var(--color-neon-magenta);
+	--color-neon-gold: var(--color-neon-gold);
+}

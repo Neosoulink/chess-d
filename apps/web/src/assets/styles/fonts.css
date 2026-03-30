@@ -1,0 +1,11 @@
+@font-face {
+	font-family: "Kelly Slab";
+	src:
+		local("Kelly Slab"), url("../fonts/ttf/kelly-slab/kelly-slab-regular.ttf");
+}
+
+@font-face {
+	font-family: "Comic Neue";
+	src:
+		local("Comic Neue"), url("../fonts/ttf/comic-neue/comic-neue-regular.ttf");
+}

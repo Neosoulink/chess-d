@@ -169,7 +169,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 
 	const moveBoardPiece = useCallback(
 		(move: Move) => {
-			app?.module?.getWorker()?.postMessage?.({
+			app?.module?.getWorkerThread()?.worker?.postMessage?.({
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
 			} satisfies MessageData<Move>);
@@ -192,7 +192,7 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 		if (data.player.id === currentPlayer?.getEntity()?.id) return;
 
 		if (data.emote)
-			app?.module?.getWorker()?.postMessage?.({
+			app?.module?.getWorkerThread()?.worker?.postMessage?.({
 				token: HAND_WILL_EMOTE_TOKEN,
 				value: {
 					side: data.side,
@@ -294,11 +294,15 @@ export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
 				});
 		};
 
-		app?.module?.getWorker()?.addEventListener("message", handleMessages);
+		app?.module
+			?.getWorkerThread()
+			?.worker?.addEventListener("message", handleMessages);
 
 		return () => {
 			subscription.unsubscribe();
-			app?.module?.getWorker?.().removeEventListener("message", handleMessages);
+			app?.module
+				?.getWorkerThread()
+				?.worker?.removeEventListener("message", handleMessages);
 		};
 	}, [app, currentPlayer, opponentPlayer, moveBoardPiece, socket, app?.module]);
 

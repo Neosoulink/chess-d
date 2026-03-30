@@ -4,7 +4,7 @@ import { IconBase } from "./icon-base";
 import { IconBaseProps } from "./context";
 
 export const ChessboardIcon = forwardRef<SVGSVGElement, IconBaseProps>(
-	({ className, ...props }, ref) => (
+	({ ...props }, ref) => (
 		<IconBase ref={ref} {...{ viewBox: "0 0 80 80", fill: "none", ...props }}>
 			<path
 				d="M4 1.5H76C77.3807 1.5 78.5 2.61929 78.5 4V76C78.5 77.3807 77.3807 78.5 76 78.5H4C2.61929 78.5 1.5 77.3807 1.5 76V4C1.5 2.61929 2.61929 1.5 4 1.5Z"

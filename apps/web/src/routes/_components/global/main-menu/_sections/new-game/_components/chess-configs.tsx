@@ -3,12 +3,24 @@ import { Chessboard2 } from "@chrisoakman/chessboard2/dist/chessboard2.min.js";
 import { validateFen } from "chess.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useGameStore } from "../../_stores";
-import { Button, Icon, Input } from "../core";
+import { MAIN_MENU_SECTIONS } from "@/shared/constants";
+import { useGameStore, useMainMenuStore } from "@/routes/_stores";
+import { Button, Icon } from "@/routes/_components/core";
+import { TitleDivider } from "@/routes/_components/custom/title-divider";
+import { MainMenuLabelInput } from "../../../_components/label-input";
 
-export const PiecesPositionEditor = () => {
+export const NewGameChessConfig = () => {
 	const { initialGameState, setInitialGameState } = useGameStore();
-	const { fen, playerSide } = initialGameState || {};
+	const { currentSections } = useMainMenuStore();
+
+	const { fen, playerSide } = useMemo(
+		() => initialGameState || {},
+		[initialGameState]
+	);
+	const [currentSection] = useMemo(
+		() => currentSections || [],
+		[currentSections]
+	);
 
 	const [inputFen, setInputFen] = useState(fen || DEFAULT_FEN);
 	const [showMap, setShowMap] = useState(false);
@@ -110,69 +122,81 @@ export const PiecesPositionEditor = () => {
 		}
 	}, [fen]);
 
+	useEffect(() => {
+		if (currentSection === MAIN_MENU_SECTIONS.newGame) {
+			reset();
+			setTimeout(() => {
+				setShowMap(false);
+			}, 0);
+		}
+	}, [currentSection, reset]);
+
 	return (
-		<div className="flex flex-col gap-2 items-center">
-			<div className="flex gap-2 items-end w-full">
-				<div className="flex-1 flex flex-col gap-4">
-					<div className="flex gap-4">
-						<div className="flex-1">
-							<label htmlFor="fen" className="block mb-2 font-medium">
-								Start Side
-							</label>
+		<div className="flex flex-col gap-2">
+			<TitleDivider title="Chess configs" icon="Chessboard" heading="3" />
 
-							<Input
-								asSelect
-								value={startSide}
-								onChange={(e) => changeStartSide(e.target.value as ColorSide)}
-							>
-								<option value={ColorSide.white}>White</option>
-								<option value={ColorSide.black}>Black</option>
-							</Input>
-						</div>
+			<MainMenuLabelInput
+				id="fen-start-side"
+				labelProps={{
+					children: "Start Side"
+				}}
+				inputProps={{
+					type: "select",
+					value: startSide,
+					onChange: (e) => changeStartSide(e.target.value as ColorSide)
+				}}
+				selectOptions={[
+					{ value: ColorSide.white, label: "White" },
+					{ value: ColorSide.black, label: "Black" }
+				]}
+			/>
 
-						<div className="flex-1">
-							<label htmlFor="fen" className="block mb-2 font-medium">
-								Your side
-							</label>
+			<MainMenuLabelInput
+				id="player-side"
+				labelProps={{
+					children: "Your Side"
+				}}
+				inputProps={{
+					type: "select",
+					value: playerSide,
+					onChange: (e) => changePlayerSide(e.target.value as ColorSide)
+				}}
+				selectOptions={[
+					{ value: ColorSide.white, label: "White" },
+					{ value: ColorSide.black, label: "Black" }
+				]}
+			/>
 
-							<Input
-								asSelect
-								value={playerSide}
-								onChange={(e) => changePlayerSide(e.target.value as ColorSide)}
-							>
-								<option value={ColorSide.white}>White</option>
-								<option value={ColorSide.black}>Black</option>
-							</Input>
-						</div>
-					</div>
+			<MainMenuLabelInput
+				id="fen-pieces-position"
+				labelProps={{
+					children: "Pieces Position"
+				}}
+				inputProps={{
+					value: inputFen,
+					invalid: !validateFen(inputFen).ok,
+					onChange: (e) => changeInputFen(e.target.value)
+				}}
+				extraActions={[
+					{
+						label: "Reset",
+						icon: "Reload",
+						action: reset
+					}
+				]}
+			/>
 
-					<div className="flex-1">
-						<label htmlFor="fen" className="block mb-2 font-medium">
-							Pieces Position
-						</label>
-
-						<Input
-							value={inputFen}
-							onChange={(e) => changeInputFen(e.target.value)}
-						/>
-					</div>
-				</div>
-
-				<Button className="h-11 w-11 text-2xl bg-black/30" onClick={reset}>
-					<Icon.Reload />
-				</Button>
-
+			<div className="flex gap-2">
+				{showMap && (
+					<div ref={mapWrapperRef} className="h-52 w-52 pointer-events-auto" />
+				)}
 				<Button
-					className={`h-11 w-11 text-2xl bg-black/30 ${showMap ? "" : " text-light/90"}`}
+					className="h-11 w-11 text-2xl"
 					onClick={() => setShowMap(!showMap)}
 				>
-					<Icon.Chessboard />
+					{showMap ? <Icon.Cross /> : <Icon.Chessboard />}
 				</Button>
 			</div>
-
-			{showMap && (
-				<div ref={mapWrapperRef} className="h-52 w-52 pointer-events-auto" />
-			)}
 		</div>
 	);
 };

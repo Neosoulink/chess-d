@@ -1,9 +1,20 @@
 export enum MainMenuSection {
 	main = "MAIN",
 	newGame = "NEW_GAME",
-	newGameSimulation = "NEW_GAME_SIMULATION",
-	newGameAI = "NEW_GAME_AI",
-	newGameHuman = "NEW_GAME_HUMAN",
-	saveGame = "SAVE_GAME",
-	loadGame = "LOAD_GAME"
+	settings = "SETTINGS"
+}
+
+export enum MainMenuNewGameSection {
+	main = "MAIN",
+	ai = "AI",
+	human = "HUMAN",
+	simulation = "SIMULATION"
+}
+
+export enum MainMenuSettingsSection {
+	general = "GENERAL",
+	audio = "AUDIO",
+	controls = "CONTROLS",
+	language = "LANGUAGE",
+	theme = "THEME"
 }

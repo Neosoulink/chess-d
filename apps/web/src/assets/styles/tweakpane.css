@@ -1,0 +1,12 @@
+@layer tweakpane {
+	.tp-dfwv {
+		z-index: 9999;
+		width: 350px !important;
+		margin-left: -100px;
+	}
+
+	.tp-rotv {
+		overflow-y: auto;
+		max-height: 90dvh;
+	}
+}

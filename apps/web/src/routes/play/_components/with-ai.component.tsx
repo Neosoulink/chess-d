@@ -70,7 +70,7 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 		setCurrentStartSide(initialGameState?.startSide || ColorSide.white);
 		resetGame();
 
-		const worker = appModule?.getWorker() as Worker | undefined;
+		const worker = appModule?.getWorkerThread()?.worker as Worker | undefined;
 		const handleResetMessage = (e: MessageEvent<MessageData | undefined>) => {
 			if (e.data?.token === GAME_RESET_TOKEN)
 				worker?.removeEventListener("message", handleResetMessage);
@@ -110,7 +110,7 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 
 	const performPieceMove = useCallback(
 		(move: Move) => {
-			appModule?.getWorker()?.postMessage?.({
+			appModule?.getWorkerThread()?.worker?.postMessage?.({
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
 			} satisfies MessageData<Move>);
@@ -284,10 +284,14 @@ export const WithAIComponent: FC<WithAIComponentProps> = () => {
 				return performPieceMove(payload.value.move);
 		});
 
-		appModule?.getWorker()?.addEventListener("message", handleMessages);
+		appModule
+			?.getWorkerThread()
+			?.worker?.addEventListener("message", handleMessages);
 
 		return () => {
-			appModule?.getWorker()?.removeEventListener?.("message", handleMessages);
+			appModule
+				?.getWorkerThread()
+				?.worker?.removeEventListener?.("message", handleMessages);
 			aiPerformedMoveSubscription?.unsubscribe?.();
 			playersSubscription.unsubscribe();
 		};

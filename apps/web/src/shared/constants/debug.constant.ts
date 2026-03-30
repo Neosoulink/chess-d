@@ -13,7 +13,6 @@ import {
 	NeutralToneMapping,
 	NoToneMapping,
 	PCFShadowMap,
-	PCFSoftShadowMap,
 	ReinhardToneMapping,
 	SRGBColorSpace,
 	VSMShadowMap
@@ -141,11 +140,10 @@ export const DEBUG_OPTIONS: Record<
 				(self.rendererInstance.shadowMap.needsUpdate = !!value)
 		},
 		"Shadows Type": {
-			default: PCFSoftShadowMap,
+			default: PCFShadowMap,
 			config: {
 				options: {
 					BasicShadowMap,
-					PCFSoftShadowMap,
 					PCFShadowMap,
 					VSMShadowMap
 				}

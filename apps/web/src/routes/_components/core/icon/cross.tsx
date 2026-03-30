@@ -4,7 +4,7 @@ import { IconBase } from "./icon-base";
 import { IconBaseProps } from "./context";
 
 export const CrossIcon = forwardRef<SVGSVGElement, IconBaseProps>(
-	({ className, ...props }, ref) => (
+	({ ...props }, ref) => (
 		<IconBase ref={ref} {...{ viewBox: "0 0 24 24", ...props }}>
 			<path
 				strokeLinecap="round"
