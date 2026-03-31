@@ -9,7 +9,7 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 
-import { PlayersService } from "../services/players.service";
+import { RoomsService } from "../services/rooms.service";
 import {
 	SOCKET_ROOM_CREATED_TOKEN,
 	SOCKET_JOINED_ROOM_TOKEN,
@@ -21,18 +21,17 @@ import {
 } from "@chess-d/shared";
 
 @WebSocketGateway({
+	namespace: "rooms",
 	cors: {
 		origin: "*",
 		credentials: true
 	}
 })
-export class PlayersGateway
-	implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
 	private readonly server: Server;
 
-	constructor(private readonly playersService: PlayersService) {}
+	constructor(private readonly roomsService: RoomsService) {}
 
 	private handleError(error: Error, socket: Socket): void {
 		console.warn("Error occurred:", error.message, `<${error.cause}>`);
@@ -45,18 +44,10 @@ export class PlayersGateway
 	}
 
 	handleConnection(@ConnectedSocket() socket: Socket): void {
-		const data = this.playersService.register(socket);
+		const data = this.roomsService.register(socket);
 		if (data instanceof Error) return this.handleError(data, socket);
 
 		const { player, roomID, room } = data;
-
-		console.log(
-			"\n=========/ Player connected /=========\n",
-			player,
-			`\n\nRoom "${roomID}" has ${room?.players.length} player(s).`,
-			`\nGame status "${room.fen}".`,
-			"\n====================================="
-		);
 
 		this.server.to(socket.id).socketsJoin(roomID);
 		this.server
@@ -72,17 +63,13 @@ export class PlayersGateway
 	}
 
 	handleDisconnect(socket: Socket): void {
-		const data = this.playersService.unregister(socket);
+		const data = this.roomsService.unregister(socket);
 
 		if (data instanceof Error) return this.handleError(data, socket);
 
 		const { player, roomID, room } = data;
 
 		this.server.in(roomID).emit(SOCKET_LEFT_ROOM_TOKEN, player.id);
-
-		console.log(
-			`\nPlayer "${player?.id}" left room "${roomID}".\nTotal in room: ${room?.players?.length ?? 0}`
-		);
 	}
 
 	@SubscribeMessage(SOCKET_MOVE_PERFORMED_TOKEN)
@@ -90,7 +77,7 @@ export class PlayersGateway
 		@ConnectedSocket() socket: Socket,
 		@MessageBody() payload: GameUpdatedPayload
 	): void {
-		const data = this.playersService.handleMove(socket, payload.move);
+		const data = this.roomsService.handleMove(socket, payload.move);
 
 		if (data instanceof Error) return this.handleError(data, socket);
 
@@ -98,8 +85,6 @@ export class PlayersGateway
 			.in(socket.data.roomID)
 			.except(socket.id)
 			.emit(SOCKET_MOVE_PERFORMED_TOKEN, payload);
-
-		console.log("\nMove performed", socket.id, payload);
 	}
 
 	@SubscribeMessage(SOCKET_ACTION_MESSAGE_TOKEN)
@@ -107,10 +92,9 @@ export class PlayersGateway
 		@ConnectedSocket() socket: Socket,
 		@MessageBody() payload: SocketActionMessagePayload
 	): void {
-		const data = this.playersService.handleActionMessage(socket, payload);
-		if (data instanceof Error) return this.handleError(data, socket);
+		const data = this.roomsService.handleActionMessage(socket, payload);
 
-		console.log("\nAction message", socket.id, data);
+		if (data instanceof Error) return this.handleError(data, socket);
 
 		this.server
 			.in(socket.data.roomID)

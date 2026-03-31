@@ -7,7 +7,7 @@ import { MAIN_MENU_SECTIONS } from "@/shared/constants";
 import { useMainMenuStore } from "@/routes/_stores";
 import { ModalSection, TitleDivider } from "@/routes/_components/custom";
 import { MainMenuLabelInput } from "../../_components/label-input";
-import { MainMenuNewGameMultiplayer } from "./_components/human";
+import { MainMenuNewGameMultiplayer } from "./_components/multiplayer";
 import { MainMenuNewGameAI } from "./_components/ai";
 import { MainMenuNewGameSimulation } from "./_components/simulation";
 import { NewGameChessConfig } from "./_components/chess-configs";
@@ -37,7 +37,7 @@ export const MainMenuNewGameSection = () => {
 	}, [gameModeConfigs.gameMode]);
 
 	const handleMultiMode = () => {
-		let to = "/play?mode=human";
+		let to = "/play?mode=multiplayer";
 
 		if (gameModeConfigs.multiJoinRoom && gameModeConfigs.multiRoomId)
 			to = `${to}&roomID=${gameModeConfigs.multiRoomId}`;
@@ -89,7 +89,7 @@ export const MainMenuNewGameSection = () => {
 					icon: "ActionUndo",
 					action: () => setSections(MAIN_MENU_SECTIONS.main)
 				},
-				...(gameModeConfigs.gameMode === GameMode.human
+				...(gameModeConfigs.gameMode === GameMode.multiplayer
 					? [
 							{
 								label: gameModeConfigs.multiJoinRoom
@@ -99,7 +99,7 @@ export const MainMenuNewGameSection = () => {
 							},
 							{
 								label: "Random Match",
-								action: () => navigate("/play?mode=human&random=true")
+								action: () => navigate("/play?mode=multiplayer&random=true")
 							}
 						]
 					: []),
@@ -151,7 +151,7 @@ export const MainMenuNewGameSection = () => {
 					selectOptions={[
 						{ value: "none", label: "Select a mode" },
 						{ value: GameMode.ai, label: "AI" },
-						{ value: GameMode.human, label: "Multiplayer" },
+						{ value: GameMode.multiplayer, label: "Multiplayer" },
 						{ value: GameMode.free, label: "Free" },
 						{ value: GameMode.simulation, label: "Simulation" }
 					]}
@@ -159,7 +159,7 @@ export const MainMenuNewGameSection = () => {
 
 				{!!isValidGameMode && (
 					<>
-						{gameModeConfigs.gameMode === GameMode.human && (
+						{gameModeConfigs.gameMode === GameMode.multiplayer && (
 							<MainMenuNewGameMultiplayer
 								joinRoom={!!gameModeConfigs.multiJoinRoom}
 								roomId={gameModeConfigs.multiRoomId}

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { Observable, Subject } from "rxjs";
 import { create } from "zustand";
 
-export interface ChatStoreChat {
+export interface ChatStoreItem {
 	content: string;
 	side: ColorSide;
 	timestamp: number;
@@ -13,9 +13,9 @@ export interface ChatStoreChat {
 }
 
 export interface ChatStore {
-	chats: ChatStoreChat[];
-	chat$: Observable<ChatStoreChat>;
-	notify: (chat: Omit<ChatStoreChat, "timestamp">) => void;
+	chats: ChatStoreItem[];
+	chat$: Observable<ChatStoreItem>;
+	notify: (chat: Omit<ChatStoreItem, "timestamp">) => void;
 	reset: () => void;
 }
 
@@ -24,7 +24,7 @@ export const chatStoreInitialState: Omit<Properties<ChatStore>, "chat$"> = {
 };
 
 export const useChatStore = create<ChatStore>((set, get) => {
-	const chat$$ = new Subject<ChatStoreChat>();
+	const chat$$ = new Subject<ChatStoreItem>();
 	const chat$ = chat$$.asObservable();
 
 	chat$.subscribe((chat) => {

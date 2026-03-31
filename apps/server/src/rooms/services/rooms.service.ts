@@ -12,7 +12,7 @@ import { validateFen, type Move } from "chess.js";
 import type { Socket } from "socket.io";
 
 @Injectable()
-export class PlayersService {
+export class RoomsService {
 	private readonly rooms: Record<
 		UUID,
 		{ fen: string; players: PlayerEntity[]; startSide: ColorSide }
@@ -23,7 +23,7 @@ export class PlayersService {
 		| {
 				player: PlayerEntity;
 				roomID: string;
-				room: PlayersService["rooms"][UUID];
+				room: RoomsService["rooms"][UUID];
 		  }
 		| Error {
 		const {
@@ -118,7 +118,7 @@ export class PlayersService {
 	unregister(socket: Socket):
 		| {
 				roomID: string;
-				room: PlayersService["rooms"][UUID];
+				room: RoomsService["rooms"][UUID];
 				player: PlayerEntity;
 		  }
 		| Error {

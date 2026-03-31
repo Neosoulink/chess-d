@@ -1,110 +1,19 @@
-import { FC, PointerEvent, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useLocation } from "react-router";
 
-import { cn } from "@/shared/utils";
 import { HAND_WILL_EMOTE_TOKEN } from "@/shared/tokens";
 import { MessageData } from "@/shared/types";
 import { ObservablePayload } from "@chess-d/shared";
 import { HandsController } from "@/core/game/world/hands/hands.controller";
-import { Button, Icon } from "@/routes/_components/core";
+import { Icon } from "@/routes/_components/core";
 import { PopoverButton } from "@/routes/_components/custom";
-import { ChatStoreChat, useChatStore } from "@/routes/_stores/chat.store";
+import { useChatStore } from "@/routes/_stores/chat.store";
 import { useGameStore } from "@/routes/_stores";
 import { HANDS_SUPPORT_EMOTES } from "@/shared/constants";
+import { ChatEmotesOptions } from "./_components/emotes-options";
+import { ChatMessagesOptions } from "./_components/messages-options";
+import { ChatItem } from "./_components/item";
 
-/** @internal */
-const EmotesOptions: FC<{
-	data: {
-		name: string;
-		description?: string;
-		action: () => void;
-	}[];
-}> = ({ data }) => {
-	const handleClick = (
-		e: PointerEvent<HTMLButtonElement>,
-		action: () => void
-	) => {
-		action();
-	};
-
-	return data.map(({ name, description, action }, index) => (
-		<Button
-			key={`${name}-${index}`}
-			title={description}
-			onPointerDown={(e) => handleClick(e, action)}
-			className="size-8"
-		>
-			{name}
-		</Button>
-	));
-};
-
-/** @internal */
-const MsgOptions: FC<{
-	data: {
-		content: string;
-		description?: string;
-		action: () => void;
-	}[];
-}> = ({ data }) => {
-	const handleClick = (
-		e: PointerEvent<HTMLButtonElement>,
-		action: () => void
-	) => {
-		action();
-	};
-
-	return data.map(({ content, description, action }, index) => (
-		<Button
-			key={`${content}-${index}`}
-			title={description}
-			onPointerDown={(e) => handleClick(e, action)}
-			className="h-8"
-		>
-			{content}
-		</Button>
-	));
-};
-
-const ChatItem: FC<ChatStoreChat & { isPlayer: boolean }> = ({
-	content,
-	type,
-	isPlayer
-}) => {
-	const isEmote = type === "emote";
-	const typeLabel = isEmote ? "Emote" : "Said";
-
-	return (
-		<li
-			className={cn(
-				"relative flex items-center gap-1 h-7 w-fit bg-linear-to-r from-dark/80 to-dark/5 px-2 py-0.5"
-			)}
-		>
-			{isEmote && (
-				<div className="absolute top-0 left-0 w-full h-full bg-linear-to-r from-neon-cyan/10 to-neon-purple/5" />
-			)}
-			<span>({isPlayer ? "You" : "Opponent"}):</span>
-			{isEmote && <Icon.HandSign size={20} />}
-			<span>{typeLabel} -</span>
-			<span>{content}</span>
-		</li>
-	);
-};
-
-const emotesData = [
-	{
-		content: "👍",
-		description: "Good job!"
-	},
-	{
-		content: "👎",
-		description: "Bad!"
-	},
-	{
-		content: "👉",
-		description: "Finger gun!"
-	}
-];
 const msgData = [
 	{
 		content: "Nice move!",
@@ -154,7 +63,7 @@ export const PlayChat = () => {
 		<section className="flex flex-col gap-2 h-fit z-10 absolute bottom-6 left-6 pointer-events-none select-none">
 			<ul
 				ref={chatListRef}
-				className="h-24 overflow-y-hidden no-scrollbar mask-t-from-70% mask-t-to-transparent text-xs text-light/50 flex flex-col justify-end"
+				className="max-h-20 overflow-y-auto no-scrollbar mask-t-from-70% mask-t-to-transparent text-xs text-light/50"
 			>
 				<div className="flex flex-col gap-1">
 					{chats.map(({ timestamp, side, description, ...chat }, index) => (
@@ -173,7 +82,7 @@ export const PlayChat = () => {
 					popoverProps={{
 						className: "gap-2",
 						children: (
-							<EmotesOptions
+							<ChatEmotesOptions
 								data={HANDS_SUPPORT_EMOTES.map((emote) => ({
 									name: emote.emoji,
 									action: () => handleEmoteAction(emote)
@@ -190,7 +99,7 @@ export const PlayChat = () => {
 					popoverProps={{
 						className: "gap-2",
 						children: (
-							<MsgOptions
+							<ChatMessagesOptions
 								data={msgData.map(({ content, description }) => ({
 									content,
 									description,

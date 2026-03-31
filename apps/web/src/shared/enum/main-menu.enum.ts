@@ -7,7 +7,7 @@ export enum MainMenuSection {
 export enum MainMenuNewGameSection {
 	main = "MAIN",
 	ai = "AI",
-	human = "HUMAN",
+	multiplayer = "MULTIPLAYER",
 	simulation = "SIMULATION"
 }
 

@@ -29,7 +29,7 @@ export const PlayRoute: FC = () => {
 
 			{gameMode === GameMode.ai || gameMode === GameMode.simulation ? (
 				<PlayModeAI />
-			) : gameMode === GameMode.human ? (
+			) : gameMode === GameMode.multiplayer ? (
 				<PlayModeMultiplayer />
 			) : (
 				<PlayModeFree />

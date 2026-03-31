@@ -3,7 +3,7 @@ import { ConfigModule } from "@nestjs/config";
 import { Module, ValidationPipe } from "@nestjs/common";
 import { APP_PIPE } from "@nestjs/core";
 
-import { PlayersModule } from "./players/players.module";
+import { RoomsModule } from "./rooms/rooms.module";
 
 @Module({
 	imports: [
@@ -12,7 +12,7 @@ import { PlayersModule } from "./players/players.module";
 				CLIENT_HOST: Joi.string().required()
 			})
 		}),
-		PlayersModule
+		RoomsModule
 	],
 	providers: [
 		{

@@ -1,6 +1,7 @@
 import {
 	ColorSide,
 	GameUpdatedPayload,
+	ObservablePayload,
 	PlayerEntity,
 	SOCKET_ACTION_MESSAGE_TOKEN,
 	SOCKET_JOINED_ROOM_TOKEN,
@@ -11,19 +12,23 @@ import {
 	SocketAuthInterface
 } from "@chess-d/shared";
 import { Move } from "chess.js";
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { data, useLocation, useSearchParams } from "react-router";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation, useSearchParams } from "react-router";
 import { merge } from "rxjs";
 import { io } from "socket.io-client";
 
-import { PlayerModel } from "../../../shared/models";
+import { PlayerModel } from "@/shared/models";
 import {
 	GAME_UPDATED_TOKEN,
+	HAND_STARTED_EMOTE_TOKEN,
 	HAND_WILL_EMOTE_TOKEN,
 	PIECE_WILL_MOVE_TOKEN
-} from "../../../shared/tokens";
-import { EngineUpdatedMessageData, MessageData } from "../../../shared/types";
+} from "@/shared/tokens";
+import { HANDS_SUPPORT_EMOTES } from "@/shared/constants";
+import { EngineUpdatedMessageData, MessageData } from "@/shared/types";
 import { useGameStore, useLoaderStore } from "../../_stores";
+import { useChatStore } from "@/routes/_stores/chat.store";
+import { HandsController } from "@/core/game/world/hands/hands.controller";
 
 /** @internal */
 interface SocketPayload {
@@ -37,6 +42,7 @@ export interface PlayModeMultiplayerProps {}
 export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 	const { app, initialGameState, setInitialGameState, resetGame } =
 		useGameStore();
+	const { chat$, notify: chatNotify } = useChatStore();
 	const { setIsLoading } = useLoaderStore();
 	const location = useLocation();
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -48,7 +54,7 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 
 	const socket = useMemo(
 		() =>
-			io(import.meta.env.PUBLIC_SERVER_HOST, {
+			io(`${import.meta.env.PUBLIC_SERVER_HOST}/rooms`, {
 				autoConnect: false
 			}),
 		[]
@@ -58,8 +64,6 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 
 	const onRoomCreated = useCallback(
 		(data: SocketPayload) => {
-			console.log("Room created:", data);
-
 			const player = new PlayerModel();
 			player.setEntity(data.player);
 
@@ -80,7 +84,7 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 			});
 			resetGame();
 
-			setTimeout(() => setIsLoading(false), 100);
+			setTimeout(() => setIsLoading(false), 300);
 		},
 		[resetGame, setInitialGameState, setIsLoading, setSearchParams, socket]
 	);
@@ -122,9 +126,7 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 				setOpponentPlayer(player);
 			}
 
-			setTimeout(() => setIsLoading(false), 100);
-
-			console.log("Joined room:", data);
+			setTimeout(() => setIsLoading(false), 300);
 		},
 		[
 			currentPlayer,
@@ -137,14 +139,10 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 	);
 
 	const onLeftRoom = useCallback((playerId: string) => {
-		console.log("Player left room.", playerId);
-
 		setOpponentPlayer(undefined);
 	}, []);
 
 	const onDisconnect = useCallback(() => {
-		console.log("Disconnected from server.");
-
 		setCurrentPlayer(undefined);
 		setOpponentPlayer(undefined);
 	}, []);
@@ -183,24 +181,39 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 				token: "PLACED_PIECE",
 				value: { ...data, entity: opponentPlayer.getEntity() }
 			});
-			console.log("Opponent performed move:", data);
 		},
 		[opponentPlayer]
 	);
 
-	const onActionMessage = useCallback((data: SocketActionMessagePayload) => {
-		if (data.player.id === currentPlayer?.getEntity()?.id) return;
+	const onActionMessage = useCallback(
+		(data: SocketActionMessagePayload) => {
+			const appWorker = app?.module?.getWorkerThread()?.worker;
+			const emote = HANDS_SUPPORT_EMOTES.find(
+				(emote) => emote.key === data.emote
+			);
 
-		if (data.emote)
-			app?.module?.getWorkerThread()?.worker?.postMessage?.({
-				token: HAND_WILL_EMOTE_TOKEN,
-				value: {
+			if (!appWorker || data.player.id === currentPlayer?.getEntity()?.id)
+				return;
+
+			if (emote)
+				return appWorker.postMessage?.({
+					token: HAND_WILL_EMOTE_TOKEN,
+					value: {
+						emote,
+						side: data.side,
+						duration: 3
+					} satisfies ObservablePayload<HandsController["emote$$"]>
+				});
+
+			if (data.message)
+				return chatNotify({
+					content: data.message,
 					side: data.side,
-					emote: data.emote,
-					duration: 3
-				}
-			});
-	}, []);
+					type: "message"
+				});
+		},
+		[app?.module, currentPlayer]
+	);
 
 	useEffect(() => {
 		setIsLoading(true);
@@ -251,8 +264,10 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 	]);
 
 	useEffect(() => {
+		const appWorker = app?.module?.getWorkerThread()?.worker;
 		const players: PlayerModel[] = [];
 
+		if (!appWorker) return;
 		if (currentPlayer) players.push(currentPlayer);
 		if (opponentPlayer) players.push(opponentPlayer);
 
@@ -268,10 +283,8 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 				fen !== move.before &&
 				entity?.color === move.color &&
 				currentPlayer?.color === move.color
-			) {
-				console.log("Player notified:", value);
+			)
 				socket.emit(SOCKET_MOVE_PERFORMED_TOKEN, value);
-			}
 
 			if (payload.token === "PLACED_PIECE" && move) return moveBoardPiece(move);
 		});
@@ -284,7 +297,6 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 
 			if (!fen || !token) return;
 
-			console.log("Received message:", payload.data);
 			if (token === GAME_UPDATED_TOKEN)
 				players.forEach((player) => {
 					player?.next({
@@ -294,17 +306,70 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 				});
 		};
 
-		app?.module
-			?.getWorkerThread()
-			?.worker?.addEventListener("message", handleMessages);
+		appWorker?.addEventListener("message", handleMessages);
 
 		return () => {
 			subscription.unsubscribe();
-			app?.module
-				?.getWorkerThread()
-				?.worker?.removeEventListener("message", handleMessages);
+			appWorker?.removeEventListener("message", handleMessages);
 		};
 	}, [app, currentPlayer, opponentPlayer, moveBoardPiece, socket, app?.module]);
+
+	useEffect(() => {
+		const sub = chat$.subscribe((chat) => {
+			const player = currentPlayer?.getEntity();
+			if (!player || chat.side !== player.color || chat.type !== "message")
+				return;
+
+			const messagePayload: SocketActionMessagePayload = {
+				player,
+				side: chat.side,
+				message: chat.content
+			};
+
+			socket.emit(SOCKET_ACTION_MESSAGE_TOKEN, messagePayload);
+		});
+
+		return () => {
+			sub.unsubscribe();
+		};
+	}, [chat$, currentPlayer, socket]);
+
+	useEffect(() => {
+		const appWorker = app?.module?.getWorkerThread()?.worker;
+		if (!appWorker) return;
+
+		const handleMessages = (
+			payload: MessageEvent<
+				MessageData<ObservablePayload<HandsController["emote$$"]>>
+			>
+		) => {
+			const player = currentPlayer?.getEntity();
+			const value = payload.data.value;
+			const token = payload.data.token;
+
+			if (
+				!player ||
+				!value ||
+				player.color !== value.side ||
+				token !== HAND_STARTED_EMOTE_TOKEN
+			)
+				return;
+
+			const messagePayload: SocketActionMessagePayload = {
+				player,
+				side: value.side,
+				emote: value.emote.key
+			};
+
+			socket.emit(SOCKET_ACTION_MESSAGE_TOKEN, messagePayload);
+		};
+
+		appWorker.addEventListener("message", handleMessages);
+
+		return () => {
+			appWorker.removeEventListener("message", handleMessages);
+		};
+	}, [app?.module, currentPlayer, socket]);
 
 	useEffect(() => {
 		const roomId = searchParams.get("roomID");

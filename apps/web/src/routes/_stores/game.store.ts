@@ -142,7 +142,11 @@ export const useGameStore = create<GameStore>((set, get) => {
 				value: state
 			} satisfies MessageData<GameResetState>);
 
-			set(() => ({ initialGameState: undefined }));
+			set(() => ({
+				initialGameState: undefined,
+				playerSide: state?.playerSide,
+				startSide: state?.startSide
+			}));
 		},
 		reset: () => {
 			const appWorker = get().app?.module?.getWorkerThread()?.worker as

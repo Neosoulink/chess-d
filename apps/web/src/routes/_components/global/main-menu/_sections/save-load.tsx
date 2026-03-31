@@ -20,7 +20,7 @@ const getGameModeTitle = (mode: GameMode) => {
 		case GameMode.ai:
 			return "AI";
 
-		case GameMode.human:
+		case GameMode.multiplayer:
 			return "Multiplayer";
 
 		case GameMode.simulation:
@@ -155,8 +155,8 @@ export const MainMenuSaveLoadSection: FC = () => {
 				navigate(
 					save.mode === GameMode.ai
 						? "/play?mode=ai"
-						: save.mode === GameMode.human
-							? "/play?mode=human"
+						: save.mode === GameMode.multiplayer
+							? "/play?mode=multiplayer"
 							: save.mode === GameMode.simulation
 								? "/play?mode=simulation"
 								: "/play?mode=free"
