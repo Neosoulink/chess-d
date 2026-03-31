@@ -132,8 +132,8 @@ importers:
         specifier: ^10.4.15
         version: 10.4.20(@nestjs/common@10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.20)(@nestjs/platform-socket.io@10.4.20)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       chess.js:
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.4.0
+        version: 1.4.0
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -214,8 +214,8 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1(vite@6.3.6(@types/node@22.18.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.44.0))
       chess.js:
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.4.0
+        version: 1.4.0
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -299,8 +299,8 @@ importers:
   packages/ai:
     dependencies:
       chess.js:
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.4.0
+        version: 1.4.0
       threads:
         specifier: ^1.7.0
         version: 1.7.0
@@ -333,8 +333,8 @@ importers:
         specifier: ^0.1.20
         version: 0.1.20(three@0.183.2)
       chess.js:
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.4.0
+        version: 1.4.0
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
@@ -395,8 +395,8 @@ importers:
         specifier: ^0.14.0
         version: 0.14.0
       chess.js:
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.4.0
+        version: 1.4.0
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
@@ -2577,8 +2577,8 @@ packages:
   chardet@2.1.0:
     resolution: {integrity: sha512-bNFETTG/pM5ryzQ9Ad0lJOTa6HWD/YsScAR3EnCPZRPlQh77JocYktSHOUHelyhm8IARL+o4c4F1bP5KVOjiRA==}
 
-  chess.js@1.2.0:
-    resolution: {integrity: sha512-QWdfpAkMslQ48hDDoEzEko6GbYTAKKx4UdXAPEF8nFnAuqp+woyL8LHSbziRP8u1aMAbnlOF0YkXF4ui0Nsubg==}
+  chess.js@1.4.0:
+    resolution: {integrity: sha512-BBJgrrtKQOzFLonR0l+k64A98NLemPwNsCskwb+29bRwobUa4iTm51E1kwGPbWXAcfdDa18nad6vpPPKPWarqw==}
 
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
@@ -8682,7 +8682,7 @@ snapshots:
 
   chardet@2.1.0: {}
 
-  chess.js@1.2.0: {}
+  chess.js@1.4.0: {}
 
   chokidar@3.6.0:
     dependencies:

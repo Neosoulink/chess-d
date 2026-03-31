@@ -3,9 +3,9 @@ import {
 	KING,
 	KNIGHT,
 	PAWN,
-	type PieceSymbol,
 	QUEEN,
-	ROOK
+	ROOK,
+	type PieceSymbol
 } from "chess.js";
 
 /**  @description Piece type based on the {@link PieceSymbol ChessJs.PieceSymbol}. */
