@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router";
 
 import { HAND_WILL_EMOTE_TOKEN } from "@/shared/tokens";
@@ -27,15 +27,21 @@ const msgData = [
 
 export const PlayChat = () => {
 	const { chats, notify, reset } = useChatStore();
-	const { playerSide, app } = useGameStore();
+	const { gameState, app } = useGameStore();
 	const { key } = useLocation();
+
+	const playerSide = useMemo(
+		() => gameState?.playerSide,
+		[gameState?.playerSide]
+	);
 
 	const chatListRef = useRef<HTMLUListElement>(null);
 
 	const handleEmoteAction = useCallback(
 		(payload: (typeof HANDS_SUPPORT_EMOTES)[number]) => {
 			const worker = app?.module.getWorkerThread()?.worker;
-			if (!worker) return;
+
+			if (!worker || !playerSide) return;
 
 			worker.postMessage({
 				token: HAND_WILL_EMOTE_TOKEN,
@@ -44,7 +50,7 @@ export const PlayChat = () => {
 					emote: payload,
 					side: playerSide
 				}
-			} as MessageData<ObservablePayload<HandsController["emote$$"]>>);
+			} satisfies MessageData<ObservablePayload<HandsController["emote$$"]>>);
 		},
 		[app?.module, playerSide]
 	);
@@ -104,6 +110,7 @@ export const PlayChat = () => {
 									content,
 									description,
 									action: () =>
+										playerSide &&
 										notify({
 											content,
 											side: playerSide,
