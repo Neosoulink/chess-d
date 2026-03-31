@@ -2,10 +2,11 @@ import { FC, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router";
 
 import {
-	GameOverview,
-	FreeModeComponent,
-	WithAIComponent,
-	WithHumanComponent
+	PlayChat,
+	PlayOverview,
+	PlayModeAI,
+	PlayModeFree,
+	PlayModeMultiplayer
 } from "./_components";
 import { GameMode } from "../../shared/enum";
 import { getGameModeFromUrl } from "../../shared/utils";
@@ -23,13 +24,15 @@ export const PlayRoute: FC = () => {
 
 	return (
 		<>
-			<GameOverview />
+			<PlayChat />
+			<PlayOverview />
+
 			{gameMode === GameMode.ai || gameMode === GameMode.simulation ? (
-				<WithAIComponent />
+				<PlayModeAI />
 			) : gameMode === GameMode.human ? (
-				<WithHumanComponent />
+				<PlayModeMultiplayer />
 			) : (
-				<FreeModeComponent />
+				<PlayModeFree />
 			)}
 		</>
 	);

@@ -13,8 +13,13 @@ import {
 } from "rxjs";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
-import { MessageData } from "../../../../shared/types";
-import { HAND_WILL_EMOTE_TOKEN } from "../../../../shared/tokens/emote.token";
+import { MessageData } from "@/shared/types";
+import {
+	HAND_ENDED_EMOTE_TOKEN,
+	HAND_STARTED_EMOTE_TOKEN,
+	HAND_WILL_EMOTE_TOKEN
+} from "@/shared/tokens/emote.token";
+import { HANDS_SUPPORT_EMOTES } from "@/shared/constants";
 import { WorldController } from "../world.controller";
 import { PiecesController } from "../chessboard/pieces/pieces.controller";
 import { AnimationAction, AnimationClip, AnimationMixer } from "three";
@@ -24,7 +29,7 @@ import { HandsService } from "./hands.service";
 export class HandsController {
 	public readonly emote$$ = new Subject<{
 		duration: number;
-		emote: string;
+		emote: (typeof HANDS_SUPPORT_EMOTES)[number];
 		side: ColorSide;
 	}>();
 
@@ -96,17 +101,24 @@ export class HandsController {
 					}: MessageEvent<
 						MessageData<ObservablePayload<HandsController["emote$$"]>>
 					>) => {
+						if (data.token !== HAND_WILL_EMOTE_TOKEN) return false;
+
 						const { duration, emote, side } = data.value || {};
 
 						return !!(
-							data.token === HAND_WILL_EMOTE_TOKEN &&
 							typeof duration === "number" &&
-							typeof emote === "string" &&
+							HANDS_SUPPORT_EMOTES.some((token) => token.key === emote?.key) &&
 							typeof side === "string"
 						);
 					}
 				),
-				map((e: MessageEvent<MessageData>) => e.data.value)
+				map(
+					(
+						e: MessageEvent<
+							MessageData<ObservablePayload<HandsController["emote$$"]>>
+						>
+					) => e.data.value!
+				)
 			)
 		).pipe(
 			map((payload) => {
@@ -114,12 +126,17 @@ export class HandsController {
 				const mixer = hand.animation.mixer;
 				const idleAction = hand.animation.idleAction;
 				const emoteClip = this._handsService.animationClips?.find(
-					(clip) => clip.name === payload.emote
+					(clip) => clip.name === payload.emote.key
 				);
 				const emoteAction = emoteClip && mixer?.clipAction(emoteClip);
 
 				if (!mixer || !idleAction || !emoteClip || !emoteAction)
 					return undefined;
+
+				self.postMessage({
+					token: HAND_STARTED_EMOTE_TOKEN,
+					value: payload
+				} satisfies MessageData<ObservablePayload<HandsController["emote$$"]>>);
 
 				return {
 					...payload,
@@ -150,6 +167,18 @@ export class HandsController {
 			share()
 		);
 		this.emoteEnded$ = this.emoteProgress$.pipe(
+			map((payload) => {
+				const { duration, emote, side } = payload;
+				self.postMessage({
+					token: HAND_ENDED_EMOTE_TOKEN,
+					value: {
+						duration,
+						emote,
+						side
+					}
+				} satisfies MessageData<ObservablePayload<HandsController["emote$$"]>>);
+				return payload;
+			}),
 			filter(({ progress }) => progress === 1),
 			share()
 		);

@@ -32,9 +32,9 @@ interface SocketPayload {
 	roomID: string;
 }
 
-export interface WithHumanComponentProps {}
+export interface PlayModeMultiplayerProps {}
 
-export const WithHumanComponent: FC<WithHumanComponentProps> = () => {
+export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 	const { app, initialGameState, setInitialGameState, resetGame } =
 		useGameStore();
 	const { setIsLoading } = useLoaderStore();

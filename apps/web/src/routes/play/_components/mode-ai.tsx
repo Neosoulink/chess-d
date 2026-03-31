@@ -20,7 +20,7 @@ import {
 import { getGameModeFromUrl } from "@/shared/utils";
 import { useGameStore, useLoaderStore } from "../../_stores";
 
-export interface WithAIComponentProps {}
+export interface PlayModeAIProps {}
 
 /** @internal */
 const devMode = import.meta.env?.DEV;
@@ -31,7 +31,7 @@ const aiWorkerLocation = new URL(
 	import.meta.url
 ) as unknown as string;
 
-export const WithAIComponent: FC<WithAIComponentProps> = () => {
+export const PlayModeAI: FC<PlayModeAIProps> = () => {
 	const { app, initialGameState, resetGame, setInitialGameState } =
 		useGameStore();
 	const { setIsLoading } = useLoaderStore();

@@ -22,7 +22,7 @@ import { HandsController } from "./hands.controller";
 
 @scoped(Lifecycle.ContainerScoped)
 export class HandsService {
-	static readonly INITIAL_HAND_POSITION: Vector3Like = { x: 0, y: 3, z: 6 };
+	static readonly INITIAL_HAND_POSITION: Vector3Like = { x: 0, y: 2.5, z: 6 };
 
 	private _gltf?: GLTF;
 

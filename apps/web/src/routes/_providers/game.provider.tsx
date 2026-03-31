@@ -21,6 +21,11 @@ import masterHand from "@/assets/3D/master-hand.glb?url";
 import helvetikerFont from "@/assets/fonts/typefaces/helvetiker_regular.typeface.json?url";
 import { configureTweakpane } from "@/shared/utils";
 import { useGameStore, useLoaderStore } from "../_stores";
+import { useChatStore } from "../_stores/chat.store";
+import { HAND_STARTED_EMOTE_TOKEN } from "@/shared/tokens";
+import { MessageData } from "@/shared/types";
+import { HandsController } from "@/core/game/world/hands/hands.controller";
+import { ObservablePayload } from "@chess-d/shared";
 
 /** @internal */
 const devMode = import.meta.env?.DEV;
@@ -41,6 +46,7 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 		resetGame,
 		reset: resetStore
 	} = useGameStore();
+	const { notify: chatNotify } = useChatStore();
 	const { setIsLoading } = useLoaderStore();
 	const { key: routeKey, pathname } = useLocation();
 
@@ -195,6 +201,29 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 		setInitialGameState,
 		setIsLoading
 	]);
+
+	useEffect(() => {
+		const worker = app?.module.getWorkerThread()?.worker;
+		if (!worker) return;
+
+		const handleEmoteStarted = (
+			event: MessageEvent<
+				MessageData<ObservablePayload<HandsController["emote$$"]>>
+			>
+		) => {
+			const { value, token } = event.data;
+			if (!value || !token || token !== HAND_STARTED_EMOTE_TOKEN) return;
+
+			chatNotify({
+				content: value.emote.description,
+				side: value.side,
+				type: "emote"
+			});
+		};
+
+		worker.addEventListener("message", handleEmoteStarted);
+		return () => worker.removeEventListener("message", handleEmoteStarted);
+	}, [app, chatNotify]);
 
 	return (
 		<section className="relative flex size-full">

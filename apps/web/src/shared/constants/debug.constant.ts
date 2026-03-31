@@ -20,7 +20,9 @@ import {
 import { BindingParams } from "tweakpane";
 
 import { DebugService } from "../../core/game/debug/debug.service";
-import { ColorSide } from "@chess-d/shared";
+import { ColorSide, ObservablePayload } from "@chess-d/shared";
+import { HANDS_SUPPORT_EMOTES } from "./hands.constant";
+import { HandsController } from "@/core/game/world/hands/hands.controller";
 
 export const DEBUG_OPTIONS: Record<
 	string,
@@ -369,33 +371,23 @@ export const DEBUG_OPTIONS: Record<
 	},
 
 	Hands: {
-		"Emote Ok": {
-			default: "$button",
-			func: ({ self }) =>
-				self.handsController.emote$$.next({
-					side: ColorSide.white,
-					duration: 3,
-					emote: "ok"
-				})
-		},
-		"Emote Not-Ok": {
-			default: "$button",
-			func: ({ self }) =>
-				self.handsController.emote$$.next({
-					side: ColorSide.white,
-					duration: 3,
-					emote: "not-ok"
-				})
-		},
-		"Emote Shot": {
-			default: "$button",
-			func: ({ self }) =>
-				self.handsController.emote$$.next({
-					side: ColorSide.white,
-					duration: 3,
-					emote: "shot"
-				})
-		},
+		...HANDS_SUPPORT_EMOTES.map((emote) => ({
+			[`Emote ${emote.key}`]: {
+				default: "$button",
+				func: ({ self }) =>
+					self.handsController.emote$$.next({
+						side: ColorSide.white,
+						duration: 3,
+						emote
+					} satisfies ObservablePayload<HandsController["emote$$"]>)
+			}
+		})).reduce(
+			(acc, emote) => ({
+				...acc,
+				...emote
+			}),
+			{}
+		),
 		"Material Side": {
 			default: DoubleSide,
 			config: {

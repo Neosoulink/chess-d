@@ -9,7 +9,9 @@ import { PlayerModel } from "@/shared/models";
 import { GAME_UPDATED_TOKEN } from "@/shared/tokens";
 import { EngineUpdatedMessageData } from "@/shared/types";
 
-export const FreeModeComponent: FC = () => {
+export interface PlayModeFreeProps {}
+
+export const PlayModeFree: FC<PlayModeFreeProps> = () => {
 	const location = useLocation();
 	const {
 		app,

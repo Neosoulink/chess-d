@@ -8,7 +8,7 @@ import { GameOverviewMap } from "./_components/mini-map";
 
 import "@chrisoakman/chessboard2/dist/chessboard2.min.css";
 
-export const GameOverview: FC = () => {
+export const PlayOverview: FC = () => {
 	const { pathname } = useLocation();
 
 	if (!pathname.startsWith("/play")) return null;

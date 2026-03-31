@@ -1,5 +1,6 @@
-export * from "./game-overview";
+export * from "./chat";
+export * from "./overview";
 
-export * from "./free-mode.component";
-export * from "./with-ai.component";
-export * from "./with-human.component";
+export * from "./mode-free";
+export * from "./mode-ai";
+export * from "./mode-multiplayer";
