@@ -37,6 +37,7 @@
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
+		"@typescript-eslint/parser": "^8.46.0",
 		"@tweakpane/core": "^2.0.5",
 		"@types/react": "^19.0.6",
 		"@types/react-dom": "^19.0.3",

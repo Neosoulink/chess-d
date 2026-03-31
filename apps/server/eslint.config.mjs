@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -14,8 +15,10 @@ const compat = new FlatCompat({
 
 /** @type {import("eslint").Linter.Config} */
 const configs = {
+	parser: tsParser,
 	parserOptions: {
-		project: true
+		project: true,
+		tsconfigRootDir: __dirname
 	}
 };
 

@@ -93,7 +93,7 @@ importers:
         specifier: ^2.1.1
         version: 2.5.6
       typescript:
-        specifier: ^5.3.3
+        specifier: ^5.6.0
         version: 5.9.2
       typescript-eslint:
         specifier: ^8.18.1
@@ -184,7 +184,7 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       typescript:
-        specifier: ^5.6.3
+        specifier: ^5.6.0
         version: 5.9.2
 
   apps/web:
@@ -274,6 +274,9 @@ importers:
       '@types/three':
         specifier: ^0.183.1
         version: 0.183.1
+      '@typescript-eslint/parser':
+        specifier: ^8.46.0
+        version: 8.57.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
       '@vitejs/plugin-react':
         specifier: ^5.0.2
         version: 5.0.2(vite@6.3.6(@types/node@22.18.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.44.0))
@@ -315,7 +318,7 @@ importers:
         specifier: ^4.8.0
         version: 4.10.0
       typescript:
-        specifier: ^5.5.3
+        specifier: ^5.6.0
         version: 5.9.2
 
   packages/chessboard:
@@ -361,7 +364,7 @@ importers:
         specifier: ^4.8.0
         version: 4.10.0
       typescript:
-        specifier: ^5.5.3
+        specifier: ^5.6.0
         version: 5.9.2
 
   packages/configs:
@@ -386,7 +389,7 @@ importers:
         specifier: ^0.183.1
         version: 0.183.1
       typescript:
-        specifier: ^5.5.3
+        specifier: ^5.6.0
         version: 5.9.2
 
   packages/shared:
@@ -414,7 +417,7 @@ importers:
         specifier: ^8.46.0
         version: 8.57.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
       typescript:
-        specifier: ^5.5.3
+        specifier: ^5.6.0
         version: 5.9.2
 
 packages:

@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -16,8 +17,11 @@ const compat = new FlatCompat({
 const configs = {
 	files: ["./src/**/*.js?(x)", "./src/**/*.ts?(x)"],
 	languageOptions: {
+		// Hoisted parser matches scope-manager; @quick-threejs/config's nested parser can mismatch and crash on enums.
+		parser: tsParser,
 		parserOptions: {
-			project: true
+			project: true,
+			tsconfigRootDir: __dirname
 		}
 	}
 };
