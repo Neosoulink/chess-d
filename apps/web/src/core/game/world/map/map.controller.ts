@@ -9,9 +9,8 @@ export class MapController {
 	public readonly reset$: Observable<
 		ObservablePayload<WorldController["resetDone$$"]>
 	>;
-	public readonly introAnimation$: Observable<
-		ObservablePayload<WorldController["introAnimation$"]>
-	>;
+	public readonly introAnimation$: WorldController["introAnimation$"];
+
 	constructor(
 		@inject(WorldController)
 		private readonly _worldController: WorldController

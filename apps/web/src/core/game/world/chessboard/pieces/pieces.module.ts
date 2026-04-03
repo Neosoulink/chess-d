@@ -41,6 +41,9 @@ export class PiecesModule implements Module {
 			),
 			this._controller.promoted$?.subscribe(
 				this._service.handlePiecePromoted.bind(this._service)
+			),
+			this._controller.introAnimation$?.subscribe(
+				this._service.handleIntroAnimation.bind(this._service)
 			)
 		);
 	}

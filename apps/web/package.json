@@ -15,7 +15,7 @@
 		"@chess-d/chessboard": "workspace:*",
 		"@chess-d/shared": "workspace:*",
 		"@chrisoakman/chessboard2": "^0.5.0",
-		"@quick-threejs/reactive": "^0.1.48",
+		"@quick-threejs/reactive": "^0.1.49",
 		"@quick-threejs/utils": "^0.1.20",
 		"@quick-threejs/worker": "^0.1.19",
 		"@tailwindcss/vite": "^4.2.1",

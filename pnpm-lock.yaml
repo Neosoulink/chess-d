@@ -202,8 +202,8 @@ importers:
         specifier: ^0.5.0
         version: 0.5.0
       '@quick-threejs/reactive':
-        specifier: ^0.1.48
-        version: 0.1.48(three@0.183.2)(vite@6.3.6(@types/node@22.18.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.44.0))
+        specifier: ^0.1.49
+        version: 0.1.49(three@0.183.2)(vite@6.3.6(@types/node@22.18.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.44.0))
       '@quick-threejs/utils':
         specifier: ^0.1.20
         version: 0.1.20(three@0.183.2)
@@ -1307,8 +1307,8 @@ packages:
   '@quick-threejs/config@0.1.14':
     resolution: {integrity: sha512-xx4Bwtubf+KjfO8tIVvXObIrdWnDz6D5J+ckkUgi/VFsKF3TiAAdgQ5vLbVPAQkfBU6J1lJwkWYEGE5bs0MW0Q==}
 
-  '@quick-threejs/reactive@0.1.48':
-    resolution: {integrity: sha512-byPPnooVDQt1IpwzKI/ljYxpKsJDBulJXDGehnyLrmT71JSWOo78cY/6r88x7+o0SBvNmrD65w4oT9SGSh04Dw==}
+  '@quick-threejs/reactive@0.1.49':
+    resolution: {integrity: sha512-Wt2nryaXpy2dWykVd7Drdt6ewYDrgOqpiGNIvStSf+0N/g45xcKPG+bDAFPA4y/lf7G4ekV24Kmm0qpHlme86g==}
     peerDependencies:
       three: '^0.183.1 '
 
@@ -7273,7 +7273,7 @@ snapshots:
 
   '@quick-threejs/config@0.1.14': {}
 
-  '@quick-threejs/reactive@0.1.48(three@0.183.2)(vite@6.3.6(@types/node@22.18.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.44.0))':
+  '@quick-threejs/reactive@0.1.49(three@0.183.2)(vite@6.3.6(@types/node@22.18.3)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.44.0))':
     dependencies:
       '@quick-threejs/utils': 0.1.20(three@0.183.2)
       '@quick-threejs/worker': 0.1.19(threads@1.7.0)(three@0.183.2)

@@ -1,3 +1,4 @@
+import { ObservablePayload } from "@chess-d/shared";
 import { register } from "@quick-threejs/reactive";
 import {
 	FC,
@@ -11,21 +12,13 @@ import { useLocation } from "react-router";
 import Stats from "stats-gl";
 import { Pane } from "tweakpane";
 
-import pawnPiece from "@/assets/3D/pieces/pawn.glb?url";
-import rookPiece from "@/assets/3D/pieces/rook.glb?url";
-import knightPiece from "@/assets/3D/pieces/knight.glb?url";
-import bishopPiece from "@/assets/3D/pieces/bishop.glb?url";
-import queenPiece from "@/assets/3D/pieces/queen.glb?url";
-import kingPiece from "@/assets/3D/pieces/king.glb?url";
-import masterHand from "@/assets/3D/master-hand.glb?url";
-import helvetikerFont from "@/assets/fonts/typefaces/helvetiker_regular.typeface.json?url";
 import { configureTweakpane } from "@/shared/utils";
 import { useGameStore, useLoaderStore } from "../_stores";
 import { useChatStore } from "../_stores/chat.store";
 import { HAND_STARTED_EMOTE_TOKEN } from "@/shared/tokens";
 import { MessageData } from "@/shared/types";
 import { HandsController } from "@/core/game/world/hands/hands.controller";
-import { ObservablePayload } from "@chess-d/shared";
+import { LOADER_REGISTER_DATA_SOURCES } from "@/shared/constants";
 
 /** @internal */
 const devMode = import.meta.env?.DEV;
@@ -83,48 +76,7 @@ export const GameProvider: FC<PropsWithChildren> = ({ children }) => {
 				withMiniCamera: false,
 				enableControls: true
 			},
-			loaderDataSources: [
-				{
-					name: "pawnPiece",
-					path: pawnPiece,
-					type: "gltf"
-				},
-				{
-					name: "rookPiece",
-					path: rookPiece,
-					type: "gltf"
-				},
-				{
-					name: "knightPiece",
-					path: knightPiece,
-					type: "gltf"
-				},
-				{
-					name: "bishopPiece",
-					path: bishopPiece,
-					type: "gltf"
-				},
-				{
-					name: "queenPiece",
-					path: queenPiece,
-					type: "gltf"
-				},
-				{
-					name: "kingPiece",
-					path: kingPiece,
-					type: "gltf"
-				},
-				{
-					name: "masterHand",
-					path: masterHand,
-					type: "gltf"
-				},
-				{
-					name: "helvetikerFont",
-					path: helvetikerFont,
-					type: "font"
-				}
-			],
+			loaderDataSources: LOADER_REGISTER_DATA_SOURCES,
 			onReady: (_app) => {
 				stateRef.current.isPending = false;
 				stateRef.current.isReady = true;

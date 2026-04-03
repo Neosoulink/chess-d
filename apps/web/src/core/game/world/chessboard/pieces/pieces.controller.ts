@@ -48,6 +48,7 @@ export class PiecesController {
 		move: Move;
 		end?: boolean;
 	}>;
+	public readonly introAnimation$: WorldController["introAnimation$"];
 
 	constructor(
 		@inject(Chess)
@@ -60,6 +61,7 @@ export class PiecesController {
 		private readonly _engineController: EngineController
 	) {
 		this.reset$ = this._worldController.resetDone$$.pipe(share());
+
 		this.resetFen$ = merge(
 			this._gameController.reset$.pipe(map(() => undefined)),
 			this._engineController.undo$.pipe(map(() => undefined)),
@@ -68,7 +70,9 @@ export class PiecesController {
 			map(() => this._game.fen()),
 			share()
 		);
+
 		this.promoted$ = this._chessboard.pieces.getPiecePromoted$()?.pipe(share());
+
 		this.playerMovedPiece$ = fromEvent<MessageEvent<MessageData<Move>>>(
 			self,
 			"message"
@@ -138,5 +142,7 @@ export class PiecesController {
 			),
 			share()
 		);
+
+		this.introAnimation$ = this._worldController.introAnimation$.pipe(share());
 	}
 }

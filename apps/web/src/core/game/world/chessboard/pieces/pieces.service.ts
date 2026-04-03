@@ -15,6 +15,7 @@ import { Color, DoubleSide, Mesh, MeshPhysicalMaterial } from "three";
 import { inject, singleton } from "tsyringe";
 
 import { PiecesController } from "./pieces.controller";
+import { WorldController } from "../../world.controller";
 
 @singleton()
 export class PiecesService {
@@ -103,7 +104,6 @@ export class PiecesService {
 		piece.physics?.rigidBody.setBodyType(0, true);
 		piece.physics?.collider.setMass(1);
 
-		// setTimeout(() => {
 		this._chessboard.pieces.getPieceDeselected$$().next({
 			piece,
 			cell,
@@ -116,7 +116,6 @@ export class PiecesService {
 			instancedPiece,
 			pieceGeometry
 		});
-		// }, 0);
 	}
 
 	public handlePiecePromoted(
@@ -131,5 +130,38 @@ export class PiecesService {
 
 		promotedPiece?.physics?.rigidBody.setBodyType(0, true);
 		promotedPiece?.physics?.collider.setMass(1);
+	}
+
+	public handleIntroAnimation(
+		progress: ObservablePayload<WorldController["introAnimation$"]>
+	) {
+		const piecesGroups = this._chessboard.pieces.getGroups();
+
+		Object.values(piecesGroups).forEach((group) => {
+			Object.values(group).forEach((instancedPiece) => {
+				if (instancedPiece instanceof InstancedPieceModel)
+					for (
+						let pieceInstanceId = 0;
+						pieceInstanceId < instancedPiece.count || 0;
+						pieceInstanceId++
+					) {
+						const geometry = instancedPiece.geometry;
+						const geometryHight = geometry.boundingBox?.max.y || 0;
+						const piece = instancedPiece?.getPieceByInstanceId(pieceInstanceId);
+
+						if (piece) {
+							this._chessboard.pieces.setPiecePosition(piece, {
+								...piece.position,
+								y:
+									PieceType.pawn === piece.type
+										? geometryHight + 1.05 - progress
+										: progress > 0.3
+											? geometryHight + 1.05 - (progress - 0.3) * 1.43
+											: geometryHight + 1.05
+							});
+						}
+					}
+			});
+		});
 	}
 }
