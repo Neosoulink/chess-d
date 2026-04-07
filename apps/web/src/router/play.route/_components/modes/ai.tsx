@@ -27,7 +27,7 @@ const devMode = import.meta.env?.DEV;
 
 /** @internal */
 const aiWorkerLocation = new URL(
-	devMode ? "../../../core/ai/ai.worker.ts" : "./ai-worker.js",
+	devMode ? "../../../../core/ai/ai.worker.ts" : "./ai-worker.js",
 	import.meta.url
 ) as unknown as string;
 
