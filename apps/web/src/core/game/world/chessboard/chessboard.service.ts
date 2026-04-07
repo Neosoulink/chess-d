@@ -6,6 +6,7 @@ import {
 } from "@chess-d/chessboard";
 import { BOARD_CELL_SIZE, BoardCoord } from "@chess-d/shared";
 import {
+	CanvasTexture,
 	Color,
 	DoubleSide,
 	FrontSide,
@@ -18,17 +19,19 @@ import {
 import { inject, Lifecycle, scoped } from "tsyringe";
 
 import { WorldService } from "../world.service";
+import { AppModule } from "@quick-threejs/reactive/worker";
 
 @scoped(Lifecycle.ContainerScoped)
 export class ChessboardService {
 	public scene = new Group();
-	public defaultMaterial = new MeshPhysicalMaterial();
+	public material = new MeshPhysicalMaterial();
 	public nextMovesMarker: InstancedCellMakerModel;
 	public previousMovesMarker: InstancedCellMakerModel;
 	public inDangerMarker: InstancedCellMakerModel;
 	public cursorCoordMarker: Mesh;
 
 	constructor(
+		@inject(AppModule) private readonly _app: AppModule,
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
 		@inject(WorldService) private readonly _world: WorldService
 	) {
@@ -80,17 +83,16 @@ export class ChessboardService {
 	}
 
 	public resetMaterials(): void {
-		this.defaultMaterial.color.set(0xffffff);
-		this.defaultMaterial.side = FrontSide;
-		this.defaultMaterial.transparent = true;
-		this.defaultMaterial.opacity = 1;
-		this.defaultMaterial.sheen = 2;
-		this.defaultMaterial.roughness = 0.8;
-		this.defaultMaterial.metalness = 0.1;
+		this.material.color.set(0xffffff);
+		this.material.side = FrontSide;
+		this.material.transparent = true;
+		this.material.opacity = 1;
+		this.material.sheen = 2;
+		this.material.roughness = 0.8;
+		this.material.metalness = 0.1;
 
 		this._chessboard.world.getScene().traverseVisible((child) => {
-			if (child instanceof InstancedCellModel)
-				child.material = this.defaultMaterial;
+			if (child instanceof InstancedCellModel) child.material = this.material;
 		});
 	}
 

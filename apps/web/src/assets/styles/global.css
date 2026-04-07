@@ -15,7 +15,7 @@
 	}
 
 	::-webkit-scrollbar-thumb {
-		@apply rounded-none cursor-grab bg-linear-to-b from-neon-cyan from-30% to-neon-purple;
+		@apply rounded-none cursor-grab bg-linear-to-b from-primary from-30% to-secondary;
 	}
 
 	html,

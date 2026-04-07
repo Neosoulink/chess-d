@@ -6,7 +6,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 
-import { Router } from "./routes";
+import { Router } from "./router";
 
 import "./assets/styles/global.css";
 

@@ -122,7 +122,9 @@ export class HandsService {
 	}
 
 	public init() {
-		this._gltf = this._app.loader.getLoadedResources()["masterHand"] as GLTF;
+		this._gltf = this._app.loader.getLoadedResources()[
+			"model-master-hand"
+		] as GLTF;
 
 		this._setupHands();
 	}

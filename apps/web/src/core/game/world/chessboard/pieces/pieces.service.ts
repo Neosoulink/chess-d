@@ -11,7 +11,7 @@ import {
 	squareToCoord
 } from "@chess-d/shared";
 import { Move } from "chess.js";
-import { Color, DoubleSide, Mesh, MeshPhysicalMaterial } from "three";
+import { DoubleSide, MeshPhysicalMaterial } from "three";
 import { inject, singleton } from "tsyringe";
 
 import { PiecesController } from "./pieces.controller";

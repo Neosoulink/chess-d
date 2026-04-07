@@ -5,8 +5,7 @@ import {
 	setup as setupChessboard
 } from "@chess-d/chessboard";
 import { PieceType } from "@chess-d/shared";
-import { AppModule } from "@quick-threejs/reactive/worker";
-import { launchApp } from "@quick-threejs/reactive/worker";
+import { AppModule, launchApp } from "@quick-threejs/reactive/worker";
 import { isObject } from "@quick-threejs/utils";
 import { Chess } from "chess.js";
 import { BufferGeometry, Camera, Mesh } from "three";
@@ -41,7 +40,8 @@ launchApp({
 			const loadedResources = payload.loadedResources;
 
 			const pawnGeometry = (
-				(loadedResources["pawnPiece"] as GLTF)?.scene?.children?.[0] as Mesh
+				(loadedResources["model-piece-pawn"] as GLTF)?.scene
+					?.children?.[0] as Mesh
 			).geometry;
 			if (pawnGeometry instanceof BufferGeometry)
 				chessboardModule.resources.setPieceGeometry(
@@ -50,7 +50,8 @@ launchApp({
 				);
 
 			const rookGeometry = (
-				(loadedResources["rookPiece"] as GLTF)?.scene?.children?.[0] as Mesh
+				(loadedResources["model-piece-rook"] as GLTF)?.scene
+					?.children?.[0] as Mesh
 			)?.geometry;
 			if (rookGeometry instanceof BufferGeometry)
 				chessboardModule.resources.setPieceGeometry(
@@ -59,7 +60,8 @@ launchApp({
 				);
 
 			const knightGeometry = (
-				(loadedResources["knightPiece"] as GLTF)?.scene?.children?.[0] as Mesh
+				(loadedResources["model-piece-knight"] as GLTF)?.scene
+					?.children?.[0] as Mesh
 			)?.geometry;
 			if (knightGeometry instanceof BufferGeometry)
 				chessboardModule.resources.setPieceGeometry(
@@ -68,7 +70,8 @@ launchApp({
 				);
 
 			const bishopGeometry = (
-				(loadedResources["bishopPiece"] as GLTF)?.scene?.children?.[0] as Mesh
+				(loadedResources["model-piece-bishop"] as GLTF)?.scene
+					?.children?.[0] as Mesh
 			)?.geometry;
 			if (bishopGeometry instanceof BufferGeometry)
 				chessboardModule.resources.setPieceGeometry(
@@ -77,7 +80,8 @@ launchApp({
 				);
 
 			const queenGeometry = (
-				(loadedResources["queenPiece"] as GLTF)?.scene?.children?.[0] as Mesh
+				(loadedResources["model-piece-queen"] as GLTF)?.scene
+					?.children?.[0] as Mesh
 			)?.geometry;
 			if (queenGeometry instanceof BufferGeometry)
 				chessboardModule.resources.setPieceGeometry(
@@ -86,7 +90,8 @@ launchApp({
 				);
 
 			const kingGeometry = (
-				(loadedResources["kingPiece"] as GLTF)?.scene?.children?.[0] as Mesh
+				(loadedResources["model-piece-king"] as GLTF)?.scene
+					?.children?.[0] as Mesh
 			)?.geometry;
 			if (kingGeometry instanceof BufferGeometry)
 				chessboardModule.resources.setPieceGeometry(

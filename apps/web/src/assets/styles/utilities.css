@@ -9,7 +9,7 @@
 
 @utility scrollbar-x-gradient {
 	&::-webkit-scrollbar-thumb {
-		@apply rounded-none cursor-grab bg-linear-to-r from-neon-cyan from-30% to-neon-purple;
+		@apply rounded-none cursor-grab bg-linear-to-r from-primary from-30% to-secondary;
 	}
 }
 
