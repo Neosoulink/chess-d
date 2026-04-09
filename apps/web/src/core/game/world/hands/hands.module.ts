@@ -17,6 +17,9 @@ export class HandsModule implements Module {
 			this._controller.reset$.subscribe(
 				this._service.reset.bind(this._service)
 			),
+			this._controller.settingsUpdate$?.subscribe(
+				this._service.resetMaterials.bind(this._service)
+			),
 			this._controller.pieceSelected$?.subscribe(
 				this._service.handlePieceSelected.bind(this._service)
 			),

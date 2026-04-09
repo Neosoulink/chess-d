@@ -1,5 +1,4 @@
 import {
-	BOARD_CELL_SIZE,
 	BOARD_RANGE_CELLS_HALF_SIZE,
 	BoardCoord,
 	ObservablePayload
@@ -16,11 +15,15 @@ import {
 	MatrixCellModel
 } from "@chess-d/chessboard";
 import { Vector3Like } from "three";
+import { SettingsController } from "../../settings/settings.controller";
 
 @scoped(Lifecycle.ContainerScoped)
 export class ChessboardController {
 	public readonly reset$: Observable<
 		ObservablePayload<WorldController["resetDone$$"]>
+	>;
+	public readonly settingsUpdate$: Observable<
+		ObservablePayload<SettingsController["update$"]>
 	>;
 	public readonly pieceMoved$?: Observable<
 		(BoardCoord & { captured?: boolean })[]
@@ -32,12 +35,16 @@ export class ChessboardController {
 		private readonly _app: AppModule,
 		@inject(ChessboardModule)
 		private readonly _chessboard: ChessboardModule,
+		@inject(SettingsController)
+		private readonly _settingsController: SettingsController,
 		@inject(WorldController)
 		private readonly _worldController: WorldController,
 		@inject(EngineController)
 		private readonly _engineController: EngineController
 	) {
 		this.reset$ = this._worldController.resetDone$$.pipe(share());
+
+		this.settingsUpdate$ = this._settingsController.update$.pipe(share());
 
 		this.pieceMoved$ = this._engineController.pieceMoved$?.pipe(
 			filter(

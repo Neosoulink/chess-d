@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { excludeProperties, Properties } from "@quick-threejs/utils";
 import { SettingsSerializedState, SettingsState } from "@/shared/types";
+
+import { serializeSettingsState } from "@/shared/utils/settings.util";
 import {
 	SETTINGS_LOCAL_STORAGE_KEY,
 	SETTINGS_DEFAULT_STATE
@@ -18,28 +20,6 @@ export const settingsStoreInitialState: Properties<SettingsStore> = {
 };
 
 export const useSettingsStore = create<SettingsStore>((set, get) => {
-	const serializeSettingsState = (
-		state?: SettingsState | null
-	): SettingsSerializedState => {
-		return Object.entries(state || {}).reduce((acc, [key, value]) => {
-			acc[key] = {
-				label: value.label,
-				params: Object.entries(value.params).reduce((acc2, [key2, value2]) => {
-					acc2[key2] = {
-						id: value2.id,
-						label: value2.label,
-						value:
-							value2.inputProps.type === "checkbox"
-								? value2.inputProps.checked
-								: value2.inputProps.value
-					};
-					return acc2;
-				}, {})
-			};
-			return acc;
-		}, {});
-	};
-
 	const getSafeLocalState = () => {
 		const localState: SettingsSerializedState | undefined = JSON.parse(
 			localStorage.getItem(SETTINGS_LOCAL_STORAGE_KEY) ?? "{}"

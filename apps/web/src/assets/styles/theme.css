@@ -10,8 +10,8 @@
 	--color-secondary: #f72585;
 
 	--tp-base-background-color: var(--color-dark);
-	--tp-base-shadow-color: var(--color-deep-space);
-	--tp-button-background-color: var(--color-neon-cyan);
+	--tp-base-shadow-color: var(--color-dark);
+	--tp-button-background-color: var(--color-primary);
 	--tp-button-background-color-active: var(--color-light);
 	--tp-button-background-color-focus: var(--color-light);
 	--tp-button-background-color-hover: var(--color-light);

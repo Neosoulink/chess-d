@@ -30,7 +30,7 @@ const getStatusMsg = (status?: EngineUpdatedMessageData["value"]) => {
 };
 
 export const GameOverviewStatus: FC = () => {
-	const { app, playerSide } = useGameStore();
+	const { app, gameState } = useGameStore();
 
 	const [status, setStatus] = useState<EngineUpdatedMessageData["value"]>();
 
@@ -64,7 +64,7 @@ export const GameOverviewStatus: FC = () => {
 		<div className="flex gap-1 items-center justify-end text-sm">
 			{!!currentTurn && (
 				<p className="h-8 px-2 flex items-center justify-center bg-dark/80">
-					{currentTurn === playerSide ? "Your" : "Opponent's"} turn
+					{currentTurn === gameState?.playerSide ? "Your" : "Opponent's"} turn
 				</p>
 			)}
 

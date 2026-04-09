@@ -1,32 +1,53 @@
 import { ColorSide, ObservablePayload } from "@chess-d/shared";
 import { AppModule } from "@quick-threejs/reactive/worker";
 import { PerspectiveCamera } from "three";
+import { clamp } from "three/src/math/MathUtils.js";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
+import { SettingsService } from "../settings/settings.service";
 import { EngineService } from "../engine/engine.service";
 import { CameraController } from "./camera.controller";
 
 @scoped(Lifecycle.ContainerScoped)
 export class CameraService {
+	private readonly Y_POSITION_SCALE = 24;
+
+	private _yPositionMultiplier = 0.5;
+	private _yPosition = 12;
+
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
+		@inject(SettingsService) private readonly _settings: SettingsService,
 		@inject(EngineService) private readonly _engineService: EngineService
 	) {}
 
 	public reset() {
-		const appDebug = this._app.debug;
-
 		const camera = this._app.camera.instance() as PerspectiveCamera;
-		const debugCamera = appDebug.miniCamera();
 		const playerSide = this._engineService.state.playerSide;
+		const cameraFov =
+			this._settings.state["camera"]?.params["fov"]?.value !== undefined
+				? Number(this._settings.state["camera"]?.params["fov"]?.value)
+				: 40;
+		this._yPositionMultiplier = clamp(
+			this._settings.state["camera"]?.params["y-position"]?.value !== undefined
+				? Number(
+						this._settings.state["camera"]?.params["y-position"]?.value ?? 100
+					) / 100
+				: 1,
+			0.1,
+			1
+		);
+		this._yPosition = this.Y_POSITION_SCALE * this._yPositionMultiplier;
 
-		camera.position.set(0, 12, (playerSide === ColorSide.white ? -1 : 1) * 9);
+		camera.position.set(
+			0,
+			this._yPosition,
+			(playerSide === ColorSide.white ? -1 : 1) * 9
+		);
 		camera.lookAt(0, 0, 0);
-		camera.fov = 40;
+		camera.fov = cameraFov;
 		camera.near = 0.1;
-		camera.far = 100;
-
-		debugCamera?.position.set(6, 2, 0);
+		camera.far = 300;
 	}
 
 	public handleIntroAnimation(
@@ -34,9 +55,10 @@ export class CameraService {
 	) {
 		const playerSide = this._engineService.state.playerSide;
 		const camera = this._app.camera.instance();
+
 		camera?.position.copy({
 			x: -20 + progress * 20,
-			y: progress * 12,
+			y: progress * this._yPosition,
 			z: (playerSide === ColorSide.white ? -1 : 1) * 9 * progress
 		});
 		camera?.lookAt(0, 0, 0);
@@ -49,14 +71,8 @@ export class CameraService {
 		camera?.lookAt(0, 0, 0);
 		camera?.position.set(
 			Math.sin(data.elapsed * 0.1) * 10,
-			12,
+			this._yPosition,
 			Math.cos(data.elapsed * 0.1) * 10
 		);
 	}
-
-	public init(): void {}
-
-	public update(): void {}
-
-	public dispose(): void {}
 }

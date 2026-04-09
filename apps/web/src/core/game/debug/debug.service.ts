@@ -12,6 +12,8 @@ import { HandsService } from "../world/hands/hands.service";
 import { PiecesService } from "../world/chessboard/pieces/pieces.service";
 import { CameraService } from "../camera/camera.service";
 import { HandsController } from "../world/hands/hands.controller";
+import { MapService } from "../world/map/map.service";
+import { ChessboardService } from "../world/chessboard/chessboard.service";
 
 @singleton()
 export class DebugService {
@@ -26,9 +28,12 @@ export class DebugService {
 		@inject(RendererService) public readonly rendererService: RendererService,
 		@inject(CameraService) public readonly cameraService: CameraService,
 		@inject(WorldService) public readonly worldService: WorldService,
+		@inject(MapService) public readonly woldMapService: MapService,
 		@inject(HandsController) public readonly handsController: HandsController,
-		@inject(HandsService) public readonly handsService: HandsService,
-		@inject(PiecesService) public readonly piecesService: PiecesService
+		@inject(ChessboardService)
+		public readonly chessboardService: ChessboardService,
+		@inject(PiecesService) public readonly piecesService: PiecesService,
+		@inject(HandsService) public readonly handsService: HandsService
 	) {
 		this.enabled = this.app.debug.enabled();
 		this.rendererInstance = this.app.renderer.instance()!;

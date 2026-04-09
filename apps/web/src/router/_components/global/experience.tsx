@@ -196,7 +196,9 @@ export const GlobalExperience: FC = () => {
 	}, [app, chatNotify]);
 
 	return (
-		<section className="relative flex size-full">
+		<section className="relative flex size-full overflow-hidden">
+			<div className="absolute inset-0 bg-linear-to-b from-primary to-secondary scale-200" />
+			<div className="absolute inset-0 bg-dark/60" />
 			<canvas ref={canvasRef} className="absolute inset-0" />
 		</section>
 	);

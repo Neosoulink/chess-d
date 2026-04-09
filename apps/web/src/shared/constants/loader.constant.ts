@@ -16,15 +16,14 @@ import textureAokWoodPath from "@/assets/images/textures/aok-wood.jpg?url";
 
 export const LOADER_SUPPORTED_ENVIRONMENT_MAPS = [
 	{
-		id: "env-map-world-dark-blue-nebula",
-		label: "Dark Blue Nebula",
-		sourcePath: envMapDarkBlueNebulaPath
-	},
-	{
 		id: "env-map-world-cyan-purple-nebula-low",
 		label: "Cyan Purple Nebula Low",
-		sourcePath: envMapCyanPurpleNebulaPath,
-		skipSettings: true
+		sourcePath: envMapCyanPurpleNebulaPath
+	},
+	{
+		id: "env-map-world-dark-blue-nebula",
+		label: "Space Nebula",
+		sourcePath: envMapDarkBlueNebulaPath
 	},
 	{
 		id: "env-map-world-pure-sky",
@@ -33,7 +32,7 @@ export const LOADER_SUPPORTED_ENVIRONMENT_MAPS = [
 	},
 	{
 		id: "env-map-world-road",
-		label: "Road",
+		label: "Road Sunrise",
 		sourcePath: envMapRoadPath
 	}
 ] as const;

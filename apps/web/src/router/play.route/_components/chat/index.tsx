@@ -8,7 +8,7 @@ import { HandsController } from "@/core/game/world/hands/hands.controller";
 import { Icon } from "@/router/_components/core";
 import { PopoverButton } from "@/router/_components/custom";
 import { useChatStore } from "@/router/_stores/chat.store";
-import { useGameStore } from "@/router/_stores";
+import { useGameStore, useSettingsStore } from "@/router/_stores";
 import { HANDS_SUPPORT_EMOTES } from "@/shared/constants";
 import { ChatEmotesOptions } from "./_components/emotes-options";
 import { ChatMessagesOptions } from "./_components/messages-options";
@@ -28,6 +28,7 @@ const msgData = [
 export const PlayChat = () => {
 	const { chats, notify, reset } = useChatStore();
 	const { gameState, app } = useGameStore();
+	const { state: settingsState } = useSettingsStore();
 	const { key } = useLocation();
 
 	const playerSide = useMemo(
@@ -35,10 +36,17 @@ export const PlayChat = () => {
 		[gameState?.playerSide]
 	);
 
+	const isHandsVisible = useMemo(
+		() => !!settingsState.hands?.params?.visible?.inputProps?.checked,
+		[settingsState.hands?.params?.visible?.inputProps?.checked]
+	);
+
 	const chatListRef = useRef<HTMLUListElement>(null);
 
 	const handleEmoteAction = useCallback(
 		(payload: (typeof HANDS_SUPPORT_EMOTES)[number]) => {
+			if (!isHandsVisible) return;
+
 			const worker = app?.module.getWorkerThread()?.worker;
 
 			if (!worker || !playerSide) return;
@@ -52,7 +60,7 @@ export const PlayChat = () => {
 				}
 			} satisfies MessageData<ObservablePayload<HandsController["emote$$"]>>);
 		},
-		[app?.module, playerSide]
+		[app?.module, isHandsVisible, playerSide]
 	);
 
 	useEffect(() => {
@@ -84,22 +92,24 @@ export const PlayChat = () => {
 			</ul>
 
 			<div className="flex items-center gap-2">
-				<PopoverButton
-					popoverProps={{
-						className: "gap-2",
-						children: (
-							<ChatEmotesOptions
-								data={HANDS_SUPPORT_EMOTES.map((emote) => ({
-									name: emote.emoji,
-									action: () => handleEmoteAction(emote)
-								}))}
-							/>
-						)
-					}}
-					className="bg-dark/80 hover:bg-dark"
-				>
-					<Icon.HandSign size={24} />
-				</PopoverButton>
+				{isHandsVisible && (
+					<PopoverButton
+						popoverProps={{
+							className: "gap-2",
+							children: (
+								<ChatEmotesOptions
+									data={HANDS_SUPPORT_EMOTES.map((emote) => ({
+										name: emote.emoji,
+										action: () => handleEmoteAction(emote)
+									}))}
+								/>
+							)
+						}}
+						className="bg-dark/80 hover:bg-dark"
+					>
+						<Icon.HandSign size={24} />
+					</PopoverButton>
+				)}
 
 				<PopoverButton
 					popoverProps={{

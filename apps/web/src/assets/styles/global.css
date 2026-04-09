@@ -21,7 +21,7 @@
 	html,
 	body,
 	#root {
-		@apply font-comic-neue font-bold p-0 m-0 top-0 left-0 overflow-hidden h-dvh w-dvw;
+		@apply font-comic-neue font-bold p-0 m-0 top-0 left-0 overflow-hidden h-dvh w-dvw select-none;
 
 		@media (prefers-color-scheme: dark) {
 			@apply scheme-dark;

@@ -11,6 +11,7 @@ import {
 	Subject,
 	switchMap
 } from "rxjs";
+import { AnimationAction, AnimationMixer } from "three";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
 import { MessageData } from "@/shared/types";
@@ -22,8 +23,9 @@ import {
 import { HANDS_SUPPORT_EMOTES } from "@/shared/constants";
 import { WorldController } from "../world.controller";
 import { PiecesController } from "../chessboard/pieces/pieces.controller";
-import { AnimationAction, AnimationClip, AnimationMixer } from "three";
 import { HandsService } from "./hands.service";
+import { SettingsController } from "../../settings/settings.controller";
+import { SettingsService } from "../../settings/settings.service";
 
 @scoped(Lifecycle.ContainerScoped)
 export class HandsController {
@@ -35,6 +37,9 @@ export class HandsController {
 
 	public readonly reset$: Observable<
 		ObservablePayload<WorldController["resetDone$$"]>
+	>;
+	public readonly settingsUpdate$: Observable<
+		ObservablePayload<SettingsController["update$"]>
 	>;
 	public readonly step$: WorldController["step$"];
 	public readonly pieceSelected$?: Observable<
@@ -71,15 +76,22 @@ export class HandsController {
 
 	constructor(
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
+		@inject(SettingsController)
+		private readonly _settingsController: SettingsController,
 		@inject(WorldController)
 		private readonly _worldController: WorldController,
 		@inject(PiecesController)
 		private readonly _piecesController: PiecesController,
+		@inject(SettingsService) private readonly _settingsService: SettingsService,
 		@inject(HandsService)
 		private readonly _handsService: HandsService
 	) {
 		this.reset$ = this._worldController.resetDone$$.pipe(share());
-		this.step$ = this._worldController.step$.pipe(share());
+		this.settingsUpdate$ = this._settingsController.update$.pipe(share());
+		this.step$ = this._worldController.step$.pipe(
+			filter(() => !!this._settingsService.state.hands?.params?.visible?.value),
+			share()
+		);
 		this.pieceSelected$ = this._chessboard.pieces
 			.getPieceSelected$()
 			?.pipe(share());

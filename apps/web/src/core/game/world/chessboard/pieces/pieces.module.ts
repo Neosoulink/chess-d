@@ -3,9 +3,9 @@ import { Module } from "@quick-threejs/reactive";
 import { inject, singleton } from "tsyringe";
 import { Subscription } from "rxjs";
 
-import { PiecesService } from "./pieces.service";
+import { EngineController } from "@/core/game/engine/engine.controller";
 import { PiecesController } from "./pieces.controller";
-import { EngineController } from "../../../engine/engine.controller";
+import { PiecesService } from "./pieces.service";
 
 @singleton()
 export class PiecesModule implements Module {
@@ -24,6 +24,9 @@ export class PiecesModule implements Module {
 				this._service.resetFen(fen)
 			),
 			this._controller.reset$?.subscribe(() => this._service.reset()),
+			this._controller.settingsUpdate$?.subscribe(
+				this._service.resetMaterials.bind(this._service)
+			),
 			this._chessboard.pieces
 				.getPieceDropped$()
 				?.subscribe(this._service.resetMaterials.bind(this._service)),

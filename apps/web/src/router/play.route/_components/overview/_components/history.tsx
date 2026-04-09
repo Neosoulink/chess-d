@@ -32,7 +32,7 @@ const MovesItem: FC<{
 		>
 			<div
 				className={cn(
-					"absolute top-0 left-0 w-full h-full bg-linear-to-r from-neon-cyan/25 to-neon-purple/25 transition-opacity duration-250 opacity-0 z-0",
+					"absolute top-0 left-0 w-full h-full bg-linear-to-r from-primary/25 to-secondary/25 transition-opacity duration-250 opacity-0 z-0",
 					hasActiveMove && "opacity-100"
 				)}
 			/>
@@ -162,11 +162,11 @@ export const GameOverviewHistory: FC = () => {
 				)}
 			</div>
 
-			<div>
+			{/* <div>
 				<Button className="size-8">
 					<Icon.Popup />
 				</Button>
-			</div>
+			</div> */}
 		</div>
 	);
 };

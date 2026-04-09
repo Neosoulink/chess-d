@@ -17,8 +17,10 @@ import type { GLTF } from "three/examples/jsm/Addons.js";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
 import { PiecesController } from "../chessboard/pieces/pieces.controller";
+import { SettingsService } from "../../settings/settings.service";
 import { WorldService } from "../world.service";
 import { HandsController } from "./hands.controller";
+import { SETTINGS_SUPPORTED_HANDS_THEMES } from "@/shared/constants";
 
 @scoped(Lifecycle.ContainerScoped)
 export class HandsService {
@@ -43,6 +45,7 @@ export class HandsService {
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
+		@inject(SettingsService) private readonly _settings: SettingsService,
 		@inject(WorldService) private readonly _world: WorldService
 	) {}
 
@@ -88,10 +91,27 @@ export class HandsService {
 	}
 
 	public resetMaterials(): void {
+		const settingsThemeId =
+			this._settings.state.hands?.params?.theme?.value?.toString();
+		const settingsTheme =
+			SETTINGS_SUPPORTED_HANDS_THEMES[settingsThemeId || "white"];
+		const primaryThemeColor =
+			this._settings.state["visual-theme"]?.params[
+				"primary-theme"
+			]?.value?.toString();
+		const transparent =
+			!!this._settings.state.hands?.params?.transparent?.value;
+
+		this.material.visible =
+			!!this._settings.state.hands?.params?.visible?.value;
+		this.material.color.set(
+			(settingsThemeId === "use-theme"
+				? primaryThemeColor
+				: settingsTheme?.value) ?? "#ffffff"
+		);
 		this.material.side = DoubleSide;
-		this.material.color.set("#ffffff");
-		this.material.transparent = true;
-		this.material.opacity = 1;
+		this.material.transparent = transparent;
+		this.material.opacity = transparent ? 0.55 : 1;
 		this.material.sheen = 2;
 		this.material.roughness = 0.45;
 		this.material.metalness = 0.02;

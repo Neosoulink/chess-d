@@ -14,9 +14,9 @@ import { MessageData, SettingsSerializedState } from "@/shared/types";
 
 @scoped(Lifecycle.ContainerScoped)
 export class SettingsController {
-	public readonly state$$ = new Subject<SettingsSerializedState>();
-	public readonly state$: Observable<SettingsSerializedState> = merge(
-		this.state$$,
+	public readonly update$$ = new Subject<SettingsSerializedState>();
+	public readonly update$: Observable<SettingsSerializedState> = merge(
+		this.update$$,
 		fromEvent<MessageEvent<MessageData<SettingsSerializedState>>>(
 			self,
 			"message"

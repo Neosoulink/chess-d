@@ -32,14 +32,17 @@ import {
 import { inject, Lifecycle, scoped } from "tsyringe";
 
 import { InfiniteGridHelper } from "@/shared/meshes";
-import { WORLD_MAP_CONFIGS } from "@/shared/constants";
+import { WORLD_MAP_THEME_PRESETS_CONFIGS } from "@/shared/constants";
 import { WorldService } from "../world.service";
 import { WorldController } from "../world.controller";
 import { EngineService } from "../../engine/engine.service";
+import { SettingsService } from "../../settings/settings.service";
 
 @scoped(Lifecycle.ContainerScoped)
 export class MapService {
-	public readonly floor = new Group();
+	public readonly scene = new Group();
+	public readonly floorScene = new Group();
+	public readonly labelsScene = new Group();
 	public readonly floorGrid = new InfiniteGridHelper(
 		BOARD_CELL_SIZE,
 		BOARD_CELL_SIZE,
@@ -52,7 +55,6 @@ export class MapService {
 			opacity: 0.2
 		})
 	);
-	public readonly gridLabels = new Group();
 	public readonly defaultMaterial = new MeshPhysicalMaterial();
 	public readonly lights = {
 		sun: new DirectionalLight(),
@@ -61,15 +63,26 @@ export class MapService {
 	};
 
 	public skybox?: GroundedSkybox;
-	public configs?: (typeof WORLD_MAP_CONFIGS)[number];
+	public themePreset?: (typeof WORLD_MAP_THEME_PRESETS_CONFIGS)[number];
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
+		@inject(SettingsService) private readonly _settings: SettingsService,
 		@inject(WorldService) private readonly _world: WorldService,
 		@inject(EngineService) private readonly _engine: EngineService
 	) {
-		this.configs = WORLD_MAP_CONFIGS[0];
-		this.floor.add(this.floorGrid, this.floorShadow);
+		this.scene.name = "world-map";
+		this.floorScene.name = "world-map-floor";
+		this.labelsScene.name = "world-map-labels";
+	}
+
+	public resetSettings(): void {
+		const settingsState = this._settings.state;
+		this.themePreset = WORLD_MAP_THEME_PRESETS_CONFIGS.find(
+			(config) =>
+				config.id ===
+				settingsState["visual-theme"]?.params["background-style"]?.value
+		);
 	}
 
 	public resetEnvironment(): void {
@@ -84,13 +97,14 @@ export class MapService {
 		const backgroundMapRotation = new Quaternion(0, 0, 0, 0);
 		let backgroundBlurriness = 0;
 
-		if (this.configs) {
-			const envMapId = this.configs.values?.environment?.mapId;
-			const backgroundMapId = this.configs.values?.environment?.backgroundMapId;
+		if (this.themePreset) {
+			const envMapId = this.themePreset.values?.environment?.mapId;
+			const backgroundMapId =
+				this.themePreset.values?.environment?.backgroundMapId;
 
 			if (envMapId) {
-				const intensity = this.configs.values?.environment?.intensity;
-				const rotation = this.configs.values?.environment?.rotation;
+				const intensity = this.themePreset.values?.environment?.intensity;
+				const rotation = this.themePreset.values?.environment?.rotation;
 
 				environmentMap = new CanvasTexture(resources[envMapId]);
 				environmentMap.mapping = EquirectangularReflectionMapping;
@@ -109,11 +123,11 @@ export class MapService {
 
 			if (backgroundMapId) {
 				const intensity =
-					this.configs.values?.environment?.backgroundMapIntensity;
+					this.themePreset.values?.environment?.backgroundMapIntensity;
 				const rotation =
-					this.configs.values?.environment?.backgroundMapRotation;
+					this.themePreset.values?.environment?.backgroundMapRotation;
 				const blurriness =
-					this.configs.values?.environment?.backgroundBlurriness;
+					this.themePreset.values?.environment?.backgroundBlurriness;
 
 				backgroundMap = new CanvasTexture(resources[backgroundMapId]);
 				backgroundMap.mapping = EquirectangularReflectionMapping;
@@ -143,17 +157,24 @@ export class MapService {
 
 	public resetSkybox(): void {
 		const resources = this._app.loader.getLoadedResources();
-		const mapId = this.configs?.values?.skybox?.mapId;
+		const mapId = this.themePreset?.values?.skybox?.mapId;
 
 		if (this.skybox) {
 			this.skybox.removeFromParent();
 			this.skybox.geometry.dispose();
 			this.skybox.material.map?.dispose();
 			this.skybox.material.dispose();
+			this.skybox.traverse((child) => {
+				if (child instanceof Mesh) {
+					child.geometry.dispose();
+					child.material.map?.dispose();
+					child.material.dispose();
+				}
+			});
 			this.skybox = undefined;
 		}
 
-		if (!this.configs || !mapId) return;
+		if (!this.themePreset || !mapId) return;
 
 		const backgroundTexture = new CanvasTexture(resources[mapId]);
 		backgroundTexture.mapping = EquirectangularReflectionMapping;
@@ -162,86 +183,108 @@ export class MapService {
 
 		this.skybox = new GroundedSkybox(
 			backgroundTexture,
-			this.configs.values?.skybox?.height ?? 15,
-			this.configs.values?.skybox?.radius ?? 50,
-			this.configs.values?.skybox?.resolution ?? undefined
+			this.themePreset.values?.skybox?.height ?? 15,
+			this.themePreset.values?.skybox?.radius ?? 50,
+			this.themePreset.values?.skybox?.resolution ?? undefined
 		);
 		this.skybox.position.set(
-			this.configs.values?.skybox?.position?.x ?? 0,
-			this.configs.values?.skybox?.position?.y ?? 0,
-			this.configs.values?.skybox?.position?.z ?? 0
+			this.themePreset.values?.skybox?.position?.x ?? 0,
+			this.themePreset.values?.skybox?.position?.y ?? 0,
+			this.themePreset.values?.skybox?.position?.z ?? 0
 		);
 		this.skybox.rotation.setFromQuaternion(
 			new Quaternion(
-				this.configs.values?.skybox?.rotation?.x ?? 0,
-				this.configs.values?.skybox?.rotation?.y ?? 0,
-				this.configs.values?.skybox?.rotation?.z ?? 0,
-				this.configs.values?.skybox?.rotation?.w ?? 0
+				this.themePreset.values?.skybox?.rotation?.x ?? 0,
+				this.themePreset.values?.skybox?.rotation?.y ?? 0,
+				this.themePreset.values?.skybox?.rotation?.z ?? 0,
+				this.themePreset.values?.skybox?.rotation?.w ?? 0
 			)
 		);
 		this.skybox.material.color.setScalar(
-			this.configs.values?.skybox?.intensity ?? 1
+			this.themePreset.values?.skybox?.intensity ?? 1
 		);
 	}
 
 	public resetLights(): void {
-		this.lights.sun.visible = this.configs?.values?.lights?.sunVisible ?? true;
+		this.lights.sun.visible =
+			this.themePreset?.values?.lights?.sunVisible ?? true;
 		this.lights.sun.color = new Color(
-			this.configs?.values?.lights?.sunColor ?? "#fff"
+			this.themePreset?.values?.lights?.sunColor ?? "#fff"
 		);
 		this.lights.sun.intensity =
-			this.configs?.values?.lights?.sunIntensity ?? 1.1;
+			this.themePreset?.values?.lights?.sunIntensity ?? 1.1;
 		this.lights.sun.position.set(
-			this.configs?.values?.lights?.sunPosition?.x ?? -1,
-			this.configs?.values?.lights?.sunPosition?.y ?? 4,
-			this.configs?.values?.lights?.sunPosition?.z ?? 2
+			this.themePreset?.values?.lights?.sunPosition?.x ?? -1,
+			this.themePreset?.values?.lights?.sunPosition?.y ?? 4,
+			this.themePreset?.values?.lights?.sunPosition?.z ?? 2
 		);
 		this.lights.sun.lookAt(
-			this.configs?.values?.lights?.sunLookAt?.x ?? 0,
-			this.configs?.values?.lights?.sunLookAt?.y ?? 0,
-			this.configs?.values?.lights?.sunLookAt?.z ?? 0
+			this.themePreset?.values?.lights?.sunLookAt?.x ?? 0,
+			this.themePreset?.values?.lights?.sunLookAt?.y ?? 0,
+			this.themePreset?.values?.lights?.sunLookAt?.z ?? 0
 		);
 
 		this.lights.sunReflection.visible =
-			this.configs?.values?.lights?.sunReflectionVisible ?? true;
-		this.lights.sunReflection.color = this.configs?.values?.lights
+			this.themePreset?.values?.lights?.sunReflectionVisible ?? true;
+		this.lights.sunReflection.color = this.themePreset?.values?.lights
 			?.sunReflectionColor
-			? new Color(this.configs?.values?.lights?.sunReflectionColor ?? "#fff")
+			? new Color(
+					this.themePreset?.values?.lights?.sunReflectionColor ?? "#fff"
+				)
 			: this.lights.sun.color.clone();
 		this.lights.sunReflection.intensity =
-			this.configs?.values?.lights?.sunReflectionIntensity ?? 1;
+			this.themePreset?.values?.lights?.sunReflectionIntensity ?? 1;
 		this.lights.sunReflection.position.set(
-			this.configs?.values?.lights?.sunReflectionPosition?.x ??
+			this.themePreset?.values?.lights?.sunReflectionPosition?.x ??
 				this.lights.sun.position.x * -1,
-			this.configs?.values?.lights?.sunReflectionPosition?.y ??
+			this.themePreset?.values?.lights?.sunReflectionPosition?.y ??
 				this.lights.sun.position.y,
-			this.configs?.values?.lights?.sunReflectionPosition?.z ??
+			this.themePreset?.values?.lights?.sunReflectionPosition?.z ??
 				this.lights.sun.position.z * -1
 		);
 		this.lights.sunReflection.lookAt(
-			this.configs?.values?.lights?.sunReflectionLookAt?.x ?? 0,
-			this.configs?.values?.lights?.sunReflectionLookAt?.y ?? 0,
-			this.configs?.values?.lights?.sunReflectionLookAt?.z ?? 0
+			this.themePreset?.values?.lights?.sunReflectionLookAt?.x ?? 0,
+			this.themePreset?.values?.lights?.sunReflectionLookAt?.y ?? 0,
+			this.themePreset?.values?.lights?.sunReflectionLookAt?.z ?? 0
 		);
 
 		this.lights.sunPropagation.visible =
-			this.configs?.values?.lights?.sunPropagationVisible ?? true;
-		this.lights.sunPropagation.color = this.configs?.values?.lights
+			this.themePreset?.values?.lights?.sunPropagationVisible ?? true;
+		this.lights.sunPropagation.color = this.themePreset?.values?.lights
 			?.sunPropagationColor
-			? new Color(this.configs?.values?.lights?.sunPropagationColor ?? "#fff")
+			? new Color(
+					this.themePreset?.values?.lights?.sunPropagationColor ?? "#fff"
+				)
 			: this.lights.sun.color.clone();
 		this.lights.sunPropagation.intensity =
-			this.configs?.values?.lights?.sunPropagationIntensity ?? 1;
+			this.themePreset?.values?.lights?.sunPropagationIntensity ?? 1;
 	}
 
 	public resetShadows(): void {
+		const isEnabled =
+			typeof this._settings.state["lights-shadows"]?.params["enable-shadows"]
+				?.value === "boolean"
+				? this._settings.state["lights-shadows"]?.params["enable-shadows"]
+						?.value
+				: true;
+		const isFloorEnabled =
+			this.themePreset?.values?.floor?.enabledShadow ?? true;
+		const graphicsQuality =
+			this._settings.state["visual-theme"]?.params["graphics-quality"]?.value;
+		const shadowMapSize =
+			graphicsQuality === "low"
+				? 512
+				: graphicsQuality === "high"
+					? 2048
+					: 1024;
+
 		this.lights.sun.castShadow =
-			this.configs?.values?.lights?.sunCastShadow ?? true;
+			isEnabled && (this.themePreset?.values?.lights?.sunCastShadow ?? true);
 		this.lights.sun.shadow.bias = 0;
 		this.lights.sun.shadow.normalBias = 0.05;
-		this.lights.sun.shadow.mapSize.set(2048, 2048);
-		this.lights.sun.shadow.map?.setSize(2048, 2048);
-		this.lights.sun.shadow.camera.far = 50;
+		this.lights.sun.shadow.mapSize.set(shadowMapSize, shadowMapSize);
+		this.lights.sun.shadow.map?.setSize(shadowMapSize, shadowMapSize);
+		this.lights.sun.shadow.camera.far = BOARD_RANGE_CELLS_SIZE * 3;
 		this.lights.sun.shadow.camera.near = 0.1;
 		this.lights.sun.shadow.camera.top = BOARD_RANGE_CELLS_SIZE;
 		this.lights.sun.shadow.camera.bottom = -BOARD_RANGE_CELLS_SIZE;
@@ -249,17 +292,23 @@ export class MapService {
 		this.lights.sun.shadow.camera.right = BOARD_RANGE_CELLS_SIZE;
 
 		this.lights.sunReflection.castShadow =
-			this.configs?.values?.lights?.sunReflectionCastShadow ?? false;
+			isEnabled &&
+			(this.themePreset?.values?.lights?.sunReflectionCastShadow ?? false);
 		this.lights.sunReflection.shadow.bias = 0;
 		this.lights.sunReflection.shadow.normalBias = 0.05;
-		this.lights.sunReflection.shadow.mapSize.set(2048, 2048);
-		this.lights.sunReflection.shadow.map?.setSize(2048, 2048);
-		this.lights.sunReflection.shadow.camera.far = 50;
+		this.lights.sunReflection.shadow.mapSize.set(shadowMapSize, shadowMapSize);
+		this.lights.sunReflection.shadow.map?.setSize(shadowMapSize, shadowMapSize);
+		this.lights.sunReflection.shadow.camera.far = BOARD_RANGE_CELLS_SIZE * 3;
 		this.lights.sunReflection.shadow.camera.near = 0.1;
 		this.lights.sunReflection.shadow.camera.top = BOARD_RANGE_CELLS_SIZE;
 		this.lights.sunReflection.shadow.camera.bottom = -BOARD_RANGE_CELLS_SIZE;
 		this.lights.sunReflection.shadow.camera.left = -BOARD_RANGE_CELLS_SIZE;
 		this.lights.sunReflection.shadow.camera.right = BOARD_RANGE_CELLS_SIZE;
+
+		this.floorShadow.visible = isEnabled && isFloorEnabled;
+		this.floorShadow.receiveShadow = isEnabled;
+		this.floorShadow.material.opacity =
+			this.themePreset?.values?.floor?.shadowOpacity ?? 0.35;
 	}
 
 	public resetMaterials(): void {
@@ -273,30 +322,24 @@ export class MapService {
 	}
 
 	public resetFloor(): void {
-		const isEnabled = this.configs?.values?.floor?.enabled ?? true;
-		const isEnabledGrids = this.configs?.values?.floor?.enabledGrids ?? true;
-		const isEnabledShadow = this.configs?.values?.floor?.enabledShadow ?? true;
+		const isEnabledGrids =
+			!!this._settings.state["visual-theme"]?.params["floor-grid"]?.value;
 
-		this.floor.visible = isEnabled;
-		this.floor.position.setY(-0.09);
+		this.floorScene.position.setY(-0.09);
 
 		this.floorGrid.visible = isEnabledGrids;
 		this.floorGrid.position.setY(-0.1);
 		if (typeof this.floorGrid.material.uniforms.uDistance?.value === "number")
 			this.floorGrid.material.uniforms.uDistance.value = 0;
 
-		this.floorShadow.visible = isEnabledShadow;
-		this.floorShadow.receiveShadow = true;
-		this.floorShadow.material.opacity =
-			this.configs?.values?.floor?.shadowOpacity ?? 0.35;
 		this.floorShadow.rotation.x = -Math.PI / 2;
 		this.floorShadow.position.y = -0.09;
 	}
 
 	public resetGridsLabels(): void {
-		const font = this._app.loader.getLoadedResources()["helvetikerFont"] as
-			| Font
-			| undefined;
+		const font = this._app.loader.getLoadedResources()[
+			"font-helvetiker-regular"
+		] as Font | undefined;
 		if (!font) return;
 
 		const boardMatrixKeys = Array.from(Array(BOARD_MATRIX_RANGE_SIZE).keys());
@@ -304,7 +347,13 @@ export class MapService {
 		const lettersGroup = new Group();
 		const numbersGroup = new Group();
 
-		this.gridLabels.clear();
+		this.labelsScene.traverseVisible((child) => {
+			if (child instanceof Mesh) child.geometry.dispose();
+		});
+		this.labelsScene.clear();
+
+		lettersGroup.name = "letters";
+		numbersGroup.name = "numbers";
 
 		boardMatrixKeys.forEach((i) => {
 			const geometryParams: TextGeometryParameters = {
@@ -357,23 +406,33 @@ export class MapService {
 			numbersGroup.add(numberMesh);
 		});
 
-		this.gridLabels.add(lettersGroup, numbersGroup);
-		this.gridLabels.position.setY(-0.1);
-		if (!isPlayerSideWhite) this.gridLabels.rotation.y = Math.PI;
-		this.gridLabels.traverse((child) => {
+		this.labelsScene.add(lettersGroup, numbersGroup);
+		this.labelsScene.position.setY(-0.1);
+		if (!isPlayerSideWhite) this.labelsScene.rotation.y = Math.PI;
+		this.labelsScene.traverse((child) => {
 			if (child instanceof Mesh) child.scale.setScalar(0);
 		});
 	}
 
 	public resetScenes(): void {
 		const appScene = this._app.world.scene();
-		const scene = this._world.scene;
+		const worldScene = this._world.scene;
 
-		scene.add(...Object.values(this.lights), this.floor, this.gridLabels);
+		this.floorScene.clear();
+		this.scene.clear();
+
+		this.floorScene.add(this.floorGrid, this.floorShadow);
+		this.scene.add(
+			...Object.values(this.lights),
+			this.floorScene,
+			this.labelsScene
+		);
+		worldScene.add(this.scene);
 		if (this.skybox) appScene.add(this.skybox);
 	}
 
 	public reset() {
+		this.resetSettings();
 		this.resetEnvironment();
 		this.resetLights();
 		this.resetSkybox();
@@ -384,13 +443,20 @@ export class MapService {
 		this.resetScenes();
 	}
 
+	public handleSettingsUpdate(): void {
+		this.reset();
+		this.labelsScene.traverseVisible((child) => {
+			if (child instanceof Mesh) child.scale.setScalar(1);
+		});
+	}
+
 	public handleIntroAnimation(
 		progress: ObservablePayload<WorldController["introAnimation$"]>
 	) {
 		if (typeof this.floorGrid.material.uniforms.uDistance?.value === "number")
 			this.floorGrid.material.uniforms.uDistance.value = progress * 40;
 
-		this.gridLabels.traverseVisible((child) => {
+		this.labelsScene.traverseVisible((child) => {
 			if (child instanceof Mesh) child.scale.setScalar(progress);
 		});
 	}

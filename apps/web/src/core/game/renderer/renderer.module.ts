@@ -18,12 +18,13 @@ export class RendererModule implements Module {
 		@inject(RendererService) private readonly _service: RendererService
 	) {
 		this._subscriptions.push(
-			this._app.timer
-				.step$()
-				.subscribe(this._service.update.bind(this._service)),
-			this._gameController.reset$.subscribe(
+			this._controller.step$.subscribe(
+				this._service.update.bind(this._service)
+			),
+			this._controller.settingsUpdate$.subscribe(
 				this._service.reset.bind(this._service)
-			)
+			),
+			this._controller.reset$.subscribe(this._service.reset.bind(this._service))
 		);
 	}
 

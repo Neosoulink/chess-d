@@ -15,9 +15,9 @@ export class SettingsModule implements Module {
 		@inject(SettingsService) private readonly _service: SettingsService
 	) {
 		this._subscriptions.push(
-			this._controller.state$.subscribe((state) => {
-				console.log(state);
-			})
+			this._controller.update$.subscribe(
+				this._service.handleUpdate.bind(this._service)
+			)
 		);
 	}
 

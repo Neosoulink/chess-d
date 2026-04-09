@@ -16,7 +16,9 @@ import {
 	QUATERNION,
 	SCALE,
 	VECTOR,
-	MatrixCellModel
+	MatrixCellModel,
+	COLOR_BLACK,
+	COLOR_WHITE
 } from "../../shared";
 import { WorldService } from "../world/world.service";
 
@@ -28,7 +30,9 @@ export class BoardService {
 	constructor(
 		@inject(Physics) private readonly _physics: Physics,
 		@inject(WorldService) private readonly _worldService: WorldService
-	) {}
+	) {
+		this.instancedCell.name = "chessboard-cells";
+	}
 
 	public initCells() {
 		const _QUATERNION = QUATERNION.clone().setFromEuler(
@@ -65,18 +69,21 @@ export class BoardService {
 
 			this.instancedCell.setMatrixAt(i, MATRIX);
 			this.instancedCell.cells[coord.row - 1]?.push(
-				new MatrixCellModel({
-					row: coord.row - 1,
-					col: coord.col - 1
-				})
-			);
-			this.instancedCell.setSquareColor(
-				i,
-				isBlack ? ColorSide.black : ColorSide.white
+				new MatrixCellModel(
+					{
+						row: coord.row - 1,
+						col: coord.col - 1
+					},
+					i,
+					isBlack ? ColorSide.black : ColorSide.white
+				)
 			);
 
 			isBlack = !isBlack;
 		}
+
+		this.instancedCell.setCellSideColors(ColorSide.black, COLOR_BLACK);
+		this.instancedCell.setCellSideColors(ColorSide.white, COLOR_WHITE);
 	}
 
 	public initPhysics() {

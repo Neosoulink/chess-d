@@ -33,8 +33,8 @@ export const MainMenuSettingsSection: FC = () => {
 				inputs: {
 					id: string;
 					label: string;
-					inputProps?: ComponentProps<typeof MainMenuLabelInput>["inputProps"];
-					options?: { value: string; label: string }[];
+					inputProps?: SettingsState[string]["params"][string]["inputProps"];
+					options?: SettingsState[string]["params"][string]["options"];
 				}[];
 		  }
 		| undefined
@@ -60,7 +60,17 @@ export const MainMenuSettingsSection: FC = () => {
 										(paramData.inputProps.max !== undefined &&
 											Number(paramData.inputProps.max) <
 												Number(paramData.inputProps.value)))) ||
-								paramData.inputProps.invalid
+								paramData.inputProps.invalid,
+							disabled:
+								paramData.dependsOn?.some(
+									(dependsOn) =>
+										!(currentState?.[sectionKey]?.params[dependsOn]?.inputProps
+											.type === "checkbox"
+											? !!currentState?.[sectionKey]?.params[dependsOn]
+													?.inputProps.checked
+											: !!currentState?.[sectionKey]?.params[dependsOn]
+													?.inputProps.value)
+								) || paramData.inputProps.disabled
 						},
 						options: paramData.options
 					})

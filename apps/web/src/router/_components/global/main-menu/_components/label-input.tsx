@@ -5,7 +5,7 @@ import { ComponentPropsWithRef, FC, useMemo } from "react";
 export interface MainMenuLabelInputProps {
 	labelProps?: ComponentPropsWithRef<"label">;
 	inputProps?: ComponentPropsWithRef<typeof Input>;
-	selectOptions?: { value?: string; label: string }[];
+	selectOptions?: { value?: string | number | boolean; label: string }[];
 	extraActions?: {
 		label: string;
 		icon: keyof typeof Icon;
@@ -56,7 +56,10 @@ export const MainMenuLabelInput: FC<MainMenuLabelInputProps> = ({
 						? inputProps?.children
 						: hasSelectOptions && selectOptions
 							? selectOptions.map((option, index) => (
-									<option key={`${option.value}-${index}`} value={option.value}>
+									<option
+										key={`${option.value}-${index}`}
+										value={option.value?.toString()}
+									>
 										{option.label}
 									</option>
 								))

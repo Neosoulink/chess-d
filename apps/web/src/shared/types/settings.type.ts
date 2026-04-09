@@ -11,7 +11,8 @@ export type SettingsState = Record<
 				id: string;
 				label: string;
 				inputProps: InputProps;
-				options?: { value: string; label: string }[];
+				dependsOn?: string[];
+				options?: { value: string | number | boolean; label: string }[];
 			}
 		>;
 	}

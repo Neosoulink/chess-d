@@ -2,7 +2,10 @@ import {
 	BufferGeometry,
 	DynamicDrawUsage,
 	InstancedMesh,
-	Vector3Like
+	Material,
+	Vector3Like,
+	Color,
+	ColorRepresentation
 } from "three";
 import { Subject, Subscription } from "rxjs";
 import { Physics, PhysicsProperties } from "@chess-d/rapier";
@@ -13,30 +16,33 @@ import { MatrixPieceModel } from "../matrixes/matrix-piece.model";
 
 export class InstancedPieceModel<
 	Type extends PieceType = PieceType,
-	Color extends ColorSide = ColorSide
+	Side extends ColorSide = ColorSide
 > extends InstancedMesh {
-	public readonly pieceUpdated$$ = new Subject<MatrixPieceModel<Type, Color>>();
-	public readonly pieces: MatrixPieceModel<Type, Color>[] = [];
+	public readonly pieceUpdated$$ = new Subject<MatrixPieceModel<Type, Side>>();
+	public readonly pieces: MatrixPieceModel<Type, Side>[] = [];
 	public readonly pieceUpdateSubscriptions: Subscription[] = [];
+
+	public readonly color = new Color();
 
 	constructor(
 		public readonly piecesType: Type,
-		public readonly piecesColor: Color,
+		public readonly piecesSide: Side,
 		count: number,
 		geometry: BufferGeometry,
-		pieces?: InstancedPieceModel<Type, Color>["pieces"]
+		material?: Material | Material[],
+		pieces?: InstancedPieceModel<Type, Side>["pieces"]
 	) {
 		const piecesMatrix = pieces ?? Array.from(Array(count));
-		const color = piecesColor === ColorSide.black ? COLOR_BLACK : COLOR_WHITE;
+		super(geometry, material, piecesMatrix.length);
 
-		super(geometry, undefined, piecesMatrix.length);
+		this.color.copy(piecesSide === ColorSide.black ? COLOR_BLACK : COLOR_WHITE);
 		this.instanceMatrix.setUsage(DynamicDrawUsage);
 
 		piecesMatrix.forEach((_, instanceId) => {
 			const oldPiece = pieces?.[+instanceId];
 			const piece = new MatrixPieceModel(
 				this.piecesType,
-				this.piecesColor,
+				this.piecesSide,
 				instanceId
 			);
 
@@ -53,7 +59,7 @@ export class InstancedPieceModel<
 			this._handlePiecesSubscription(piece);
 
 			this.setMatrixAt(piece.instanceId, piece);
-			this.setColorAt(piece.instanceId, color);
+			this.setColorAt(piece.instanceId, this.color);
 
 			this.update();
 		});
@@ -61,9 +67,7 @@ export class InstancedPieceModel<
 		this.pieceUpdated$$.subscribe(this.update.bind(this));
 	}
 
-	private _handlePiecesSubscription(
-		piece: MatrixPieceModel<Type, Color>
-	): void {
+	private _handlePiecesSubscription(piece: MatrixPieceModel<Type, Side>): void {
 		this.pieceUpdateSubscriptions.push(
 			piece.updated$$.subscribe(this._handlePieceUpdate.bind(this))
 		);
@@ -84,14 +88,15 @@ export class InstancedPieceModel<
 
 	private _handleConstruct(
 		physics: Physics,
-		pieces: InstancedPieceModel<Type, Color>["pieces"]
-	): InstancedPieceModel<Type, Color> {
+		pieces: InstancedPieceModel<Type, Side>["pieces"]
+	): InstancedPieceModel<Type, Side> {
 		const parent = this.parent;
 		const instance = new InstancedPieceModel(
 			this.piecesType,
-			this.piecesColor,
+			this.piecesSide,
 			0,
 			this.geometry,
+			this.material,
 			pieces
 		);
 		instance.userData = this.userData;
@@ -114,7 +119,7 @@ export class InstancedPieceModel<
 		this.update();
 	}
 
-	private _handlePieceUpdate(piece: MatrixPieceModel<Type, Color>) {
+	private _handlePieceUpdate(piece: MatrixPieceModel<Type, Side>) {
 		if (this.pieces[piece.instanceId] !== piece) return;
 
 		this.setMatrixAt(piece.instanceId, piece);
@@ -123,7 +128,7 @@ export class InstancedPieceModel<
 
 	public getPieceByInstanceId(
 		instanceId: number
-	): MatrixPieceModel<Type, Color> | undefined {
+	): MatrixPieceModel<Type, Side> | undefined {
 		return this.pieces[instanceId];
 	}
 
@@ -144,7 +149,7 @@ export class InstancedPieceModel<
 	}
 
 	public copy(
-		pieceGroup: InstancedPieceModel<Type, Color>,
+		pieceGroup: InstancedPieceModel<Type, Side>,
 		recursive?: boolean
 	): this {
 		Object.keys(this.pieces).forEach((id) => {
@@ -157,7 +162,7 @@ export class InstancedPieceModel<
 	public setPiecePosition(
 		instanceId: number,
 		position: Vector3Like
-	): MatrixPieceModel<Type, Color> | undefined {
+	): MatrixPieceModel<Type, Side> | undefined {
 		const piece = this.getPieceByInstanceId(instanceId);
 		return piece?.setPosition(position);
 	}
@@ -190,9 +195,9 @@ export class InstancedPieceModel<
 	}
 
 	public addPiece(
-		piece: MatrixPieceModel<Type, Color>,
+		piece: MatrixPieceModel<Type, Side>,
 		physics: Physics
-	): InstancedPieceModel<Type, Color> | undefined {
+	): InstancedPieceModel<Type, Side> | undefined {
 		if (!(piece instanceof MatrixPieceModel)) return undefined;
 
 		this.pieces.push(piece);
@@ -203,7 +208,7 @@ export class InstancedPieceModel<
 	public dropPiece(
 		instanceId: number,
 		physics?: Physics
-	): InstancedPieceModel<Type, Color> | undefined {
+	): InstancedPieceModel<Type, Side> | undefined {
 		if (!this.pieces[instanceId] || !physics) return undefined;
 
 		this._handlePieceDelete(instanceId);
@@ -240,5 +245,15 @@ export class InstancedPieceModel<
 		super.dispose();
 
 		return this;
+	}
+
+	public setPiecesColor(color: ColorRepresentation): void {
+		this.color.set(color);
+
+		this.pieces.forEach((piece) => {
+			this.setColorAt(piece.instanceId, this.color);
+		});
+
+		if (this.instanceColor) this.instanceColor.needsUpdate = true;
 	}
 }

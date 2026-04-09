@@ -13,8 +13,9 @@ export const WORLD_MAP_SUPPORTED_THEMES: {
 	{ id: "none", label: "None" }
 ];
 
-export const WORLD_MAP_CONFIGS: {
+export const WORLD_MAP_THEME_PRESETS_CONFIGS: {
 	id: (typeof WORLD_MAP_SUPPORTED_THEMES)[number]["id"];
+	label: (typeof WORLD_MAP_SUPPORTED_THEMES)[number]["label"];
 	values?: {
 		environment?: {
 			mapId?: (typeof LOADER_SUPPORTED_ENVIRONMENT_MAPS)[number]["id"];
@@ -54,13 +55,13 @@ export const WORLD_MAP_CONFIGS: {
 		floor?: {
 			enabled?: boolean;
 			enabledShadow?: boolean;
-			enabledGrids?: boolean;
 			shadowOpacity?: number;
 		};
 	};
 }[] = [
 	{
 		id: "env-map-world-road",
+		label: "Road Sunrise",
 		values: {
 			environment: {
 				mapId: "env-map-world-road",
@@ -77,14 +78,12 @@ export const WORLD_MAP_CONFIGS: {
 				height: 10,
 				radius: 75,
 				position: { y: 9.81 }
-			},
-			floor: {
-				enabledGrids: false
 			}
 		}
 	},
 	{
 		id: "env-map-world-pure-sky",
+		label: "Pure Sky",
 		values: {
 			environment: {
 				mapId: "env-map-world-pure-sky",
@@ -98,33 +97,35 @@ export const WORLD_MAP_CONFIGS: {
 				sunPropagationIntensity: 0.4
 			},
 			floor: {
-				enabledGrids: false,
 				shadowOpacity: 0.15
 			}
 		}
 	},
 	{
 		id: "env-map-world-dark-blue-nebula",
+		label: "Space Nebula",
 		values: {
 			environment: {
 				mapId: "env-map-world-cyan-purple-nebula-low",
-				intensity: 0.9,
+				intensity: 1.1,
 				backgroundMapId: "env-map-world-dark-blue-nebula",
-				backgroundMapIntensity: 6.5
+				backgroundMapIntensity: 3
 			},
 			lights: {
-				sunIntensity: 0.9,
+				sunIntensity: 1,
 				sunPosition: { x: -0.45, z: -3 },
-				sunReflectionIntensity: 0.7,
+				sunReflectionIntensity: 0.8,
 				sunReflectionCastShadow: true,
-				sunPropagationIntensity: 0.45
+				sunPropagationIntensity: 0.55
 			},
 			floor: {
-				enabled: false
+				enabled: false,
+				enabledShadow: false
 			}
 		}
 	},
 	{
-		id: "none"
+		id: "none",
+		label: "None"
 	}
 ];

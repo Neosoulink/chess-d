@@ -39,6 +39,9 @@ export class ChessboardModule implements Module {
 
 				return true;
 			}),
+			this._controller.settingsUpdate$?.subscribe(
+				this._service.resetVisual.bind(this._service)
+			),
 			this._chessboard.pieces
 				.getPieceDropped$()
 				?.subscribe(this._service.resetVisual.bind(this._service)),

@@ -21,7 +21,7 @@ export const Modal = ({
 			data-name="modal"
 			className={cn(
 				"fixed h-dvh w-dvw z-50 top-0 left-0 transition-opacity duration-300 overflow-hidden",
-				"bg-linear-to-b from-primary/60 to-secondary/60 backdrop-blur-xs",
+				"bg-linear-to-b from-primary/60 to-secondary/60 backdrop-blur-xs transition-colors",
 				show ? "opacity-100" : "opacity-0 pointer-events-none",
 				className
 			)}

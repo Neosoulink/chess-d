@@ -1,5 +1,7 @@
 import {
 	ChessboardModule,
+	COLOR_BLACK,
+	COLOR_WHITE,
 	InstancedPieceModel,
 	MatrixPieceModel
 } from "@chess-d/chessboard";
@@ -11,9 +13,19 @@ import {
 	squareToCoord
 } from "@chess-d/shared";
 import { Move } from "chess.js";
-import { DoubleSide, MeshPhysicalMaterial } from "three";
+import { AppModule } from "@quick-threejs/reactive/worker";
+import {
+	Color,
+	DoubleSide,
+	Material,
+	MeshPhysicalMaterial,
+	SRGBColorSpace,
+	Texture
+} from "three";
 import { inject, singleton } from "tsyringe";
 
+import { SETTINGS_SUPPORTED_MATERIAL_THEMES } from "@/shared/constants";
+import { SettingsService } from "@/core/game/settings/settings.service";
 import { PiecesController } from "./pieces.controller";
 import { WorldController } from "../../world.controller";
 
@@ -22,7 +34,9 @@ export class PiecesService {
 	public material = new MeshPhysicalMaterial();
 
 	constructor(
-		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule
+		@inject(AppModule) private readonly _app: AppModule,
+		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
+		@inject(SettingsService) private readonly _settings: SettingsService
 	) {}
 
 	public resetPositions() {
@@ -50,16 +64,89 @@ export class PiecesService {
 	}
 
 	public resetMaterials(): void {
+		const resources = this._app.loader.getLoadedResources();
+		const settingsThemeId =
+			this._settings.state.pieces?.params?.theme?.value?.toString();
+		const settingsTheme =
+			SETTINGS_SUPPORTED_MATERIAL_THEMES[settingsThemeId || "default"];
+
+		let texture: Texture | null = null;
+		let roughness = 0.8;
+		let metalness = 0.1;
+		let sheen = 2;
+		let ior = 1.5;
+		let reflectivity = 0;
+		let transmission = 0;
+		let whiteSideColor: string = `#${COLOR_WHITE.getHexString()}`;
+		let blackSideColor: string = `#${COLOR_BLACK.getHexString()}`;
+
+		this.material.map?.dispose();
+
+		if (settingsThemeId === "use-theme") {
+			const primaryTheme =
+				this._settings.state["visual-theme"]?.params[
+					"primary-theme"
+				]?.value?.toString();
+			const secondaryTheme =
+				this._settings.state["visual-theme"]?.params[
+					"secondary-theme"
+				]?.value?.toString();
+
+			if (primaryTheme) whiteSideColor = primaryTheme;
+			if (secondaryTheme)
+				blackSideColor =
+					primaryTheme === secondaryTheme
+						? "#" +
+							COLOR_BLACK.clone()
+								.lerp(new Color(secondaryTheme), 0.25)
+								.getHexString()
+						: secondaryTheme;
+		} else if (settingsTheme) {
+			const textureImage =
+				settingsTheme.values?.textureId &&
+				resources[settingsTheme.values.textureId];
+
+			if (textureImage) {
+				texture = new Texture(textureImage);
+				texture.colorSpace = SRGBColorSpace;
+				texture.needsUpdate = true;
+			}
+
+			roughness = settingsTheme.values?.roughness ?? roughness;
+			metalness = settingsTheme.values?.metalness ?? metalness;
+			sheen = settingsTheme.values?.sheen ?? sheen;
+			ior = settingsTheme.values?.ior ?? ior;
+			reflectivity = settingsTheme.values?.reflectivity ?? reflectivity;
+			transmission = settingsTheme.values?.transmission ?? transmission;
+		}
+
 		this.material.side = DoubleSide;
 		this.material.color.set(0xffffff);
 		this.material.transparent = true;
-		this.material.opacity = 1;
-		this.material.sheen = 2;
-		this.material.roughness = 0.45;
-		this.material.metalness = 0.02;
+		this.material.map = texture;
+		this.material.roughness = roughness;
+		this.material.metalness = metalness;
+		this.material.sheen = sheen;
+		this.material.ior = ior;
+		this.material.reflectivity = reflectivity;
+		this.material.transmission = transmission;
 
 		this._chessboard.world.getScene().traverseVisible((child) => {
-			if (child instanceof InstancedPieceModel) child.material = this.material;
+			if (!(child instanceof InstancedPieceModel)) return;
+
+			if (
+				child.material instanceof Material &&
+				child.material.uuid !== this.material.uuid
+			)
+				child.material.dispose();
+			this.material.color.set(
+				child.piecesSide === ColorSide.white ? COLOR_WHITE : COLOR_BLACK
+			);
+
+			child.material = this.material;
+			child.setPiecesColor(
+				child.piecesSide === ColorSide.white ? whiteSideColor : blackSideColor
+			);
 		});
 	}
 
