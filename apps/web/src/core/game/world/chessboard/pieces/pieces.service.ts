@@ -139,9 +139,6 @@ export class PiecesService {
 				child.material.uuid !== this.material.uuid
 			)
 				child.material.dispose();
-			this.material.color.set(
-				child.piecesSide === ColorSide.white ? COLOR_WHITE : COLOR_BLACK
-			);
 
 			child.material = this.material;
 			child.setPiecesColor(
