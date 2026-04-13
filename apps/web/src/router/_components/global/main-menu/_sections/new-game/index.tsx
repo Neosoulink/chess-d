@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 
 import { GameMode } from "@/shared/enum";
 import { MAIN_MENU_SECTIONS } from "@/shared/constants";
-import { useMainMenuStore } from "@/router/_stores";
+import { useAudioStore, useMainMenuStore } from "@/router/_stores";
 import { ModalSection, TitleDivider } from "@/router/_components/custom";
 import { MainMenuLabelInput } from "../../_components/label-input";
 import { MainMenuNewGameMultiplayer } from "./_components/multiplayer";
@@ -15,6 +15,7 @@ import { NewGameChessConfig } from "./_components/chess-configs";
 export const MainMenuNewGameSection = () => {
 	const navigate = useNavigate();
 	const { setSections, currentSections } = useMainMenuStore();
+	const { refreshInteractiveListeners } = useAudioStore();
 
 	const [gameModeConfigs, setGameModeConfigs] = useState<{
 		gameMode?: GameMode | "none";
@@ -76,6 +77,10 @@ export const MainMenuNewGameSection = () => {
 		if (currentSection === MAIN_MENU_SECTIONS.newGame)
 			setGameModeConfigs({ gameMode: "none" });
 	}, [currentSection]);
+
+	useEffect(() => {
+		refreshInteractiveListeners();
+	}, [gameModeConfigs.gameMode]);
 
 	return (
 		<ModalSection

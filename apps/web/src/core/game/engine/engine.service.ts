@@ -1,6 +1,7 @@
 import { ChessboardModule, MatrixPieceModel } from "@chess-d/chessboard";
 import {
 	ColorSide,
+	coordToSquare,
 	getOppositeColorSide,
 	MoveFlags,
 	ObservablePayload,
@@ -11,17 +12,22 @@ import { Color } from "three";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
 import {
+	EnginePieceMovedNotificationPayload,
 	EngineUpdatedMessageData,
 	GameResetState,
+	MessageData,
 	MoveLike
-} from "../../../shared/types";
+} from "@/shared/types";
 import {
 	OPPONENT_CAPTURE_COLOR,
 	OPPONENT_MOVE_COLOR,
 	PLAYER_CAPTURE_COLOR,
 	PLAYER_MOVE_COLOR
-} from "../../../shared/constants";
-import { GAME_UPDATED_TOKEN } from "../../../shared/tokens";
+} from "@/shared/constants";
+import {
+	ENGINE_PIECE_SELECTED_TOKEN,
+	GAME_UPDATED_TOKEN
+} from "@/shared/tokens";
 import { PiecesService } from "../world/chessboard/pieces/pieces.service";
 import { EngineController } from "./engine.controller";
 import { ChessboardService } from "../world/chessboard/chessboard.service";
@@ -42,28 +48,39 @@ export class EngineService {
 		@inject(PiecesService) private readonly _pieceService: PiecesService
 	) {}
 
-	private _postState(nextMove?: Move) {
+	private _postState(payload?: EnginePieceMovedNotificationPayload) {
+		const { nextMove, pgnSquare } = payload || {};
+
 		self.postMessage({
 			token: GAME_UPDATED_TOKEN,
 			value: {
-				move: nextMove,
-				redoHistory: this.redoHistory,
-				history: this._game.history({ verbose: true }),
-
 				ascii: this._game.ascii(),
+				attackers: pgnSquare ? this._game.attackers(pgnSquare) : [],
+				board: this._game.board(),
 				fen: this._game.fen(),
+				hash: this._game.hash(),
+				header: this._game.getHeaders(),
+				history: this._game.history({ verbose: true }),
 				inCheck: this._game.inCheck(),
+				isAttacked:
+					!!pgnSquare && this._game.isAttacked(pgnSquare, this._game.turn()),
 				isCheck: this._game.isCheck(),
 				isCheckmate: this._game.isCheckmate(),
 				isDraw: this._game.isDraw(),
+				isDrawByFiftyMoves: this._game.isDrawByFiftyMoves(),
 				isGameOver: this._game.isGameOver(),
 				isInsufficientMaterial: this._game.isInsufficientMaterial(),
 				isStalemate: this._game.isStalemate(),
 				isThreefoldRepetition: this._game.isThreefoldRepetition(),
+				move: nextMove,
+				moveNumber: this._game.moveNumber(),
+				moves: this._game.moves({ verbose: true }),
+				perft: this._game.perft(1),
 				pgn: this._game.pgn(),
-				turn: this._game.turn(),
+				playerSide: this.state.playerSide,
+				redoHistory: this.redoHistory,
 				startSide: this.state.startSide,
-				playerSide: this.state.playerSide
+				turn: this._game.turn()
 			}
 		} satisfies EngineUpdatedMessageData);
 	}
@@ -84,6 +101,10 @@ export class EngineService {
 		this.chessboardService.nextMovesMarker.setAccentColor(
 			new Color(isPlayerMove ? PLAYER_MOVE_COLOR : OPPONENT_MOVE_COLOR)
 		);
+
+		self.postMessage({
+			token: ENGINE_PIECE_SELECTED_TOKEN
+		} satisfies MessageData<void>);
 	}
 
 	// TODO: Move checks logic to the controller
@@ -164,7 +185,7 @@ export class EngineService {
 
 		this._game.move(nextMove);
 		this.redoHistory = [];
-		this._postState(payload.nextMove);
+		this._postState(payload);
 
 		// TODO: This should be handled by the chessboard service.
 		this.chessboardService.setPreviousMovesMarker([

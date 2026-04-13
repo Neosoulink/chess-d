@@ -97,7 +97,8 @@ export const WORLD_MAP_THEME_PRESETS_CONFIGS: {
 				sunPropagationIntensity: 0.4
 			},
 			floor: {
-				shadowOpacity: 0.15
+				shadowOpacity: 0.15,
+				enabledShadow: false
 			}
 		}
 	},

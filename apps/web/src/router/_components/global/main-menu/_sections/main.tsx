@@ -8,6 +8,8 @@ import { cn } from "@/shared/utils";
 import { Button, Icon } from "@/router/_components/core";
 import { MainMenuSection } from "../_components/section";
 
+import NeymarkChessBackgroundPath from "@/assets/images/illustrations/neymark-chess.png?url";
+
 /** @internal */
 const LogoTitle: FC = () => {
 	const { isOpen, currentSections } = useMainMenuStore();
@@ -99,6 +101,7 @@ const OptionItem = ({
 			{...{
 				asLink,
 				disabled,
+				withClickEffect: false,
 				className: cn(
 					"justify-start group relative rounded-4xl p-0.5 transition-all duration-300 w-full",
 					disabled ? "bg-light/10" : baseGradientClassNames
@@ -194,7 +197,11 @@ export const MainMenuMainSection: FC = () => {
 
 	return (
 		<MainMenuSection className="flex flex-col justify-center gap-10 pt-5 pb-3 pl-10">
-			<div className="absolute top-0 left-0 w-full h-full bg-[url('https://cdn.vectorstock.com/i/1000v/87/38/chess-pieces-seamless-background-vector-23378738.jpg')] bg-repeat bg-size-[90%] bg-center opacity-5 pointer-events-none" />
+			<img
+				src={NeymarkChessBackgroundPath}
+				alt="Neymark Chess Background"
+				className="absolute top-0 left-0 w-full h-full object-cover object-center opacity-10 pointer-events-none"
+			/>
 
 			<LogoTitle />
 

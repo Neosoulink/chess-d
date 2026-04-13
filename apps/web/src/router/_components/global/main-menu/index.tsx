@@ -1,11 +1,5 @@
 import { gsap } from "gsap";
-import {
-	ComponentPropsWithRef,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef
-} from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router";
 
 import { cn } from "@/shared/utils";
@@ -16,9 +10,6 @@ import { MainMenuMainSection } from "./_sections/main";
 import { MainMenuNewGameSection } from "./_sections/new-game";
 import { MainMenuSaveLoadSection } from "./_sections/save-load";
 import { MainMenuSettingsSection } from "./_sections/settings";
-
-export interface GlobalMainMenuProps
-	extends ComponentPropsWithRef<typeof Modal> {}
 
 /** @internal */
 const SUPPORTED_MAIN_MENU_SECTIONS = [
@@ -44,7 +35,7 @@ const SUPPORTED_MAIN_MENU_SECTIONS = [
 	}
 ] as const;
 
-export const GlobalMainMenu = (props: GlobalMainMenuProps) => {
+export const GlobalMainMenu = () => {
 	const location = useLocation();
 
 	const { isOpen, currentSections, setSections, toggleOpen, setOpen } =
@@ -149,7 +140,7 @@ export const GlobalMainMenu = (props: GlobalMainMenuProps) => {
 				})()}
 			</Button>
 
-			<Modal show={!!isOpen} {...props}>
+			<Modal show={!!isOpen}>
 				{(() => {
 					return SUPPORTED_MAIN_MENU_SECTIONS.map(({ name, component }) => {
 						const Section = component;

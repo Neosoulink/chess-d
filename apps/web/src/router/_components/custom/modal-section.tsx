@@ -4,6 +4,8 @@ import { FC, MouseEventHandler, PropsWithChildren } from "react";
 import { Button, Divider, Icon } from "../core";
 import { TitleDivider } from "./title-divider";
 
+import NeymarkChessBackgroundPath from "@/assets/images/illustrations/neymark-chess.png?url";
+
 export interface ModalSectionProps extends PropsWithChildren {
 	header?: {
 		title: string;
@@ -26,7 +28,11 @@ export const ModalSection: FC<ModalSectionProps> = ({
 }) => {
 	return (
 		<section className="flex items-center justify-center size-full z-0 py-5 relative">
-			<div className="absolute top-0 left-0 w-full h-full bg-[image:url('https://cdn.vectorstock.com/i/1000v/87/38/chess-pieces-seamless-background-vector-23378738.jpg')] bg-cover bg-center opacity-5 pointer-events-none" />
+			<img
+				src={NeymarkChessBackgroundPath}
+				alt="Neymark Chess Background"
+				className="absolute top-0 left-0 w-full h-full object-cover object-center opacity-10 pointer-events-none scale-130"
+			/>
 
 			<div
 				className={cn(

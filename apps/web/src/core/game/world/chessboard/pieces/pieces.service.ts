@@ -3,7 +3,8 @@ import {
 	COLOR_BLACK,
 	COLOR_WHITE,
 	InstancedPieceModel,
-	MatrixPieceModel
+	MatrixPieceModel,
+	PIECE_DEFAULT_HEIGHT_Y_OFFSET
 } from "@chess-d/chessboard";
 import {
 	ColorSide,
@@ -232,16 +233,17 @@ export class PiecesService {
 						const geometry = instancedPiece.geometry;
 						const geometryHight = geometry.boundingBox?.max.y || 0;
 						const piece = instancedPiece?.getPieceByInstanceId(pieceInstanceId);
+						const yOffset = 1 + PIECE_DEFAULT_HEIGHT_Y_OFFSET;
 
 						if (piece) {
 							this._chessboard.pieces.setPiecePosition(piece, {
 								...piece.position,
 								y:
 									PieceType.pawn === piece.type
-										? geometryHight + 1.05 - progress
+										? geometryHight + yOffset - progress
 										: progress > 0.3
-											? geometryHight + 1.05 - (progress - 0.3) * 1.43
-											: geometryHight + 1.05
+											? geometryHight + yOffset - (progress - 0.3) * 1.43
+											: geometryHight + yOffset
 							});
 						}
 					}

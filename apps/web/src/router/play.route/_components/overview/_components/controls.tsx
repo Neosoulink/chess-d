@@ -1,23 +1,15 @@
-import { ColorSide } from "@chess-d/shared";
-import {
-	ComponentPropsWithRef,
-	FC,
-	useCallback,
-	useEffect,
-	useMemo,
-	useState
-} from "react";
+import { ComponentPropsWithRef, FC, useCallback, useEffect } from "react";
 
 import {
 	ENGINE_WILL_REDO_TOKEN,
 	ENGINE_WILL_UNDO_TOKEN,
 	GAME_UPDATED_TOKEN
 } from "@/shared/tokens";
+import { MAIN_MENU_SECTIONS } from "@/shared/constants";
 import { cn } from "@/shared/utils";
 import { EngineUpdatedMessageData, MessageData } from "@/shared/types";
 import { useGameStore, useMainMenuStore } from "@/router/_stores";
 import { Button, Icon } from "@/router/_components/core";
-import { MAIN_MENU_SECTIONS } from "@/shared/constants";
 
 /** @internal */
 const ControlButton: FC<ComponentPropsWithRef<typeof Button>> = ({

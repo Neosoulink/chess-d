@@ -7,6 +7,8 @@ import { ChessboardController } from "./chessboard.controller";
 import { ChessboardService } from "./chessboard.service";
 import { PiecesModule } from "./pieces/pieces.module";
 import { EngineController } from "../../engine/engine.controller";
+import { MessageData } from "@/shared/types";
+import { PIECE_BOARD_COLLISION_TOKEN } from "@/shared/tokens";
 
 @scoped(Lifecycle.ContainerScoped)
 export class ChessboardModule implements Module {
@@ -48,6 +50,12 @@ export class ChessboardModule implements Module {
 			this._chessboard.pieces
 				.getPiecePromoted$()
 				?.subscribe(this._service.resetVisual.bind(this._service)),
+			this._chessboard.getPieceCollidedBoard$().subscribe((value) =>
+				self.postMessage({
+					token: PIECE_BOARD_COLLISION_TOKEN,
+					value
+				} satisfies MessageData)
+			),
 			this._engineController.undo$.subscribe(
 				this._service.resetVisual.bind(this._service)
 			),

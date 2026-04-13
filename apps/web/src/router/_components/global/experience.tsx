@@ -88,8 +88,12 @@ export const GlobalExperience: FC = () => {
 				const appLoader = _app.module.loader;
 
 				const loadSub = appLoader.getLoadCompleted$().subscribe(() => {
-					setIsResourcesLoaded(true);
-					loadSub.unsubscribe();
+					settingsApplyState({});
+
+					setTimeout(() => {
+						setIsResourcesLoaded(true);
+						loadSub.unsubscribe();
+					}, 500);
 				});
 
 				if (devMode && rootDom) {
@@ -112,9 +116,6 @@ export const GlobalExperience: FC = () => {
 				}
 
 				setApp(_app);
-				setTimeout(() => {
-					settingsApplyState({});
-				}, 500);
 			}
 		});
 	}, [setIsLoading, rootDom, setApp, setIsResourcesLoaded]);

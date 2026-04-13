@@ -1,6 +1,5 @@
 import { ColorSide } from "@chess-d/shared";
 import { Properties } from "@quick-threejs/utils";
-import { useEffect } from "react";
 import { Observable, Subject } from "rxjs";
 import { create } from "zustand";
 

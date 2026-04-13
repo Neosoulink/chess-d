@@ -172,7 +172,7 @@ export class PiecesService {
 	public setPieceCoord<Type extends PieceType, Color extends ColorSide>(
 		piece: MatrixPieceModel<Type, Color>,
 		coord: BoardCoord,
-		offset?: Vector3Like
+		offset?: Partial<Vector3Like>
 	) {
 		this.groups?.[piece.color]?.[piece.type]?.setPieceCoord(
 			piece.instanceId,

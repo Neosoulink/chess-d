@@ -21,6 +21,7 @@ import {
 	COLOR_WHITE
 } from "../../shared";
 import { WorldService } from "../world/world.service";
+import { ActiveEvents } from "@dimforge/rapier3d-compat";
 
 @scoped(Lifecycle.ContainerScoped)
 export class BoardService {
@@ -28,7 +29,7 @@ export class BoardService {
 	public physics!: PhysicsProperties;
 
 	constructor(
-		@inject(Physics) private readonly _physics: Physics,
+		@inject(Physics) private readonly _physicsModule: Physics,
 		@inject(WorldService) private readonly _worldService: WorldService
 	) {
 		this.instancedCell.name = "chessboard-cells";
@@ -94,12 +95,18 @@ export class BoardService {
 			useBoundingBox: true
 		};
 
-		this.physics = this._physics?.addToWorld(
+		this.physics = this._physicsModule?.addToWorld(
 			this.instancedCell
 		) as PhysicsProperties;
 
 		this.physics.rigidBody.setTranslation({ x: 0, y: 0, z: 0 }, true);
+		this.physics.rigidBody.userData = {
+			name: BoardService.name,
+			type: "board",
+			physicsProperties: this.physics
+		};
 		this.physics.collider.setRestitution(0.55);
+		this.physics.collider.setActiveEvents(ActiveEvents.COLLISION_EVENTS);
 	}
 
 	initScene() {
@@ -107,7 +114,7 @@ export class BoardService {
 	}
 
 	public disposePhysics() {
-		this._physics.removeFromWorld(this.instancedCell);
+		this._physicsModule.removeFromWorld(this.instancedCell);
 	}
 
 	public disposeScene() {

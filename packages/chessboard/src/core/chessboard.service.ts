@@ -1,3 +1,5 @@
+import { Physics } from "@chess-d/rapier";
+import { EventQueue } from "@dimforge/rapier3d-compat";
 import {
 	Camera,
 	Object3D,
@@ -15,11 +17,15 @@ import { CAMERA_TOKEN } from "../shared";
 export class ChessboardService {
 	public readonly raycaster = new Raycaster();
 	public readonly cursor = new Vector2();
+	public readonly physicsEventQueue: EventQueue;
 
 	constructor(
 		@inject(CAMERA_TOKEN) private readonly _camera: Camera,
+		@inject(Physics) private readonly _physics: Physics,
 		@inject(WorldService) private readonly _worldService: WorldService
-	) {}
+	) {
+		this.physicsEventQueue = new this._physics.rapier.EventQueue(true);
+	}
 
 	public getIntersections<
 		T extends Object3D<Object3DEventMap> = Object3D<Object3DEventMap>

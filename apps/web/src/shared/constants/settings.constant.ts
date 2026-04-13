@@ -107,7 +107,7 @@ export const SETTINGS_DEFAULT_STATE: SettingsState = {
 				label: "Primary Theme",
 				inputProps: {
 					type: "select",
-					value: SETTINGS_SUPPORTED_THEMES_COLORS[3].value
+					value: SETTINGS_SUPPORTED_THEMES_COLORS[0].value
 				},
 				options: SETTINGS_SUPPORTED_THEMES_COLORS.map((color) => ({
 					value: color.value,
@@ -119,7 +119,7 @@ export const SETTINGS_DEFAULT_STATE: SettingsState = {
 				label: "Secondary Theme",
 				inputProps: {
 					type: "select",
-					value: SETTINGS_SUPPORTED_THEMES_COLORS[2].value
+					value: SETTINGS_SUPPORTED_THEMES_COLORS[1].value
 				},
 				options: SETTINGS_SUPPORTED_THEMES_COLORS.map((color) => ({
 					value: color.value,
@@ -149,14 +149,6 @@ export const SETTINGS_DEFAULT_STATE: SettingsState = {
 					value: theme.id,
 					label: theme.label
 				}))
-			},
-			"floor-grid": {
-				id: "settings-visual-theme-floor-grid",
-				label: "Floor Grid",
-				inputProps: {
-					type: "checkbox",
-					checked: false
-				}
 			}
 		}
 	},
@@ -164,15 +156,19 @@ export const SETTINGS_DEFAULT_STATE: SettingsState = {
 		label: "Audio",
 		icon: "VolumeOn",
 		params: {
-			enabled: {
-				id: "settings-audio-enable-audio",
-				label: "Enable Audio",
-				inputProps: { type: "checkbox", checked: true }
+			mute: {
+				id: "settings-audio-mute-audio",
+				label: "General",
+				inputProps: {
+					type: "checkbox",
+					checked: true,
+					className: "after:content-['Unmute'] checked:after:content-['Mute']"
+				}
 			},
 			volume: {
-				id: "settings-audio-music-volume",
-				label: "Sound Volume %",
-				dependsOn: ["enabled"],
+				id: "settings-audio-volume",
+				label: "Volume %",
+				dependsOn: ["mute"],
 				inputProps: { type: "number", min: 0, max: 100, step: 1, value: 100 }
 			}
 		}

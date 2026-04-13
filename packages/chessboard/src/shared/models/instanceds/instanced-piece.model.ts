@@ -11,7 +11,11 @@ import { Subject, Subscription } from "rxjs";
 import { Physics, PhysicsProperties } from "@chess-d/rapier";
 import { BoardCoord, ColorSide, PieceType } from "@chess-d/shared";
 
-import { COLOR_BLACK, COLOR_WHITE } from "../../constants";
+import {
+	COLOR_BLACK,
+	COLOR_WHITE,
+	PIECE_DEFAULT_HEIGHT_Y_OFFSET
+} from "../../constants";
 import { MatrixPieceModel } from "../matrixes/matrix-piece.model";
 
 export class InstancedPieceModel<
@@ -143,8 +147,18 @@ export class InstancedPieceModel<
 		physicsProperties.forEach((props, instanceId) => {
 			const piece = this.getPieceByInstanceId(instanceId);
 
-			if (piece instanceof MatrixPieceModel && props?.collider)
+			if (piece instanceof MatrixPieceModel && props?.collider) {
 				piece.physics = props;
+				piece.physics.rigidBody.userData = {
+					name: InstancedPieceModel.name,
+					type: "piece",
+					pieceInstanceId: piece.instanceId,
+					pieceType: piece.type,
+					pieceSide: piece.color,
+					piecePromotedFromType: piece.promotedFromType,
+					physicsProperties: props
+				};
+			}
 		});
 	}
 
@@ -171,7 +185,7 @@ export class InstancedPieceModel<
 		instanceId: number,
 		boardMesh: InstancedMesh,
 		coord: BoardCoord,
-		offset?: Vector3Like
+		offset?: Partial<Vector3Like>
 	): this["pieces"][number] | undefined {
 		if (this?.geometry.attributes.position) {
 			this.geometry.computeBoundingBox();
@@ -182,7 +196,7 @@ export class InstancedPieceModel<
 
 			if (!boundingBox || !piece) return undefined;
 
-			const height = boundingBox.max.y + 0.05;
+			const height = boundingBox.max.y + PIECE_DEFAULT_HEIGHT_Y_OFFSET;
 
 			piece.setCoord(boardMesh, coord, {
 				x: boardMesh.position.x + (offset?.x || 0),

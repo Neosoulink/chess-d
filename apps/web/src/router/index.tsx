@@ -5,7 +5,8 @@ import { Loader } from "./_components/custom";
 import {
 	GlobalExperience,
 	GlobalTheme,
-	GlobalMainMenu
+	GlobalMainMenu,
+	GlobalAudios
 } from "./_components/global";
 import { HomeRoute } from "./home.route";
 import { PlayRoute } from "./play.route";
@@ -20,6 +21,7 @@ export const Router: FC = () => (
 					<GlobalTheme />
 					<GlobalMainMenu />
 					<Loader />
+					<GlobalAudios />
 				</>
 			}
 		>

@@ -13,12 +13,14 @@ export type ButtonProps = (
 ) & {
 	disabled?: boolean;
 	asLink?: boolean;
+	withClickEffect?: boolean;
 } & ComponentPropsWithRef<"button">;
 
 export const Button = ({
 	className,
 	asLink,
 	disabled,
+	withClickEffect = true,
 	...props
 }: ButtonProps) => {
 	const Comp = useMemo(() => (asLink ? Link : "button"), [asLink]);
@@ -28,6 +30,7 @@ export const Button = ({
 			className={cn(
 				"h-10 px-2 bg-light/20 flex justify-center items-center gap-2 pointer-events-auto transition-[border-color,background-color,color,opacity] duration-250",
 				"hover:bg-light/30 hover:text-shadow-[0_0_4px_color-mix(in_srgb,var(--color-neon-gold)_25%,transparent)]",
+				withClickEffect && "active:scale-110",
 				disabled && "opacity-30 pointer-events-none select-none",
 				className
 			)}
