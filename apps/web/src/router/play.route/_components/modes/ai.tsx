@@ -27,7 +27,6 @@ import {
 } from "@/shared/tokens";
 import { getGameModeFromUrl } from "@/shared/utils";
 import { useGameStore, useLoaderStore } from "@/router/_stores";
-import { clamp } from "three/src/math/MathUtils.js";
 
 export interface PlayModeAIProps {}
 
@@ -130,8 +129,7 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 
 			return {
 				...options,
-				proxyBaseUrl: options?.proxyBaseUrl ?? envBaseUrl ?? "",
-				depth: clamp(options?.depth ?? 3, 1, 5)
+				proxyBaseUrl: options?.proxyBaseUrl ?? envBaseUrl ?? ""
 			};
 		},
 		[]

@@ -1,7 +1,6 @@
 import { SupportedAiModel } from "@chess-d/ai";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { clamp } from "three/src/math/MathUtils.js";
 
 import { GameMode } from "@/shared/enum";
 import { MAIN_MENU_SECTIONS } from "@/shared/constants";
@@ -63,7 +62,7 @@ export const MainMenuNewGameSection = () => {
 		const aiOpponent = gameModeConfigs.aiOpponent;
 		const depth =
 			typeof gameModeConfigs.aiOpponentDepth === "number"
-				? clamp(gameModeConfigs.aiOpponentDepth, 1, 6)
+				? gameModeConfigs.aiOpponentDepth
 				: undefined;
 
 		let to = "/play?mode=ai";
@@ -102,7 +101,7 @@ export const MainMenuNewGameSection = () => {
 
 	useEffect(() => {
 		refreshInteractiveListeners();
-	}, [gameModeConfigs.gameMode]);
+	}, [gameModeConfigs]);
 
 	return (
 		<ModalSection

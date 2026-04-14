@@ -3,8 +3,14 @@ import {
 	SupportedAiModel,
 	SupportedAiModelKey
 } from "@chess-d/ai";
+import {
+	AI_DEFAULT_DEPTH,
+	AI_MAX_DEPTH,
+	AI_MIN_DEPTH,
+	AI_STOCKFISH_DEFAULT_DEPTH,
+	AI_STOCKFISH_MAX_DEPTH
+} from "@chess-d/shared";
 import { FC, Fragment, useEffect, useMemo } from "react";
-import { clamp } from "three/src/math/MathUtils.js";
 
 import { MainMenuLabelInput } from "../../../_components/label-input";
 
@@ -39,6 +45,11 @@ export const MainMenuNewGameSimulation: FC<{
 
 	const renderPayersSelection = (num: number) => {
 		const aiPlayerData = num === 1 ? aiPlayer1 : aiPlayer2;
+		const maxDepth =
+			aiPlayerData?.model &&
+			SupportedAiModel[aiPlayerData?.model] === SupportedAiModel.stockfish
+				? AI_STOCKFISH_MAX_DEPTH
+				: AI_MAX_DEPTH;
 
 		return (
 			<Fragment key={`ai-opponent-${num}`}>
@@ -62,28 +73,34 @@ export const MainMenuNewGameSimulation: FC<{
 				/>
 
 				{aiPlayerData?.model &&
-					[SupportedAiModel.basicBot, SupportedAiModel.zeyu].includes(
-						SupportedAiModel[aiPlayerData.model]
-					) && (
+					[
+						SupportedAiModel.basicBot,
+						SupportedAiModel.zeyu,
+						SupportedAiModel.stockfish
+					].includes(SupportedAiModel[aiPlayerData.model]) && (
 						<MainMenuLabelInput
 							labelProps={{
-								children: `Depth AI ${num}`
+								children: `Depth AI ${num} (${AI_MIN_DEPTH}-${maxDepth})`
 							}}
 							inputProps={{
 								type: "number",
 								name: "depth",
 								id: "depth",
-								value: aiPlayerData.depth ?? 3,
-								min: 1,
-								max: 5,
+								value: aiPlayerData.depth ?? AI_DEFAULT_DEPTH,
+								min: AI_MIN_DEPTH,
+								max: maxDepth,
 								placeholder: "Enter the depth",
 								onChange: (e) =>
 									onChange({
 										aiPlayer: {
 											...aiPlayerData,
 											depth: isNaN(Number(e.target.value))
-												? 3
-												: clamp(Number(e.target.value), 1, 5)
+												? aiPlayerData?.model &&
+													SupportedAiModel[aiPlayerData?.model] ===
+														SupportedAiModel.stockfish
+													? AI_STOCKFISH_DEFAULT_DEPTH
+													: AI_DEFAULT_DEPTH
+												: Number(e.target.value)
 										},
 										playerIndex: num
 									})

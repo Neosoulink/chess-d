@@ -1,3 +1,4 @@
+import { AI_DEFAULT_DEPTH, AI_MAX_DEPTH, AI_MIN_DEPTH } from "@chess-d/shared";
 import { inject, Lifecycle, scoped } from "tsyringe";
 import { Color } from "chess.js";
 
@@ -19,7 +20,15 @@ export class ZeyuModule implements AiModel {
 
 	public getMove(color: Color) {
 		const [bestMove] = this.service.minimax(
-			this.options?.depth ?? 3,
+			Math.min(
+				Math.max(
+					AI_MIN_DEPTH,
+					typeof this.options?.depth === "number"
+						? this.options.depth
+						: AI_DEFAULT_DEPTH
+				),
+				AI_MAX_DEPTH
+			),
 			Number.NEGATIVE_INFINITY,
 			Number.POSITIVE_INFINITY,
 			true,
