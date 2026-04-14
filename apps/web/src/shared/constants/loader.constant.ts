@@ -37,7 +37,7 @@ export const LOADER_SUPPORTED_AUDIOS: {
 }[] = [
 	{
 		id: "sfx-ui-select",
-		label: "Select",
+		label: "UI Select",
 		sourcePath: audioSfxUiSelectPath,
 		options: { volume: 0.2 }
 	},
@@ -45,7 +45,7 @@ export const LOADER_SUPPORTED_AUDIOS: {
 		id: "sfx-ui-click",
 		label: "UI Click",
 		sourcePath: audioSfxUiClickPath,
-		options: { volume: 0.8 }
+		options: { volume: 0.7 }
 	},
 	{
 		id: "sfx-game-fail",
@@ -101,7 +101,7 @@ export const LOADER_SUPPORTED_AUDIOS: {
 		id: "sfx-piece-collision-low",
 		label: "Piece Collision Low",
 		sourcePath: audioSfxPieceCollisionPath,
-		options: { volume: 0.3 }
+		options: { volume: 0.1 }
 	},
 	{
 		id: "sfx-piece-capture",

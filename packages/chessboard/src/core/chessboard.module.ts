@@ -68,6 +68,8 @@ export class ChessboardModule {
 		this.pieces.dispose();
 		this.debug.dispose();
 
+		this._service.physicsEventQueue.clear();
+		this._service.physicsEventQueue.free();
 		this._subscriptions.forEach((sub) => sub.unsubscribe());
 	}
 }

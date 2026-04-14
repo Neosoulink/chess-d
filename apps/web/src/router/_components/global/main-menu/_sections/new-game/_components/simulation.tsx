@@ -1,13 +1,30 @@
-import { SupportedAiModel } from "@chess-d/ai";
-import { FC, useEffect, useMemo } from "react";
+import {
+	SUPPORTED_AI_MODEL_LABELS,
+	SupportedAiModel,
+	SupportedAiModelKey
+} from "@chess-d/ai";
+import { FC, Fragment, useEffect, useMemo } from "react";
+import { clamp } from "three/src/math/MathUtils.js";
 
 import { MainMenuLabelInput } from "../../../_components/label-input";
 
 export const MainMenuNewGameSimulation: FC<{
-	aiPlayer1?: keyof typeof SupportedAiModel;
-	aiPlayer2?: keyof typeof SupportedAiModel;
+	aiPlayer1?: {
+		model?: keyof typeof SupportedAiModel;
+		depth?: number;
+		apiKey?: string;
+	};
+	aiPlayer2?: {
+		model?: keyof typeof SupportedAiModel;
+		depth?: number;
+		apiKey?: string;
+	};
 	onChange(props: {
-		aiPlayer?: keyof typeof SupportedAiModel;
+		aiPlayer?: {
+			model?: keyof typeof SupportedAiModel;
+			depth?: number;
+			apiKey?: string;
+		};
 		playerIndex: number;
 	}): void;
 }> = ({ aiPlayer1, aiPlayer2, onChange }) => {
@@ -16,54 +33,103 @@ export const MainMenuNewGameSimulation: FC<{
 			.filter((ai) => isNaN(Number(ai)))
 			.map((ai) => ({
 				value: ai,
-				label: ai
+				label: SUPPORTED_AI_MODEL_LABELS[ai as SupportedAiModelKey] ?? ai
 			}));
 	}, []);
 
 	const renderPayersSelection = (num: number) => {
-		const id = `ai-opponent-${num}`;
+		const aiPlayerData = num === 1 ? aiPlayer1 : aiPlayer2;
+
 		return (
-			<MainMenuLabelInput
-				key={id}
-				id={id}
-				labelProps={{
-					children: `AI player ${num}`
-				}}
-				inputProps={{
-					type: "select",
-					name: "ai-opponent",
-					id: "ai-opponent",
-					className: "w-full",
-					value: num === 1 ? aiPlayer1 : aiPlayer2,
-					onChange: (e) =>
-						onChange({
-							aiPlayer: e.target.value as keyof typeof SupportedAiModel,
-							playerIndex: num
-						})
-				}}
-				selectOptions={supportedAiModels}
-			/>
+			<Fragment key={`ai-opponent-${num}`}>
+				<MainMenuLabelInput
+					labelProps={{
+						children: `AI player ${num}`
+					}}
+					inputProps={{
+						type: "select",
+						name: "ai-opponent",
+						id: "ai-opponent",
+						className: "w-full",
+						value: aiPlayerData?.model,
+						onChange: (e) =>
+							onChange({
+								aiPlayer: { ...aiPlayerData, model: e.target.value },
+								playerIndex: num
+							})
+					}}
+					selectOptions={supportedAiModels}
+				/>
+
+				{aiPlayerData?.model &&
+					[SupportedAiModel.basicBot, SupportedAiModel.zeyu].includes(
+						SupportedAiModel[aiPlayerData.model]
+					) && (
+						<MainMenuLabelInput
+							labelProps={{
+								children: `Depth AI ${num}`
+							}}
+							inputProps={{
+								type: "number",
+								name: "depth",
+								id: "depth",
+								value: aiPlayerData.depth ?? 3,
+								min: 1,
+								max: 5,
+								placeholder: "Enter the depth",
+								onChange: (e) =>
+									onChange({
+										aiPlayer: {
+											...aiPlayerData,
+											depth: isNaN(Number(e.target.value))
+												? 3
+												: clamp(Number(e.target.value), 1, 5)
+										},
+										playerIndex: num
+									})
+							}}
+						/>
+					)}
+
+				{aiPlayerData?.model &&
+					[
+						SupportedAiModel.openAiChatGpt,
+						SupportedAiModel.googleGemini,
+						SupportedAiModel.anthropicClaude
+					].includes(SupportedAiModel[aiPlayerData.model]) && (
+						<MainMenuLabelInput
+							labelProps={{
+								children: `API Key AI ${num} (optional)`
+							}}
+							inputProps={{
+								type: "text",
+								name: "api-key",
+								id: "api-key",
+								value: aiPlayerData.apiKey ?? "",
+								placeholder: "Your provider API key",
+								onChange: (e) =>
+									onChange({
+										aiPlayer: { ...aiPlayerData, apiKey: e.target.value },
+										playerIndex: num
+									})
+							}}
+						/>
+					)}
+			</Fragment>
 		);
 	};
 
 	useEffect(() => {
-		onChange({
-			aiPlayer: "basicBot",
-			playerIndex: 1
-		});
-		onChange({
-			aiPlayer: "basicBot",
-			playerIndex: 2
+		[1, 2].forEach((num) => {
+			onChange({
+				aiPlayer: { model: "basicBot", depth: 3 },
+				playerIndex: num
+			});
 		});
 
 		return () => {
-			onChange({
-				aiPlayer: undefined,
-				playerIndex: 1
-			});
-			onChange({
-				aiPlayer: undefined,
-				playerIndex: 2
+			[1, 2].forEach((num) => {
+				onChange({ aiPlayer: undefined, playerIndex: num });
 			});
 		};
 	}, []);

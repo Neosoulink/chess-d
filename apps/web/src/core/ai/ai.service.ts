@@ -1,22 +1,36 @@
-import { register, SupportedAiModel } from "@chess-d/ai";
-import { Chess, validateFen } from "chess.js";
+import { AiWillPerformMovePayload } from "@/shared/types";
+import {
+	type AiRegisterOptions,
+	register,
+	SupportedAiModel
+} from "@chess-d/ai";
+import { Chess, Move, validateFen } from "chess.js";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
 @scoped(Lifecycle.ContainerScoped)
 export class AiService {
 	constructor(@inject(Chess) private readonly game: Chess) {}
 
-	public handleWillPerformMove = (ai?: SupportedAiModel, fen?: string) => {
-		if (!ai || !Object.values(SupportedAiModel).includes(ai))
-			return console.warn("Received invalid AI model");
+	public handleWillPerformMove = async ({
+		ai,
+		fen,
+		registerOptions
+	}: AiWillPerformMovePayload): Promise<Move | null | undefined> => {
+		if (!ai || !Object.values(SupportedAiModel).includes(ai)) {
+			console.warn("Received invalid AI model");
+			return undefined;
+		}
 
-		if (!fen || !validateFen(fen).ok)
-			return console.warn("AI received invalid FEN string");
+		if (!fen || !validateFen(fen).ok) {
+			console.warn("AI received invalid FEN string");
+			return undefined;
+		}
 
 		this.game.load(fen);
 
-		const { container, model } = register(ai, this.game);
-		const move = model?.getMove(this.game.turn());
+		const { container, model } = register(ai, this.game, registerOptions);
+		const raw = model?.getMove(this.game.turn());
+		const move = await Promise.resolve(raw);
 
 		container.clearInstances();
 

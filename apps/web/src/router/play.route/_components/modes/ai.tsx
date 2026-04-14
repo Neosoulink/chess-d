@@ -1,4 +1,8 @@
-import { SupportedAiModel, SupportedAiModelKey } from "@chess-d/ai";
+import {
+	AiRegisterOptions,
+	SupportedAiModel,
+	SupportedAiModelKey
+} from "@chess-d/ai";
 import { ColorSide, DEFAULT_FEN, getOppositeColorSide } from "@chess-d/shared";
 import { RegisterModule } from "@quick-threejs/reactive";
 import { WorkerThread } from "@quick-threejs/worker";
@@ -9,7 +13,11 @@ import { merge, Subscription } from "rxjs";
 
 import { GameMode } from "@/shared/enum";
 import { PlayerModel } from "@/shared/models";
-import { EngineUpdatedMessageData, MessageData } from "@/shared/types";
+import {
+	AiWillPerformMovePayload,
+	EngineUpdatedMessageData,
+	MessageData
+} from "@/shared/types";
 import {
 	AI_PERFORMED_MOVE_TOKEN,
 	AI_WILL_PERFORM_MOVE_TOKEN,
@@ -18,7 +26,8 @@ import {
 	PIECE_WILL_MOVE_TOKEN
 } from "@/shared/tokens";
 import { getGameModeFromUrl } from "@/shared/utils";
-import { useGameStore, useLoaderStore } from "../../../_stores";
+import { useGameStore, useLoaderStore } from "@/router/_stores";
+import { clamp } from "three/src/math/MathUtils.js";
 
 export interface PlayModeAIProps {}
 
@@ -44,9 +53,6 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 		| Awaited<ReturnType<ReturnType<RegisterModule["getWorkerPool"]>["run"]>>
 		| undefined
 	>();
-	const [resetInitialGameState, setResetInitialGameState] = useState<
-		typeof initialGameState | undefined
-	>(undefined);
 	const [currentStartFen, setCurrentStartFen] = useState<string>(
 		initialGameState?.fen || DEFAULT_FEN
 	);
@@ -118,6 +124,19 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 		[appModule]
 	);
 
+	const wrapRegisterOptions = useCallback(
+		(options?: Partial<AiRegisterOptions>): AiRegisterOptions => {
+			const envBaseUrl = import.meta.env.PUBLIC_SERVER_HOST?.replace(/\/$/, "");
+
+			return {
+				...options,
+				proxyBaseUrl: options?.proxyBaseUrl ?? envBaseUrl ?? "",
+				depth: clamp(options?.depth ?? 3, 1, 5)
+			};
+		},
+		[]
+	);
+
 	useEffect(() => {
 		if (
 			locationKeyRef.current === location.key ||
@@ -154,6 +173,12 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 		if (gameMode === GameMode.simulation) {
 			const searchedAI1 = searchParams.get("ai1");
 			const searchedAI2 = searchParams.get("ai2");
+			const searchedDepth1 = isNaN(Number(searchParams.get("depth1")))
+				? undefined
+				: Number(searchParams.get("depth1"));
+			const searchedDepth2 = isNaN(Number(searchParams.get("depth2")))
+				? undefined
+				: Number(searchParams.get("depth2"));
 			const ai1Key =
 				searchedAI1 !== null && SupportedAiModelKey[searchedAI1]
 					? searchedAI1
@@ -169,10 +194,13 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 				id: SupportedAiModel[ai1Key],
 				color: currentPlayerSide
 			});
+			aiPlayer1.depth = searchedDepth1;
 			aiPlayer2.setEntity({
 				id: SupportedAiModel[ai2Key],
 				color: getOppositeColorSide(currentPlayerSide)
 			});
+			aiPlayer2.depth = searchedDepth2;
+
 			players.push(aiPlayer1, aiPlayer2);
 
 			if (
@@ -188,15 +216,21 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 							fen: currentStartFen,
 							ai: (currentStartSide === aiPlayer1.color
 								? aiPlayer1.id
-								: aiPlayer2.id) as SupportedAiModel
+								: aiPlayer2.id) as SupportedAiModel,
+							registerOptions: wrapRegisterOptions({
+								depth:
+									currentStartSide === aiPlayer1.color
+										? aiPlayer1.depth
+										: aiPlayer2.depth
+							})
 						}
-					} satisfies MessageData<{
-						fen: string;
-						ai: SupportedAiModel;
-					}>);
+					} satisfies MessageData<AiWillPerformMovePayload>);
 				}, 1500);
 		} else {
 			const searchedAIParam = searchParams.get("ai");
+			const searchedDepthParam = isNaN(Number(searchParams.get("depth")))
+				? undefined
+				: Number(searchParams.get("depth"));
 			const aiKey =
 				searchedAIParam !== null && SupportedAiModelKey[searchedAIParam]
 					? SupportedAiModelKey[searchedAIParam]
@@ -221,12 +255,12 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 						token: AI_WILL_PERFORM_MOVE_TOKEN,
 						value: {
 							fen: currentStartFen,
-							ai: aiPlayer.id as SupportedAiModelKey
+							ai: aiPlayer.id as SupportedAiModel,
+							registerOptions: wrapRegisterOptions({
+								depth: searchedDepthParam
+							})
 						}
-					} satisfies MessageData<{
-						fen: string;
-						ai: SupportedAiModelKey;
-					}>);
+					} satisfies MessageData<AiWillPerformMovePayload>);
 				}, 1500);
 		}
 
@@ -239,7 +273,11 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 				players.forEach((player) => {
 					player.next({
 						token: "NOTIFIED",
-						value: { ...payload.data.value, entity: player.getEntity() }
+						value: {
+							...payload.data.value,
+							entity: player.getEntity(),
+							depth: player.depth
+						}
 					});
 				});
 		};
@@ -259,14 +297,14 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 					const player = players.find((player) => player.color === move.color);
 
 					player?.next({
-						value: { move, entity: player.getEntity() },
+						value: { move, entity: player.getEntity(), depth: player.depth },
 						token: "PLACED_PIECE"
 					});
 				});
 
 		const playersSubscription = merge(...players).subscribe((payload) => {
 			const { token, value } = payload;
-			const { turn, fen, move, entity } = value || {};
+			const { turn, fen, move, entity, depth } = value || {};
 
 			if (
 				token === "NOTIFIED" &&
@@ -277,8 +315,12 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 			)
 				aiWorker?.[0]?.worker?.postMessage?.({
 					token: AI_WILL_PERFORM_MOVE_TOKEN,
-					value: { fen, ai: entity.id as SupportedAiModel }
-				} satisfies MessageData<{ fen: string; ai: SupportedAiModel }>);
+					value: {
+						fen,
+						ai: entity.id as SupportedAiModel,
+						registerOptions: wrapRegisterOptions({ depth })
+					}
+				} satisfies MessageData<AiWillPerformMovePayload>);
 
 			if (payload.token === "PLACED_PIECE" && payload.value?.move)
 				return performPieceMove(payload.value.move);

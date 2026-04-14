@@ -1,7 +1,7 @@
 import { WorkerThreadModule } from "@quick-threejs/worker";
 import { Module } from "@quick-threejs/reactive";
 import { inject, Lifecycle, scoped } from "tsyringe";
-import { Subscription } from "rxjs";
+import { filter, from, mergeMap, Subscription } from "rxjs";
 
 import { AiController } from "./ai.controller";
 import { AiService } from "./ai.service";
@@ -18,19 +18,19 @@ export class AiModule implements Module, WorkerThreadModule {
 
 	init(): void {
 		this._subscriptions.push(
-			this.controller.willPerformMove$.subscribe((payload) => {
-				const move = this.service.handleWillPerformMove(
-					payload.data.value?.ai,
-					payload.data.value?.fen
-				);
-
-				if (!move) return;
-
-				this.controller.movePerformed$$.next({
-					token: AI_PERFORMED_MOVE_TOKEN,
-					value: { move }
-				});
-			})
+			this.controller.willPerformMove$
+				.pipe(
+					mergeMap((payload) =>
+						from(this.service.handleWillPerformMove(payload.data.value!))
+					),
+					filter((move): move is NonNullable<typeof move> => !!move)
+				)
+				.subscribe((move) => {
+					this.controller.movePerformed$$.next({
+						token: AI_PERFORMED_MOVE_TOKEN,
+						value: { move }
+					});
+				})
 		);
 	}
 

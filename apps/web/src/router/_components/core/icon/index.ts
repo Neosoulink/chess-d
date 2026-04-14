@@ -22,6 +22,7 @@ import { MenuIcon } from "./menu";
 import { PictureIcon } from "./picture";
 import { PopupIcon } from "./popup";
 import { ProcessorIcon } from "./processor";
+import { RandomIcon } from "./random";
 import { RefreshIcon } from "./refresh";
 import { ReloadIcon } from "./reload";
 import { RocketIcon } from "./rocket";
@@ -58,6 +59,7 @@ export const Icon = {
 	Picture: PictureIcon,
 	Popup: PopupIcon,
 	Processor: ProcessorIcon,
+	Random: RandomIcon,
 	Refresh: RefreshIcon,
 	Reload: ReloadIcon,
 	Rocket: RocketIcon,

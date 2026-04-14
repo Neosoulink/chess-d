@@ -3,12 +3,32 @@
 	"extends": ["//"],
 	"tasks": {
 		"dev": {
-			"env": ["CLIENT_HOST"]
+			"env": [
+				"CLIENT_HOST",
+				"EXTRA_CORS_ORIGINS",
+				"OPENAI_API_KEY",
+				"OPENAI_BASE_URL",
+				"OPENAI_MODEL",
+				"GEMINI_API_KEY",
+				"GEMINI_MODEL",
+				"ANTHROPIC_API_KEY",
+				"ANTHROPIC_MODEL"
+			]
 		},
 		"build": {
 			"dependsOn": ["^build"],
 			"outputs": ["dist/**"],
-			"env": ["CLIENT_HOST"]
+			"env": [
+				"CLIENT_HOST",
+				"EXTRA_CORS_ORIGINS",
+				"OPENAI_API_KEY",
+				"OPENAI_BASE_URL",
+				"OPENAI_MODEL",
+				"GEMINI_API_KEY",
+				"GEMINI_MODEL",
+				"ANTHROPIC_API_KEY",
+				"ANTHROPIC_MODEL"
+			]
 		}
 	}
 }

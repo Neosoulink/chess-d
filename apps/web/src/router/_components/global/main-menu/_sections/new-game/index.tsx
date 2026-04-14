@@ -1,11 +1,16 @@
 import { SupportedAiModel } from "@chess-d/ai";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { clamp } from "three/src/math/MathUtils.js";
 
 import { GameMode } from "@/shared/enum";
 import { MAIN_MENU_SECTIONS } from "@/shared/constants";
 import { useAudioStore, useMainMenuStore } from "@/router/_stores";
-import { ModalSection, TitleDivider } from "@/router/_components/custom";
+import {
+	ModalSection,
+	ModalSectionProps,
+	TitleDivider
+} from "@/router/_components/custom";
 import { MainMenuLabelInput } from "../../_components/label-input";
 import { MainMenuNewGameMultiplayer } from "./_components/multiplayer";
 import { MainMenuNewGameAI } from "./_components/ai";
@@ -20,11 +25,19 @@ export const MainMenuNewGameSection = () => {
 	const [gameModeConfigs, setGameModeConfigs] = useState<{
 		gameMode?: GameMode | "none";
 		aiOpponent?: keyof typeof SupportedAiModel;
+		aiOpponentApiKey?: string;
+		aiOpponentDepth?: number;
 		multiRoomId?: string;
 		multiJoinRoom?: boolean;
 		simulationAI1?: keyof typeof SupportedAiModel;
+		simulationAI1Depth?: number;
+		simulationAI1ApiKey?: string;
 		simulationAI2?: keyof typeof SupportedAiModel;
-	}>({});
+		simulationAI2Depth?: number;
+		simulationAI2ApiKey?: string;
+	}>({
+		aiOpponentDepth: 3
+	});
 
 	const [currentSection] = useMemo(
 		() => currentSections || [],
@@ -48,10 +61,18 @@ export const MainMenuNewGameSection = () => {
 
 	const handleAiMode = () => {
 		const aiOpponent = gameModeConfigs.aiOpponent;
+		const depth =
+			typeof gameModeConfigs.aiOpponentDepth === "number"
+				? clamp(gameModeConfigs.aiOpponentDepth, 1, 6)
+				: undefined;
 
-		if (!aiOpponent || SupportedAiModel[aiOpponent] === undefined) return;
+		let to = "/play?mode=ai";
 
-		navigate(`/play?mode=ai&ai=${aiOpponent}`);
+		if (aiOpponent && SupportedAiModel[aiOpponent] !== undefined)
+			to = `${to}&ai=${aiOpponent}`;
+		if (depth) to = `${to}&depth=${depth}`;
+
+		navigate(to);
 	};
 
 	const handleFreeMode = () => {
@@ -60,22 +81,23 @@ export const MainMenuNewGameSection = () => {
 
 	const handleSimulationMode = () => {
 		const ai1 = gameModeConfigs.simulationAI1;
+		const depth1 = gameModeConfigs.simulationAI1Depth;
 		const ai2 = gameModeConfigs.simulationAI2;
+		const depth2 = gameModeConfigs.simulationAI2Depth;
 
-		if (
-			!ai1 ||
-			!ai2 ||
-			SupportedAiModel[ai1] === undefined ||
-			SupportedAiModel[ai2] === undefined
-		)
-			return;
+		let to = "/play?mode=simulation";
 
-		navigate(`/play?mode=simulation&ai1=${ai1}&ai2=${ai2}`);
+		if (ai1 && SupportedAiModel[ai1] !== undefined) to = `${to}&ai1=${ai1}`;
+		if (depth1) to = `${to}&depth1=${depth1}`;
+		if (ai2 && SupportedAiModel[ai2] !== undefined) to = `${to}&ai2=${ai2}`;
+		if (depth2) to = `${to}&depth2=${depth2}`;
+
+		navigate(to);
 	};
 
 	useEffect(() => {
 		if (currentSection === MAIN_MENU_SECTIONS.newGame)
-			setGameModeConfigs({ gameMode: "none" });
+			setGameModeConfigs({ gameMode: "none", aiOpponentDepth: 3 });
 	}, [currentSection]);
 
 	useEffect(() => {
@@ -95,7 +117,7 @@ export const MainMenuNewGameSection = () => {
 					action: () => setSections(MAIN_MENU_SECTIONS.main)
 				},
 				...(gameModeConfigs.gameMode === GameMode.multiplayer
-					? [
+					? ([
 							{
 								label: gameModeConfigs.multiJoinRoom
 									? "Join Match"
@@ -104,9 +126,10 @@ export const MainMenuNewGameSection = () => {
 							},
 							{
 								label: "Random Match",
+								icon: "Random",
 								action: () => navigate("/play?mode=multiplayer&random=true")
 							}
-						]
+						] satisfies ModalSectionProps["footerOptions"])
 					: []),
 				...(gameModeConfigs.gameMode === GameMode.ai
 					? [
@@ -185,11 +208,15 @@ export const MainMenuNewGameSection = () => {
 
 						{gameModeConfigs.gameMode === GameMode.ai && (
 							<MainMenuNewGameAI
-								aiOpponent={gameModeConfigs.aiOpponent}
-								onChange={(aiOpponent) =>
+								values={{
+									ai: gameModeConfigs.aiOpponent,
+									apiKey: gameModeConfigs.aiOpponentApiKey,
+									depth: gameModeConfigs.aiOpponentDepth
+								}}
+								onChange={(props) =>
 									setGameModeConfigs((prev) => ({
 										...prev,
-										aiOpponent
+										...props
 									}))
 								}
 							/>
@@ -197,14 +224,30 @@ export const MainMenuNewGameSection = () => {
 
 						{gameModeConfigs.gameMode === GameMode.simulation && (
 							<MainMenuNewGameSimulation
-								aiPlayer1={gameModeConfigs.simulationAI1}
-								aiPlayer2={gameModeConfigs.simulationAI2}
+								aiPlayer1={{
+									model: gameModeConfigs.simulationAI1,
+									depth: gameModeConfigs.simulationAI1Depth,
+									apiKey: gameModeConfigs.simulationAI1ApiKey
+								}}
+								aiPlayer2={{
+									model: gameModeConfigs.simulationAI2,
+									depth: gameModeConfigs.simulationAI2Depth,
+									apiKey: gameModeConfigs.simulationAI2ApiKey
+								}}
 								onChange={(props) =>
 									setGameModeConfigs((prev) => ({
 										...prev,
 										...(props.playerIndex === 1
-											? { simulationAI1: props.aiPlayer }
-											: { simulationAI2: props.aiPlayer })
+											? {
+													simulationAI1: props.aiPlayer?.model ?? "basicBot",
+													simulationAI1Depth: props.aiPlayer?.depth ?? 3,
+													simulationAI1ApiKey: props.aiPlayer?.apiKey ?? ""
+												}
+											: {
+													simulationAI2: props.aiPlayer?.model ?? "basicBot",
+													simulationAI2Depth: props.aiPlayer?.depth ?? 3,
+													simulationAI2ApiKey: props.aiPlayer?.apiKey ?? ""
+												})
 									}))
 								}
 							/>

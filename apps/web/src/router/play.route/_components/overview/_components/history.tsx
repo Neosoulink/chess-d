@@ -11,7 +11,7 @@ import { GAME_UPDATED_TOKEN } from "@/shared/tokens";
 import { cn } from "@/shared/utils";
 import { EngineUpdatedMessageData, MoveLike } from "@/shared/types";
 import { useGameStore } from "@/router/_stores";
-import { Button, Icon } from "@/router/_components/core";
+import { Button } from "@/router/_components/core";
 
 /** @internal */
 const MovesItem: FC<{
@@ -38,10 +38,10 @@ const MovesItem: FC<{
 			/>
 
 			{moves.map(
-				(data) =>
+				(data, i) =>
 					!!data?.move && (
 						<Button
-							key={data.move.san}
+							key={`${data.move.san}-${i}`}
 							className={cn(
 								"flex-1 text-base font-bold opacity-80 h-6 bg-transparent border-b border-b-transparent hover:text-light hover:opacity-100 z-1",
 								data.active &&
@@ -150,7 +150,7 @@ export const GameOverviewHistory: FC = () => {
 				>
 					{formattedHistory.map((move, i) => (
 						<MovesItem
-							key={`${move[0]?.move?.from}-${move[1]?.move?.to}`}
+							key={`${move[0]?.move?.from}-${move[1]?.move?.to}-${i}`}
 							moveNumber={i + 1}
 							moves={move}
 						/>

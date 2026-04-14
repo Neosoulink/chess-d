@@ -12,7 +12,7 @@ export const HomeRoute = () => {
 				isOpen && "opacity-0"
 			)}
 		>
-			<small className="animate-pulse">
+			<small className="animate-pulse text-center">
 				Open main menu with the <code className="border rounded p-px">Esc</code>{" "}
 				key or press the{" "}
 				<code className="border rounded p-[2px] inline-block -mb-1">

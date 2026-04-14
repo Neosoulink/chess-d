@@ -149,6 +149,9 @@ importers:
       socket.io:
         specifier: ^4.8.1
         version: 4.8.1
+      stockfish:
+        specifier: 18.0.7
+        version: 18.0.7
       ts-morph:
         specifier: ^25.0.0
         version: 25.0.1
@@ -311,6 +314,9 @@ importers:
       '@chess-d/configs':
         specifier: workspace:*
         version: link:../configs
+      '@chess-d/shared':
+        specifier: workspace:*
+        version: link:../shared
       reflect-metadata:
         specifier: ^0.2.0
         version: 0.2.2
@@ -5331,6 +5337,10 @@ packages:
   statuses@2.0.2:
     resolution: {integrity: sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==}
     engines: {node: '>= 0.8'}
+
+  stockfish@18.0.7:
+    resolution: {integrity: sha512-tJ+bfMAHs4fV7QYiLcHUicx1RzKOQwj8twx/z0iUTauMG+SE3l1rEtRSg+WER81ke3bc5tqKBWEWntUbydkgZg==}
+    hasBin: true
 
   stop-iteration-iterator@1.1.0:
     resolution: {integrity: sha512-eLoXW/DHyl62zxY4SCaIgnRhuMr6ri4juEYARS8E6sCEqzKpOiE521Ucofdx+KnDZl5xmvGYaaKCk5FEOxJCoQ==}
@@ -11870,6 +11880,8 @@ snapshots:
   statuses@2.0.1: {}
 
   statuses@2.0.2: {}
+
+  stockfish@18.0.7: {}
 
   stop-iteration-iterator@1.1.0:
     dependencies:
