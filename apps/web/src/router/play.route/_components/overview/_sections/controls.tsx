@@ -1,4 +1,4 @@
-import { ComponentPropsWithRef, FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect } from "react";
 
 import {
 	ENGINE_WILL_REDO_TOKEN,
@@ -6,30 +6,10 @@ import {
 	GAME_UPDATED_TOKEN
 } from "@/shared/tokens";
 import { MAIN_MENU_SECTIONS } from "@/shared/constants";
-import { cn } from "@/shared/utils";
 import { EngineUpdatedMessageData, MessageData } from "@/shared/types";
 import { useGameStore, useMainMenuStore } from "@/router/_stores";
-import { Button, Icon } from "@/router/_components/core";
-
-/** @internal */
-const ControlButton: FC<ComponentPropsWithRef<typeof Button>> = ({
-	children,
-	className,
-	type = "button",
-	...props
-}) => {
-	return (
-		<Button
-			{...{
-				...props,
-				type,
-				className: cn("size-8 bg-dark/80 hover:bg-dark", className)
-			}}
-		>
-			{children}
-		</Button>
-	);
-};
+import { Icon } from "@/router/_components/core";
+import { GameOverviewButton } from "../_components/button";
 
 export const GameOverviewControls: FC = () => {
 	const { app } = useGameStore();
@@ -83,21 +63,21 @@ export const GameOverviewControls: FC = () => {
 
 	return (
 		<div className="flex gap-1 items-center justify-center">
-			<ControlButton onClick={undoMove}>
+			<GameOverviewButton onClick={undoMove}>
 				<Icon.ActionUndo />
-			</ControlButton>
+			</GameOverviewButton>
 
-			<ControlButton onClick={redoMove}>
+			<GameOverviewButton onClick={redoMove}>
 				<Icon.ActionRedo />
-			</ControlButton>
+			</GameOverviewButton>
 
-			<ControlButton>
+			<GameOverviewButton>
 				<Icon.Hint />
-			</ControlButton>
+			</GameOverviewButton>
 
-			<ControlButton onClick={openSaveMenu}>
+			<GameOverviewButton onClick={openSaveMenu}>
 				<Icon.Save />
-			</ControlButton>
+			</GameOverviewButton>
 		</div>
 	);
 };

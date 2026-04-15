@@ -199,7 +199,7 @@ export const GlobalExperience: FC = () => {
 	return (
 		<section className="relative flex size-full overflow-hidden">
 			<div className="absolute inset-0 bg-linear-to-b from-primary to-secondary scale-200" />
-			<div className="absolute inset-0 bg-dark/60" />
+			<div className="absolute inset-0 bg-dark/50" />
 			<canvas ref={canvasRef} className="absolute inset-0" />
 		</section>
 	);

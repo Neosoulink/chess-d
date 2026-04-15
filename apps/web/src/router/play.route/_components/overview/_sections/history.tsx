@@ -11,7 +11,8 @@ import { GAME_UPDATED_TOKEN } from "@/shared/tokens";
 import { cn } from "@/shared/utils";
 import { EngineUpdatedMessageData, MoveLike } from "@/shared/types";
 import { useGameStore } from "@/router/_stores";
-import { Button } from "@/router/_components/core";
+import { Button, Icon } from "@/router/_components/core";
+import { GameOverviewButton } from "../_components/button";
 
 /** @internal */
 const MovesItem: FC<{
@@ -27,7 +28,7 @@ const MovesItem: FC<{
 		<li
 			aria-current={hasActiveMove ? "true" : "false"}
 			className={cn(
-				"relative flex items-center justify-center gap-1 bg-dark/80 px-1 h-9 w-fit"
+				"relative flex items-center justify-center gap-1 bg-dark/80 px-1 h-8 w-fit"
 			)}
 		>
 			<div
@@ -43,7 +44,7 @@ const MovesItem: FC<{
 						<Button
 							key={`${data.move.san}-${i}`}
 							className={cn(
-								"flex-1 text-base font-bold opacity-80 h-6 bg-transparent border-b border-b-transparent hover:text-light hover:opacity-100 z-1",
+								"flex-1 text-base font-bold opacity-80 h-6 bg-transparent border-b border-b-transparent hover:text-light hover:opacity-100 z-1 text-nowrap",
 								data.active &&
 									"text-light opacity-100 bg-light/30 border-b-light",
 								moves?.length === 1 && "col-span-1"
@@ -67,27 +68,24 @@ const MovesItem: FC<{
 };
 
 export const GameOverviewHistory: FC = () => {
-	const { app } = useGameStore();
-
-	const [movesHistory, setMovesHistory] = useState<MoveLike[]>([]);
-	const [redoHistory, setRedoHistory] = useState<MoveLike[]>([]);
+	const { gameState, setShowSummary } = useGameStore();
 
 	const formattedHistory = useMemo(() => {
-		const _combinedMoves: MoveLike[] = [
-			...movesHistory,
-			...redoHistory.slice().reverse()
-		];
+		const history = (gameState?.history?.slice() as MoveLike[]) || [];
+		const redoHistory = gameState?.redoHistory?.slice().reverse() || [];
+
+		const _combinedMoves: MoveLike[] = [...history, ...redoHistory];
 		const _newMoves: ComponentProps<typeof MovesItem>["moves"][] = [];
 
 		for (let i = 0; i < _combinedMoves.length; i += 2) {
 			_newMoves.push([
 				{
-					active: i === movesHistory.length - 1,
+					active: i === history.length - 1,
 					move: _combinedMoves[i]
 				},
 				_combinedMoves[i + 1]
 					? {
-							active: i === movesHistory.length - 2,
+							active: i === history.length - 2,
 							move: _combinedMoves[i + 1]
 						}
 					: undefined
@@ -95,33 +93,9 @@ export const GameOverviewHistory: FC = () => {
 		}
 
 		return _newMoves;
-	}, [redoHistory]);
+	}, [gameState?.history, gameState?.redoHistory]);
 
 	const scrollableContainer = useRef<HTMLUListElement>(null);
-
-	useEffect(() => {
-		const appModule = app?.module;
-		const appWorker = appModule?.getWorkerThread()?.worker as
-			| Worker
-			| undefined;
-
-		const handleMessages = (e: MessageEvent<EngineUpdatedMessageData>) => {
-			if (e.data?.token !== GAME_UPDATED_TOKEN || !e.data?.value) return;
-
-			const history = e.data?.value?.history;
-			const redoHistory = e.data?.value?.redoHistory;
-
-			setMovesHistory(history);
-			setRedoHistory(redoHistory);
-		};
-
-		appWorker?.addEventListener("message", handleMessages);
-
-		return () => {
-			appWorker?.removeEventListener("message", handleMessages);
-			setMovesHistory([]);
-		};
-	}, [app]);
 
 	useEffect(() => {
 		const container = scrollableContainer.current;
@@ -162,11 +136,9 @@ export const GameOverviewHistory: FC = () => {
 				)}
 			</div>
 
-			{/* <div>
-				<Button className="size-8">
-					<Icon.Popup />
-				</Button>
-			</div> */}
+			<GameOverviewButton onClick={() => setShowSummary(true)}>
+				<Icon.Popup />
+			</GameOverviewButton>
 		</div>
 	);
 };

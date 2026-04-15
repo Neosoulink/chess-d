@@ -4,7 +4,7 @@ import { FC, Fragment, useCallback, useEffect, useRef } from "react";
 import { merge } from "rxjs";
 import { useLocation } from "react-router";
 
-import { useGameStore, useLoaderStore } from "../../../_stores";
+import { useGameStore, useLoaderStore } from "../../_stores";
 import { PlayerModel } from "@/shared/models";
 import { GAME_UPDATED_TOKEN } from "@/shared/tokens";
 import { EngineUpdatedMessageData } from "@/shared/types";

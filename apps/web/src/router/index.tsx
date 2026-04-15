@@ -11,6 +11,8 @@ import {
 import { HomeRoute } from "./home.route";
 import { PlayRoute } from "./play.route";
 
+import "@chrisoakman/chessboard2/dist/chessboard2.min.css";
+
 export const Router: FC = () => (
 	<Routes>
 		<Route

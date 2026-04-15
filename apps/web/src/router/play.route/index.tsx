@@ -1,17 +1,11 @@
 import { FC, useMemo } from "react";
 import { useSearchParams } from "react-router";
 
-import {
-	PlayChat,
-	PlayOverview,
-	PlayModeAI,
-	PlayModeFree,
-	PlayModeMultiplayer
-} from "./_components";
+import { PlayChat, PlayOverview, PlaySummary } from "./_components";
+import { PlayModeAI, PlayModeFree, PlayModeMultiplayer } from "./_modes";
 import { GameMode } from "../../shared/enum";
 import { getGameModeFromUrl } from "../../shared/utils";
 import { useGameStore } from "../_stores";
-
 export const PlayRoute: FC = () => {
 	const { app, isResourcesLoaded } = useGameStore();
 	const [searchParams] = useSearchParams();
@@ -26,6 +20,7 @@ export const PlayRoute: FC = () => {
 		<>
 			<PlayChat />
 			<PlayOverview />
+			<PlaySummary />
 
 			{gameMode === GameMode.ai || gameMode === GameMode.simulation ? (
 				<PlayModeAI />

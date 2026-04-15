@@ -26,11 +26,13 @@ export interface GameStore {
 	isResourcesLoaded: boolean;
 	playerSide: ColorSide;
 	startSide: ColorSide;
+	showSummary?: boolean;
 	setApp: (app?: ContainerizedApp<RegisterModule> | undefined) => void;
 	setInitialGameState: (state?: GameResetState) => void;
 	setGameState: (state?: GameState) => void;
 	setIsResourcesLoaded: (bool: boolean) => void;
 	setPlayerSide: (side: ColorSide) => void;
+	setShowSummary: (show: boolean) => void;
 	performPieceMove: (move: Move) => void;
 	resetGame: () => void;
 	getSaves: () => (GameSave | undefined)[];
@@ -45,7 +47,8 @@ export const gameStoreInitialState: Properties<GameStore> = {
 	gameState: undefined,
 	isResourcesLoaded: false,
 	playerSide: ColorSide.white,
-	startSide: ColorSide.white
+	startSide: ColorSide.white,
+	showSummary: false
 };
 
 /** @internal */
@@ -90,6 +93,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 		setIsResourcesLoaded: (bool) => set(() => ({ isResourcesLoaded: bool })),
 		setGameState,
 		setPlayerSide: (playerSide) => set(() => ({ playerSide })),
+		setShowSummary: (show) => set(() => ({ showSummary: show })),
 		getSaves,
 		saveState: (slot) => {
 			const state = get().gameState;

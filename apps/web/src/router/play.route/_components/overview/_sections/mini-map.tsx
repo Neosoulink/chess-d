@@ -4,9 +4,10 @@ import { FC, useEffect, useRef, useState } from "react";
 
 import { GAME_UPDATED_TOKEN } from "@/shared/tokens";
 import { EngineUpdatedMessageData } from "@/shared/types";
-import { useAudioStore, useGameStore } from "@/router/_stores";
-import { Button, Icon } from "@/router/_components/core";
 import { cn } from "@/shared/utils";
+import { useAudioStore, useGameStore } from "@/router/_stores";
+import { Icon } from "@/router/_components/core";
+import { GameOverviewButton } from "../_components/button";
 
 export const GameOverviewMap: FC = () => {
 	const { app } = useGameStore();
@@ -74,15 +75,15 @@ export const GameOverviewMap: FC = () => {
 
 	return (
 		<div className="relative group flex flex-col items-end gap-1">
-			<Button
+			<GameOverviewButton
 				className={cn(
-					"size-8 p-0 bg-dark/80 opacity-0 group-hover:opacity-30 hover:bg-dark hover:opacity-100",
+					"opacity-0 group-hover:opacity-30 hover:bg-dark hover:opacity-100",
 					!showMap && "opacity-100"
 				)}
 				onClick={() => setShowMap(!showMap)}
 			>
 				{showMap ? <Icon.Cross size={14} /> : <Icon.Chessboard size={16} />}
-			</Button>
+			</GameOverviewButton>
 
 			{showMap && (
 				<div ref={mapWrapperRef} className="size-30 pointer-events-auto" />

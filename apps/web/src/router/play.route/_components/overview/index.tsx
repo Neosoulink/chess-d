@@ -1,12 +1,10 @@
 import { FC } from "react";
 import { useLocation } from "react-router";
 
-import { GameOverviewHistory } from "./_components/history";
-import { GameOverviewStatus } from "./_components/status";
-import { GameOverviewControls } from "./_components/controls";
-import { GameOverviewMap } from "./_components/mini-map";
-
-import "@chrisoakman/chessboard2/dist/chessboard2.min.css";
+import { GameOverviewHistory } from "./_sections/history";
+import { GameOverviewStatus } from "./_sections/status";
+import { GameOverviewControls } from "./_sections/controls";
+import { GameOverviewMap } from "./_sections/mini-map";
 
 export const PlayOverview: FC = () => {
 	const { pathname } = useLocation();

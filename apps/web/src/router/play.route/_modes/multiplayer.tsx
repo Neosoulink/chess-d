@@ -26,7 +26,7 @@ import {
 } from "@/shared/tokens";
 import { HANDS_SUPPORT_EMOTES } from "@/shared/constants";
 import { EngineUpdatedMessageData, MessageData } from "@/shared/types";
-import { useGameStore, useLoaderStore } from "../../../_stores";
+import { useGameStore, useLoaderStore } from "../../_stores";
 import { useChatStore } from "@/router/_stores/chat.store";
 import { HandsController } from "@/core/game/world/hands/hands.controller";
 
