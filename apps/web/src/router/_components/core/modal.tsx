@@ -25,7 +25,7 @@ export const Modal = ({
 				"fixed h-dvh w-dvw z-50 top-0 left-0 transition-opacity duration-300 overflow-hidden backdrop-blur-xs",
 				withBgColor &&
 					"bg-linear-to-b from-primary/60 to-secondary/60 transition-colors",
-				show ? "opacity-100" : "opacity-0 pointer-events-none",
+				!show && "opacity-0 pointer-events-none select-none",
 				className
 			)}
 			{...props}

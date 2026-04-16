@@ -69,10 +69,11 @@ export const PlaySummary: FC = () => {
 				)}
 				onClick={(e) => e.stopPropagation()}
 			>
-				<div className="absolute inset-0 bg-black/50 z-0" />
+				<div className="absolute inset-0 bg-black/50 z-0 pointer-events-none" />
 
 				<Button
 					className="absolute top-5 right-5 size-7 z-20"
+					disabled={!showSummary}
 					onClick={() => setShowSummary(false)}
 				>
 					<Icon.Cross size={16} />
@@ -153,7 +154,11 @@ export const PlaySummary: FC = () => {
 					<Divider />
 
 					<div className="flex items-center gap-2">
-						<Button className="h-8 w-fit" onClick={openSaveMenu}>
+						<Button
+							className="h-8 w-fit"
+							disabled={!showSummary}
+							onClick={openSaveMenu}
+						>
 							<Icon.Save size={14} /> Save
 						</Button>
 					</div>
