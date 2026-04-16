@@ -98,7 +98,7 @@ export const PlaySummary: FC = () => {
 					<div className="flex flex-col gap-3 px-1 flex-1 overflow-y-auto">
 						<div className="flex-1">
 							<h3 className="text-xs">History</h3>
-							<ul className="flex flex-col overflow-y-auto max-h-52">
+							<ul className="flex flex-col overflow-y-auto max-h-48">
 								{formattedHistory.map((moves, i) => (
 									<li
 										key={`${moves[0]?.move?.from}-${moves[1]?.move?.to}-${i}`}
