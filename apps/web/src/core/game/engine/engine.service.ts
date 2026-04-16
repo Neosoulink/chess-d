@@ -1,13 +1,12 @@
 import { ChessboardModule, MatrixPieceModel } from "@chess-d/chessboard";
 import {
 	ColorSide,
-	coordToSquare,
 	getOppositeColorSide,
 	MoveFlags,
 	ObservablePayload,
 	PieceType
 } from "@chess-d/shared";
-import { Chess, Move, validateFen } from "chess.js";
+import { Chess, validateFen } from "chess.js";
 import { Color } from "three";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
@@ -29,8 +28,9 @@ import {
 	GAME_UPDATED_TOKEN
 } from "@/shared/tokens";
 import { PiecesService } from "../world/chessboard/pieces/pieces.service";
-import { EngineController } from "./engine.controller";
 import { ChessboardService } from "../world/chessboard/chessboard.service";
+import { EngineController } from "./engine.controller";
+
 @scoped(Lifecycle.ContainerScoped)
 export class EngineService {
 	public readonly state = {
@@ -216,7 +216,7 @@ export class EngineService {
 		}
 	}
 
-	public handleUndo(): Move | null {
+	public handleUndo() {
 		const move = this._game.undo();
 		if (move)
 			this.redoHistory.push({
@@ -227,17 +227,36 @@ export class EngineService {
 			});
 
 		this._postState();
-		return move;
 	}
 
-	public handleRedo(): MoveLike | null {
+	public handleRedo() {
 		const move = this.redoHistory.pop();
-		if (!move) return null;
+		if (!move) return;
 
 		this._game.move(move);
 		this._postState();
+	}
 
-		return move;
+	public handleGoToMove(
+		payload: ObservablePayload<EngineController["goToMove$"]>
+	) {
+		const { move } = payload;
+
+		const allMoves: MoveLike[] = [
+			...this._game.history({ verbose: true }),
+			...this.redoHistory.slice().reverse()
+		];
+		const targetIndex = allMoves.findIndex(
+			(m) => m.san === move.san && m.from === move.from && m.to === move.to
+		);
+
+		if (targetIndex === -1) return;
+
+		this._game.reset();
+		for (const m of allMoves.slice(0, targetIndex + 1)) this._game.move(m);
+
+		this.redoHistory = allMoves.slice(targetIndex + 1).reverse();
+		this._postState();
 	}
 
 	public reset(data: GameResetState) {

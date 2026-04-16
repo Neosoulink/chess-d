@@ -17,7 +17,7 @@ import { ChessboardController } from "@chess-d/chessboard/dist/core/chessboard.c
 import { MoveFlags, ObservablePayload } from "@chess-d/shared";
 
 export const GlobalAudios: FC = () => {
-	const { app: gameApp, isResourcesLoaded } = useGameStore();
+	const { app: gameApp, gameState, isResourcesLoaded } = useGameStore();
 	const { state: settingsState } = useSettingsStore();
 	const { isOpen, currentSections } = useMainMenuStore();
 	const { init, tracks, refreshInteractiveListeners, setVolumes } =
@@ -165,6 +165,7 @@ export const GlobalAudios: FC = () => {
 		}, 0);
 	}, [
 		gameApp,
+		gameState,
 		isResourcesLoaded,
 		tracks,
 		key,

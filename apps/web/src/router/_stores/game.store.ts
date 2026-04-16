@@ -5,6 +5,9 @@ import { Move, validateFen } from "chess.js";
 import { create } from "zustand";
 
 import {
+	ENGINE_WILL_GO_TO_MOVE_TOKEN,
+	ENGINE_WILL_REDO_TOKEN,
+	ENGINE_WILL_UNDO_TOKEN,
 	GAME_RESET_TOKEN,
 	GAME_UPDATED_TOKEN,
 	PIECE_WILL_MOVE_TOKEN
@@ -14,7 +17,8 @@ import {
 	GameResetState,
 	GameSave,
 	GameState,
-	MessageData
+	MessageData,
+	MoveLike
 } from "../../shared/types";
 import { getGameModeFromUrl } from "../../shared/utils";
 import { SupportedSaveSlots } from "../../shared/enum";
@@ -34,10 +38,13 @@ export interface GameStore {
 	setPlayerSide: (side: ColorSide) => void;
 	setShowSummary: (show: boolean) => void;
 	performPieceMove: (move: Move) => void;
-	resetGame: () => void;
 	getSaves: () => (GameSave | undefined)[];
 	saveState: (slot: SupportedSaveSlots) => undefined | GameSave;
 	eraseStateSave: (slot: SupportedSaveSlots) => void;
+	resetGame: () => void;
+	undoMove: () => void;
+	redoMove: () => void;
+	goToMove: (move: MoveLike) => void;
 	reset: () => void;
 }
 
@@ -133,6 +140,34 @@ export const useGameStore = create<GameStore>((set, get) => {
 				token: PIECE_WILL_MOVE_TOKEN,
 				value: move
 			} satisfies MessageData<Move>);
+		},
+		undoMove: () => {
+			const appWorker = get().app?.module?.getWorkerThread()?.worker as
+				| Worker
+				| undefined;
+
+			appWorker?.postMessage({
+				token: ENGINE_WILL_UNDO_TOKEN
+			} satisfies MessageData);
+		},
+		redoMove: () => {
+			const appWorker = get().app?.module?.getWorkerThread()?.worker as
+				| Worker
+				| undefined;
+
+			appWorker?.postMessage({
+				token: ENGINE_WILL_REDO_TOKEN
+			} satisfies MessageData);
+		},
+		goToMove: (move: MoveLike) => {
+			const appWorker = get().app?.module?.getWorkerThread()?.worker as
+				| Worker
+				| undefined;
+
+			appWorker?.postMessage({
+				token: ENGINE_WILL_GO_TO_MOVE_TOKEN,
+				value: { move }
+			} satisfies MessageData<{ move: MoveLike }>);
 		},
 		resetGame: () => {
 			const appModule = get().app?.module;

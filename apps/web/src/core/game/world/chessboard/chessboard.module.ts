@@ -61,6 +61,9 @@ export class ChessboardModule implements Module {
 			),
 			this._engineController.redo$.subscribe(
 				this._service.resetVisual.bind(this._service)
+			),
+			this._engineController.goToMove$.subscribe(
+				this._service.resetVisual.bind(this._service)
 			)
 		);
 	}

@@ -1,18 +1,18 @@
 import {
 	ComponentProps,
 	FC,
+	useCallback,
 	useEffect,
 	useMemo,
-	useRef,
-	useState
+	useRef
 } from "react";
 
-import { GAME_UPDATED_TOKEN } from "@/shared/tokens";
 import { cn } from "@/shared/utils";
-import { EngineUpdatedMessageData, MoveLike } from "@/shared/types";
+import { GameResetState, MessageData, MoveLike } from "@/shared/types";
 import { useGameStore } from "@/router/_stores";
 import { Button, Icon } from "@/router/_components/core";
 import { GameOverviewButton } from "../_components/button";
+import { GAME_RESET_TOKEN } from "@/shared/tokens";
 
 /** @internal */
 const MovesItem: FC<{
@@ -21,7 +21,8 @@ const MovesItem: FC<{
 		move1?: { active: boolean; move?: MoveLike } | undefined,
 		move2?: { active: boolean; move?: MoveLike } | undefined
 	];
-}> = ({ moveNumber, moves }) => {
+	onGoToMove: (move: MoveLike) => void;
+}> = ({ moveNumber, moves, onGoToMove }) => {
 	const hasActiveMove = moves.find((data) => data?.active);
 
 	return (
@@ -49,6 +50,7 @@ const MovesItem: FC<{
 									"text-light opacity-100 bg-light/30 border-b-light",
 								moves?.length === 1 && "col-span-1"
 							)}
+							onClick={() => !!data.move && onGoToMove(data.move)}
 						>
 							{data.move.san}
 						</Button>
@@ -68,7 +70,7 @@ const MovesItem: FC<{
 };
 
 export const GameOverviewHistory: FC = () => {
-	const { gameState, setShowSummary } = useGameStore();
+	const { gameState, setShowSummary, goToMove } = useGameStore();
 
 	const formattedHistory = useMemo(() => {
 		const history = (gameState?.history?.slice() as MoveLike[]) || [];
@@ -127,6 +129,7 @@ export const GameOverviewHistory: FC = () => {
 							key={`${move[0]?.move?.from}-${move[1]?.move?.to}-${i}`}
 							moveNumber={i + 1}
 							moves={move}
+							onGoToMove={goToMove}
 						/>
 					))}
 				</ul>

@@ -17,8 +17,6 @@ export class GameService {
 			ReturnType<Exclude<AppModule["mousemove$"], undefined>>
 		>
 	) {
-		const pixelRatio = this._app.sizes.pixelRatio();
-
 		this.cursor.x = (payload.clientX / payload.windowWidth) * 2 - 1;
 		this.cursor.y = -(payload.clientY / payload.windowHeight) * 2 + 1;
 	}

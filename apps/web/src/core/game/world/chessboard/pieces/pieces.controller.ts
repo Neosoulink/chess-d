@@ -35,6 +35,7 @@ import { WorldController } from "@/core/game/world/world.controller";
 export class PiecesController {
 	public readonly reset$: Observable<void>;
 	public readonly resetFen$: Observable<string>;
+	public readonly resetMaterials$: Observable<void>;
 	public readonly settingsUpdate$: Observable<
 		ObservablePayload<SettingsController["update$"]>
 	>;
@@ -65,19 +66,31 @@ export class PiecesController {
 		@inject(EngineController)
 		private readonly _engineController: EngineController
 	) {
+		this.promoted$ = this._chessboard.pieces.getPiecePromoted$()?.pipe(share());
+		this.settingsUpdate$ = this._settingsController.update$.pipe(share());
 		this.reset$ = this._worldController.resetDone$$.pipe(share());
 		this.resetFen$ = merge(
 			this._gameController.reset$.pipe(map(() => undefined)),
 			this._engineController.undo$.pipe(map(() => undefined)),
-			this._engineController.redo$.pipe(map(() => undefined))
+			this._engineController.redo$.pipe(map(() => undefined)),
+			this._engineController.goToMove$.pipe(map(() => undefined))
 		).pipe(
 			map(() => this._game.fen()),
 			share()
 		);
 
-		this.settingsUpdate$ = this._settingsController.update$.pipe(share());
-
-		this.promoted$ = this._chessboard.pieces.getPiecePromoted$()?.pipe(share());
+		this.resetMaterials$ = merge(
+			this.promoted$ ?? new Observable<void>(),
+			this.settingsUpdate$ ?? new Observable<void>(),
+			this._chessboard.pieces.getPieceDropped$() ?? new Observable<void>(),
+			this._chessboard.pieces.getPiecePromoted$() ?? new Observable<void>(),
+			this._engineController.undo$,
+			this._engineController.redo$,
+			this._engineController.goToMove$
+		).pipe(
+			map(() => undefined),
+			share()
+		);
 
 		this.playerMovedPiece$ = fromEvent<MessageEvent<MessageData<Move>>>(
 			self,
