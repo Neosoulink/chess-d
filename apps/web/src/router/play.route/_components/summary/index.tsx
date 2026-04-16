@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 
 import { cn } from "@/shared/utils";
 import { Button, Divider, Icon, Input, Modal } from "@/router/_components/core";
@@ -63,7 +63,7 @@ export const PlaySummary: FC = () => {
 			<div
 				className={cn(
 					"relative overflow-hidden",
-					"w-3/5 max-w-96 h-full max-h-124 shadow-lg px-4 py-6",
+					"w-3/5 max-w-96 h-full max-h-128 shadow-lg px-4 py-6",
 					"bg-linear-to-b from-primary/50 to-secondary/50 transition-transform duration-300 -translate-y-10",
 					showSummary && "translate-y-0"
 				)}
