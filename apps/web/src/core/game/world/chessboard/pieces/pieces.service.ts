@@ -45,12 +45,12 @@ export class PiecesService {
 			for (const pieceType of Object.values(PieceType).filter(
 				(type) => type.length === 1
 			)) {
-				const group = this._chessboard.pieces.getGroups()[color][
-					pieceType
-				] as InstancedPieceModel;
-				for (const piece of group.pieces || []) {
+				const group = this._chessboard.pieces.getGroups()[color][pieceType] as
+					| InstancedPieceModel
+					| undefined;
+				for (const piece of group?.pieces || []) {
 					piece.physics?.rigidBody.setBodyType(1, false);
-					group.setPieceCoord(
+					group?.setPieceCoord(
 						piece.instanceId,
 						this._chessboard.board.getInstancedCell(),
 						piece.coord
