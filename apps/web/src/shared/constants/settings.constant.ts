@@ -143,7 +143,7 @@ export const SETTINGS_DEFAULT_STATE: SettingsState = {
 				label: "Background Style",
 				inputProps: {
 					type: "select",
-					value: WORLD_MAP_THEME_PRESETS_CONFIGS[2]?.id
+					value: WORLD_MAP_THEME_PRESETS_CONFIGS[3]?.id
 				},
 				options: WORLD_MAP_THEME_PRESETS_CONFIGS.map((theme) => ({
 					value: theme.id,
@@ -271,7 +271,7 @@ export const SETTINGS_DEFAULT_STATE: SettingsState = {
 				id: "settings-hands-transparent",
 				label: "Transparent",
 				dependsOn: ["visible"],
-				inputProps: { type: "checkbox", checked: false }
+				inputProps: { type: "checkbox", checked: true }
 			},
 			theme: {
 				id: "settings-hands-color",
