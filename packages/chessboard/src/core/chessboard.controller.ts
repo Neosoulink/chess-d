@@ -37,7 +37,7 @@ export class ChessboardController {
 		@inject(Physics) private readonly _physics: Physics,
 		@inject(ChessboardService) private readonly _service: ChessboardService
 	) {
-		this.update$$.subscribe(({ cursor, timestep }) => {
+		this.update$$.subscribe(() => {
 			this._service.physicsEventQueue.drainCollisionEvents(
 				(handle1, handle2, started) => {
 					const collider1 = this._physics.world.getCollider(handle1);

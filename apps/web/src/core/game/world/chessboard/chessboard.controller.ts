@@ -78,7 +78,7 @@ export class ChessboardController {
 			})
 		);
 
-		this.cursorCoord$ = this._app.mousemove$?.().pipe(
+		this.cursorCoord$ = this._app.pointermove$?.().pipe(
 			map(() => {
 				const intersections = this._chessboard.getIntersections();
 				const cellsIntersection = intersections.find(

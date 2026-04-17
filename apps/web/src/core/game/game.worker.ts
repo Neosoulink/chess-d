@@ -24,8 +24,8 @@ launchApp({
 		const { module: chessboardModule } = await setupChessboard({
 			camera: appModule.camera.instance() as Camera,
 			observables: {
-				mousedown$: appModule.mousedown$?.(),
-				mouseup$: appModule.mouseup$?.()
+				pointerdown$: appModule.pointerdown$?.(),
+				pointerup$: appModule.pointerup$?.()
 			},
 			enableDebug: appModule.debug.enabled()
 		});

@@ -31,7 +31,7 @@ export class GameModule implements Module {
 	) {
 		this._subscriptions.push(
 			this._app
-				.mousemove$?.()
+				.pointermove$?.()
 				.subscribe(this._service.updateCursorPosition.bind(this._service)),
 			this._app.timer.step$().subscribe(({ delta }) => {
 				this._chessboard.update({

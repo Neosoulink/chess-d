@@ -14,7 +14,7 @@ export class GameService {
 
 	public updateCursorPosition(
 		payload: ObservablePayload<
-			ReturnType<Exclude<AppModule["mousemove$"], undefined>>
+			ReturnType<Exclude<AppModule["pointermove$"], undefined>>
 		>
 	) {
 		this.cursor.x = (payload.clientX / payload.windowWidth) * 2 - 1;

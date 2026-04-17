@@ -9,8 +9,8 @@ import {
 	CAMERA_TOKEN,
 	DEBUG_MODE_TOKEN,
 	INITIAL_FEN_TOKEN,
-	MOUSE_DOWN_OBSERVABLE_TOKEN,
-	MOUSE_UP_OBSERVABLE_TOKEN
+	POINTER_DOWN_OBSERVABLE_TOKEN,
+	POINTER_UP_OBSERVABLE_TOKEN
 } from "../shared";
 import { ChessboardModule } from "./chessboard.module";
 import { fromEvent, Observable } from "rxjs";
@@ -39,7 +39,10 @@ export interface SetupProps {
 	 * @important If not provided, the `proxyTarget` must be provided.
 	 */
 	observables?:
-		| Record<"mousedown$" | "mouseup$", Observable<Event> | undefined>
+		| Record<
+				"pointerdown$" | "pointerup$",
+				Observable<PointerEvent> | undefined
+		  >
 		| undefined;
 
 	/** @description Enable debug mode. */
@@ -68,24 +71,24 @@ export const setup = async (props: SetupProps) => {
 			cause: fenValidation.error
 		});
 
-	let mousedown$: Observable<Event> | undefined;
-	let mouseup$: Observable<Event> | undefined;
+	let pointerdown$: Observable<Event> | undefined;
+	let pointerup$: Observable<Event> | undefined;
 
-	if (typeof observables?.mousedown$?.pipe === "function")
-		mousedown$ = observables.mousedown$;
+	if (typeof observables?.pointerdown$?.pipe === "function")
+		pointerdown$ = observables.pointerdown$;
 
-	if (typeof observables?.mouseup$?.pipe === "function")
-		mouseup$ = observables.mouseup$;
+	if (typeof observables?.pointerup$?.pipe === "function")
+		pointerup$ = observables.pointerup$;
 
 	if (proxyTarget) {
-		if (!(observables?.mousedown$ instanceof Observable))
-			mousedown$ = fromEvent(proxyTarget as unknown as Window, "mousedown");
+		if (!(observables?.pointerdown$ instanceof Observable))
+			pointerdown$ = fromEvent(proxyTarget as unknown as Window, "pointerdown");
 
-		if (!(observables?.mouseup$ instanceof Observable))
-			mouseup$ = fromEvent(proxyTarget as unknown as Window, "mouseup");
+		if (!(observables?.pointerup$ instanceof Observable))
+			pointerup$ = fromEvent(proxyTarget as unknown as Window, "pointerup");
 	}
 
-	if (!mousedown$ || !mouseup$)
+	if (!pointerdown$ || !pointerup$)
 		throw new Error(
 			"Invalid observables. Please provide valid observables or a proxy target."
 		);
@@ -93,8 +96,8 @@ export const setup = async (props: SetupProps) => {
 	container.register(Physics, { useValue: await RapierPhysics() });
 	container.register(CAMERA_TOKEN, { useValue: camera });
 	container.register(INITIAL_FEN_TOKEN, { useValue: fen });
-	container.register(MOUSE_DOWN_OBSERVABLE_TOKEN, { useValue: mousedown$ });
-	container.register(MOUSE_UP_OBSERVABLE_TOKEN, { useValue: mouseup$ });
+	container.register(POINTER_DOWN_OBSERVABLE_TOKEN, { useValue: pointerdown$ });
+	container.register(POINTER_UP_OBSERVABLE_TOKEN, { useValue: pointerup$ });
 	container.register(DEBUG_MODE_TOKEN, { useValue: !!props.enableDebug });
 
 	const module = container.resolve(ChessboardModule);
