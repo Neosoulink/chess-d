@@ -75,13 +75,6 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 		setCurrentStartSide(initialGameState?.startSide || ColorSide.white);
 		resetGame();
 
-		const worker = appModule?.getWorkerThread()?.worker as Worker | undefined;
-		const handleResetMessage = (e: MessageEvent<MessageData | undefined>) => {
-			if (e.data?.token === GAME_RESET_TOKEN)
-				worker?.removeEventListener("message", handleResetMessage);
-		};
-
-		worker?.addEventListener("message", handleResetMessage);
 		stateRef.current.isPending = true;
 
 		const _workerThread = await appModule?.getWorkerPool()?.run?.({
@@ -302,9 +295,10 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 
 		const playersSubscription = merge(...players).subscribe((payload) => {
 			const { token, value } = payload;
-			const { turn, fen, move, entity, depth } = value || {};
+			const { turn, fen, move, entity, depth, isGameOver } = value || {};
 
 			if (
+				!isGameOver &&
 				token === "NOTIFIED" &&
 				move &&
 				fen &&

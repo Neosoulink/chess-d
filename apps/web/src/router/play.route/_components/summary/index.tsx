@@ -81,15 +81,34 @@ export const PlaySummary: FC = () => {
 
 				<div className="flex flex-col gap-2 h-full z-10 relative">
 					<nav>
-						<h3>State: {stateLabel}</h3>
-						{gameState?.isGameOver && (
-							<h4 className="text-sm text-light/50">
-								{gameState?.turn !== gameState?.playerSide ? (
-									<span className="text-positive">You won!</span>
-								) : (
-									<span className="text-negative">You lost!</span>
+						<h3>
+							State:{" "}
+							<span
+								className={cn(
+									gameState?.isGameOver
+										? gameState?.isDraw && "text-warning"
+										: gameState?.isGameOver
+											? gameState?.turn !== gameState?.playerSide
+												? "text-positive"
+												: "text-negative"
+											: ""
 								)}
-							</h4>
+							>
+								{stateLabel}
+							</span>
+						</h3>
+						{gameState?.isDraw ? (
+							<span className="text-warning">No winner</span>
+						) : (
+							gameState?.isGameOver && (
+								<h4 className="text-sm text-light/50">
+									{gameState?.turn !== gameState?.playerSide ? (
+										<span className="text-positive">You won!</span>
+									) : (
+										<span className="text-negative">You lost!</span>
+									)}
+								</h4>
+							)
 						)}
 					</nav>
 

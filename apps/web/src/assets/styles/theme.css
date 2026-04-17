@@ -6,6 +6,7 @@
 	--color-dark: #1a1a1a;
 	--color-positive: #2dfc49;
 	--color-negative: #fc4949;
+	--color-warning: #ffcc33;
 	--color-primary: #ffcc33;
 	--color-secondary: #f72585;
 
@@ -44,6 +45,7 @@
 	--color-dark: var(--color-dark);
 	--color-positive: var(--color-positive);
 	--color-negative: var(--color-negative);
+	--color-warning: var(--color-warning);
 	--color-primary: var(--color-primary);
 	--color-secondary: var(--color-secondary);
 }

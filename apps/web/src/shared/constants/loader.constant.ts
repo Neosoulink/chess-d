@@ -3,6 +3,7 @@ import { LoaderResource } from "@quick-threejs/reactive";
 import audioSfxChatMessagePath from "@/assets/audios/sfx-chat-message.mp3?url";
 import audioSfxGameDrawPath from "@/assets/audios/sfx-game-draw.mp3?url";
 import audioSfxGameFailPath from "@/assets/audios/sfx-game-fail.mp3?url";
+import audioSfxGameHintPath from "@/assets/audios/sfx-game-hint.mp3?url";
 import audioSfxGameStartPath from "@/assets/audios/sfx-game-start.mp3?url";
 import audioSfxGameWinPath from "@/assets/audios/sfx-game-win.mp3?url";
 import audioSfxInCheckPath from "@/assets/audios/sfx-in-check.mp3?url";
@@ -68,6 +69,11 @@ export const LOADER_SUPPORTED_AUDIOS: {
 		id: "sfx-game-draw",
 		label: "Game Draw",
 		sourcePath: audioSfxGameDrawPath
+	},
+	{
+		id: "sfx-game-hint",
+		label: "Game Hint",
+		sourcePath: audioSfxGameHintPath
 	},
 	{
 		id: "sfx-chat-message",

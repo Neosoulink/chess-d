@@ -9,6 +9,11 @@ import { PiecesModule } from "./pieces/pieces.module";
 import { EngineController } from "../../engine/engine.controller";
 import { MessageData } from "@/shared/types";
 import { PIECE_BOARD_COLLISION_TOKEN } from "@/shared/tokens";
+import {
+	BOARD_CELL_SIZE,
+	BOARD_RANGE_CELLS_HALF_SIZE,
+	squareToCoord
+} from "@chess-d/shared";
 
 @scoped(Lifecycle.ContainerScoped)
 export class ChessboardModule implements Module {
@@ -56,6 +61,9 @@ export class ChessboardModule implements Module {
 					value
 				} satisfies MessageData)
 			),
+			this._controller.hintMarker$?.subscribe(
+				this._service.setHintMarker.bind(this._service)
+			),
 			this._engineController.undo$.subscribe(
 				this._service.resetVisual.bind(this._service)
 			),
@@ -64,6 +72,9 @@ export class ChessboardModule implements Module {
 			),
 			this._engineController.goToMove$.subscribe(
 				this._service.resetVisual.bind(this._service)
+			),
+			this._controller.resetMarkers$.subscribe(
+				this._service.resetMarkers.bind(this._service)
 			)
 		);
 	}

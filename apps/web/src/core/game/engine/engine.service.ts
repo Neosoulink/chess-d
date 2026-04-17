@@ -194,6 +194,7 @@ export class EngineService {
 		]);
 		this.chessboardService.setNextMovesMarker([]);
 		this.chessboardService.setInDangerMarker([]);
+		this.chessboardService.setHintMarker([]);
 		this.chessboardService.previousMovesMarker.setAccentColor(
 			new Color(
 				this.state.playerSide === piece.color

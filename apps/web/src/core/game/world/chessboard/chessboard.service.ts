@@ -9,6 +9,7 @@ import {
 import { BOARD_CELL_SIZE, BoardCoord, ColorSide } from "@chess-d/shared";
 import { AppModule } from "@quick-threejs/reactive/worker";
 import {
+	CircleGeometry,
 	Color,
 	DoubleSide,
 	Group,
@@ -30,9 +31,15 @@ import { SETTINGS_SUPPORTED_MATERIAL_THEMES } from "@/shared/constants";
 export class ChessboardService {
 	public scene = new Group();
 	public material = new MeshPhysicalMaterial();
+	public hintMarkerMaterial = new MeshBasicMaterial({
+		transparent: true,
+		opacity: 0.45
+	});
+	public hintMarkerGeometry = new CircleGeometry(BOARD_CELL_SIZE / 2, 20);
 	public nextMovesMarker: InstancedCellMakerModel;
 	public previousMovesMarker: InstancedCellMakerModel;
 	public inDangerMarker: InstancedCellMakerModel;
+	public hintMarker: InstancedCellMakerModel;
 	public cursorCoordMarker: Mesh;
 
 	constructor(
@@ -43,13 +50,29 @@ export class ChessboardService {
 	) {
 		this.scene.name = "world-chessboard";
 		this.nextMovesMarker = new InstancedCellMakerModel(
-			this._chessboard.board.getInstancedCell()
+			this._chessboard.board.getInstancedCell(),
+			undefined,
+			this.hintMarkerGeometry,
+			this.hintMarkerMaterial
 		);
 		this.previousMovesMarker = new InstancedCellMakerModel(
-			this._chessboard.board.getInstancedCell()
+			this._chessboard.board.getInstancedCell(),
+			undefined,
+			this.hintMarkerGeometry,
+			this.hintMarkerMaterial
 		);
 		this.inDangerMarker = new InstancedCellMakerModel(
-			this._chessboard.board.getInstancedCell()
+			this._chessboard.board.getInstancedCell(),
+			undefined,
+			this.hintMarkerGeometry,
+			this.hintMarkerMaterial
+		);
+		this.hintMarker = new InstancedCellMakerModel(
+			this._chessboard.board.getInstancedCell(),
+			undefined,
+			this.hintMarkerGeometry,
+			this.hintMarkerMaterial,
+			new Color(0x79cdf8)
 		);
 		this.cursorCoordMarker = new Mesh(
 			new PlaneGeometry(BOARD_CELL_SIZE, BOARD_CELL_SIZE),
@@ -68,6 +91,10 @@ export class ChessboardService {
 
 	public setInDangerMarker(coord: BoardCoord[]) {
 		this.inDangerMarker = this.inDangerMarker.set(coord);
+	}
+
+	public setHintMarker(coord: BoardCoord[]) {
+		this.hintMarker = this.hintMarker.set(coord);
 	}
 
 	public setNextMovesMarker(coord: BoardCoord[]) {
@@ -194,6 +221,7 @@ export class ChessboardService {
 			this.nextMovesMarker,
 			this.previousMovesMarker,
 			this.inDangerMarker,
+			this.hintMarker,
 			this.cursorCoordMarker
 		);
 		worldScene.add(scene);
@@ -203,6 +231,7 @@ export class ChessboardService {
 		this.setNextMovesMarker([]);
 		this.setPreviousMovesMarker([]);
 		this.setInDangerMarker([]);
+		this.setHintMarker([]);
 	}
 
 	public resetVisual(): void {

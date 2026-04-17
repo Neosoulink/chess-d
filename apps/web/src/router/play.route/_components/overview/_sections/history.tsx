@@ -1,18 +1,12 @@
-import {
-	ComponentProps,
-	FC,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef
-} from "react";
+import { ComponentProps, FC, useEffect, useMemo, useRef } from "react";
 
-import { cn } from "@/shared/utils";
-import { GameResetState, MessageData, MoveLike } from "@/shared/types";
+import { cn, getGameModeFromUrl } from "@/shared/utils";
+import { MoveLike } from "@/shared/types";
 import { useGameStore } from "@/router/_stores";
 import { Button, Icon } from "@/router/_components/core";
 import { GameOverviewButton } from "../_components/button";
-import { GAME_RESET_TOKEN } from "@/shared/tokens";
+import { useSearchParams } from "react-router";
+import { GameMode } from "@/shared/enum";
 
 /** @internal */
 const MovesItem: FC<{
@@ -21,7 +15,7 @@ const MovesItem: FC<{
 		move1?: { active: boolean; move?: MoveLike } | undefined,
 		move2?: { active: boolean; move?: MoveLike } | undefined
 	];
-	onGoToMove: (move: MoveLike) => void;
+	onGoToMove?: (move: MoveLike) => void;
 }> = ({ moveNumber, moves, onGoToMove }) => {
 	const hasActiveMove = moves.find((data) => data?.active);
 
@@ -50,7 +44,7 @@ const MovesItem: FC<{
 									"text-light opacity-100 bg-light/30 border-b-light",
 								moves?.length === 1 && "col-span-1"
 							)}
-							onClick={() => !!data.move && onGoToMove(data.move)}
+							onClick={() => !!data.move && onGoToMove?.(data.move)}
 						>
 							{data.move.san}
 						</Button>
@@ -71,6 +65,12 @@ const MovesItem: FC<{
 
 export const GameOverviewHistory: FC = () => {
 	const { gameState, setShowSummary, goToMove } = useGameStore();
+	const [searchParams] = useSearchParams();
+
+	const gameMode = useMemo(
+		() => getGameModeFromUrl(searchParams),
+		[searchParams]
+	);
 
 	const formattedHistory = useMemo(() => {
 		const history = (gameState?.history?.slice() as MoveLike[]) || [];
@@ -129,7 +129,9 @@ export const GameOverviewHistory: FC = () => {
 							key={`${move[0]?.move?.from}-${move[1]?.move?.to}-${i}`}
 							moveNumber={i + 1}
 							moves={move}
-							onGoToMove={goToMove}
+							onGoToMove={
+								gameMode !== GameMode.multiplayer ? goToMove : undefined
+							}
 						/>
 					))}
 				</ul>

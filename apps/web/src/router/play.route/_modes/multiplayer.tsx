@@ -17,6 +17,7 @@ import { useLocation, useSearchParams } from "react-router";
 import { merge } from "rxjs";
 import { io } from "socket.io-client";
 
+import { EngineUpdatedMessageData, MessageData } from "@/shared/types";
 import { PlayerModel } from "@/shared/models";
 import {
 	GAME_UPDATED_TOKEN,
@@ -25,10 +26,9 @@ import {
 	PIECE_WILL_MOVE_TOKEN
 } from "@/shared/tokens";
 import { HANDS_SUPPORT_EMOTES } from "@/shared/constants";
-import { EngineUpdatedMessageData, MessageData } from "@/shared/types";
-import { useGameStore, useLoaderStore } from "../../_stores";
 import { useChatStore } from "@/router/_stores/chat.store";
 import { HandsController } from "@/core/game/world/hands/hands.controller";
+import { useGameStore, useLoaderStore } from "../../_stores";
 
 /** @internal */
 interface SocketPayload {
