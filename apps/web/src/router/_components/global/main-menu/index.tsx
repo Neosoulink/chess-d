@@ -127,7 +127,7 @@ export const GlobalMainMenu = () => {
 		<>
 			<Button
 				className={cn(
-					"fixed top-12 right-12 z-60 rounded-lg p-1 size-9",
+					"fixed top-12 right-6 z-60 size-9",
 					"bg-radial from-deep-space/20 to-primary/20 text-primary",
 					"border-primary/80 border",
 					"shadow-[inset_0_0_5px_var(--color-primary),0_0_0px_var(--color-primary)] hover:shadow-[inset_0_0_10px_var(--color-primary),0_0_3px_var(--color-primary)]"
