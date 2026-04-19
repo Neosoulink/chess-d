@@ -1,9 +1,7 @@
 import { Module } from "@quick-threejs/reactive";
-import { AppModule } from "@quick-threejs/reactive/worker";
 import { inject, Lifecycle, scoped } from "tsyringe";
 import { Subscription } from "rxjs";
 
-import { GameController } from "../game.controller";
 import { CameraService } from "./camera.service";
 import { CameraController } from "./camera.controller";
 
@@ -12,8 +10,6 @@ export class CameraModule implements Module {
 	private _subscriptions: (Subscription | undefined)[] = [];
 
 	constructor(
-		@inject(AppModule) private readonly _app: AppModule,
-		@inject(GameController) private readonly _gameController: GameController,
 		@inject(CameraController) private readonly _controller: CameraController,
 		@inject(CameraService) private readonly _service: CameraService
 	) {

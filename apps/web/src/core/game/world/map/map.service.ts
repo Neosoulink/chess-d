@@ -12,11 +12,10 @@ import {
 	CanvasTexture,
 	Color,
 	DirectionalLight,
-	DoubleSide,
 	EquirectangularReflectionMapping,
 	Group,
 	Mesh,
-	MeshPhysicalMaterial,
+	MeshLambertMaterial,
 	PlaneGeometry,
 	Quaternion,
 	ShadowMaterial,
@@ -31,7 +30,6 @@ import {
 } from "three/examples/jsm/Addons.js";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
-import { InfiniteGridHelper } from "@/shared/meshes";
 import { WORLD_MAP_THEME_PRESETS_CONFIGS } from "@/shared/constants";
 import { WorldService } from "../world.service";
 import { WorldController } from "../world.controller";
@@ -41,21 +39,14 @@ import { SettingsService } from "../../settings/settings.service";
 @scoped(Lifecycle.ContainerScoped)
 export class MapService {
 	public readonly scene = new Group();
-	public readonly floorScene = new Group();
 	public readonly labelsScene = new Group();
-	public readonly floorGrid = new InfiniteGridHelper(
-		BOARD_CELL_SIZE,
-		BOARD_CELL_SIZE,
-		undefined,
-		10
-	);
 	public readonly floorShadow = new Mesh(
 		new PlaneGeometry(50, 50),
 		new ShadowMaterial({
 			opacity: 0.2
 		})
 	);
-	public readonly defaultMaterial = new MeshPhysicalMaterial();
+	public readonly material = new MeshLambertMaterial();
 	public readonly lights = {
 		sun: new DirectionalLight(),
 		sunReflection: new DirectionalLight(),
@@ -72,7 +63,7 @@ export class MapService {
 		@inject(EngineService) private readonly _engine: EngineService
 	) {
 		this.scene.name = "world-map";
-		this.floorScene.name = "world-map-floor";
+		this.floorShadow.name = "world-map-floor-shadow";
 		this.labelsScene.name = "world-map-labels";
 	}
 
@@ -272,11 +263,7 @@ export class MapService {
 		const graphicsQuality =
 			this._settings.state["visual-theme"]?.params["graphics-quality"]?.value;
 		const shadowMapSize =
-			graphicsQuality === "low"
-				? 512
-				: graphicsQuality === "high"
-					? 2048
-					: 1024;
+			graphicsQuality === "low" ? 256 : graphicsQuality === "high" ? 1024 : 512;
 
 		this.lights.sun.castShadow =
 			isEnabled && (this.themePreset?.values?.lights?.sunCastShadow ?? true);
@@ -284,7 +271,7 @@ export class MapService {
 		this.lights.sun.shadow.normalBias = 0.05;
 		this.lights.sun.shadow.mapSize.set(shadowMapSize, shadowMapSize);
 		this.lights.sun.shadow.map?.setSize(shadowMapSize, shadowMapSize);
-		this.lights.sun.shadow.camera.far = BOARD_RANGE_CELLS_SIZE * 3;
+		this.lights.sun.shadow.camera.far = BOARD_RANGE_CELLS_SIZE * 2.25;
 		this.lights.sun.shadow.camera.near = 0.1;
 		this.lights.sun.shadow.camera.top = BOARD_RANGE_CELLS_SIZE;
 		this.lights.sun.shadow.camera.bottom = -BOARD_RANGE_CELLS_SIZE;
@@ -298,7 +285,7 @@ export class MapService {
 		this.lights.sunReflection.shadow.normalBias = 0.05;
 		this.lights.sunReflection.shadow.mapSize.set(shadowMapSize, shadowMapSize);
 		this.lights.sunReflection.shadow.map?.setSize(shadowMapSize, shadowMapSize);
-		this.lights.sunReflection.shadow.camera.far = BOARD_RANGE_CELLS_SIZE * 3;
+		this.lights.sunReflection.shadow.camera.far = BOARD_RANGE_CELLS_SIZE * 2.25;
 		this.lights.sunReflection.shadow.camera.near = 0.1;
 		this.lights.sunReflection.shadow.camera.top = BOARD_RANGE_CELLS_SIZE;
 		this.lights.sunReflection.shadow.camera.bottom = -BOARD_RANGE_CELLS_SIZE;
@@ -312,28 +299,14 @@ export class MapService {
 	}
 
 	public resetMaterials(): void {
-		this.defaultMaterial.side = DoubleSide;
-		this.defaultMaterial.color = new Color("#fff");
-		this.defaultMaterial.transparent = true;
-		this.defaultMaterial.opacity = 1;
-		this.defaultMaterial.sheen = 2;
-		this.defaultMaterial.roughness = 0.45;
-		this.defaultMaterial.metalness = 0.02;
+		this.material.color = new Color("#fff");
+		this.material.transparent = true;
+		this.material.opacity = 1;
 	}
 
 	public resetFloor(): void {
-		const isEnabledGrids =
-			!!this._settings.state["visual-theme"]?.params["floor-grid"]?.value;
-
-		this.floorScene.position.setY(-0.09);
-
-		this.floorGrid.visible = isEnabledGrids;
-		this.floorGrid.position.setY(-0.1);
-		if (typeof this.floorGrid.material.uniforms.uDistance?.value === "number")
-			this.floorGrid.material.uniforms.uDistance.value = 0;
-
 		this.floorShadow.rotation.x = -Math.PI / 2;
-		this.floorShadow.position.y = -0.09;
+		this.floorShadow.position.y = -0.18;
 	}
 
 	public resetGridsLabels(): void {
@@ -377,7 +350,7 @@ export class MapService {
 			numberGeometry.rotateX(-Math.PI / 2);
 			numberGeometry.rotateY(Math.PI);
 
-			const letterMesh = new Mesh(letterGeometry, this.defaultMaterial);
+			const letterMesh = new Mesh(letterGeometry, this.material);
 			letterMesh.name = `letter-${i}`;
 			letterMesh.castShadow = true;
 			letterMesh.receiveShadow = true;
@@ -388,9 +361,8 @@ export class MapService {
 				0,
 				-BOARD_RANGE_CELLS_HALF_SIZE
 			);
-			letterMesh.scale.setScalar(0);
 
-			const numberMesh = new Mesh(numberGeometry, this.defaultMaterial);
+			const numberMesh = new Mesh(numberGeometry, this.material);
 			numberMesh.name = `number-${i}`;
 			numberMesh.castShadow = true;
 			numberMesh.receiveShadow = true;
@@ -418,13 +390,11 @@ export class MapService {
 		const appScene = this._app.world.scene();
 		const worldScene = this._world.scene;
 
-		this.floorScene.clear();
 		this.scene.clear();
 
-		this.floorScene.add(this.floorGrid, this.floorShadow);
 		this.scene.add(
 			...Object.values(this.lights),
-			this.floorScene,
+			this.floorShadow,
 			this.labelsScene
 		);
 		worldScene.add(this.scene);
@@ -453,9 +423,6 @@ export class MapService {
 	public handleIntroAnimation(
 		progress: ObservablePayload<WorldController["introAnimation$"]>
 	) {
-		if (typeof this.floorGrid.material.uniforms.uDistance?.value === "number")
-			this.floorGrid.material.uniforms.uDistance.value = progress * 40;
-
 		this.labelsScene.traverseVisible((child) => {
 			if (child instanceof Mesh) child.scale.setScalar(progress);
 		});

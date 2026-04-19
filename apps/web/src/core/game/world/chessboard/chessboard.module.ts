@@ -9,12 +9,6 @@ import { PiecesModule } from "./pieces/pieces.module";
 import { EngineController } from "../../engine/engine.controller";
 import { MessageData } from "@/shared/types";
 import { PIECE_BOARD_COLLISION_TOKEN } from "@/shared/tokens";
-import {
-	BOARD_CELL_SIZE,
-	BOARD_RANGE_CELLS_HALF_SIZE,
-	squareToCoord
-} from "@chess-d/shared";
-
 @scoped(Lifecycle.ContainerScoped)
 export class ChessboardModule implements Module {
 	private _subscriptions: (Subscription | undefined)[] = [];

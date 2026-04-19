@@ -158,15 +158,13 @@ export const GlobalAudios: FC = () => {
 
 	useEffect(() => {
 		const subscription = chat$.subscribe((chat) => {
-			if (chat.side === playerSide) return;
-
 			const messageTrack = tracks["sfx-chat-message"];
 			messageTrack?.audio?.stop();
 			messageTrack?.audio?.play();
 		});
 
 		return () => subscription.unsubscribe();
-	}, [chat$, playerSide, tracks]);
+	}, [chat$, tracks]);
 
 	useEffect(() => {
 		setTimeout(() => {

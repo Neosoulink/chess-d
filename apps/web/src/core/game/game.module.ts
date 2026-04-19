@@ -22,7 +22,7 @@ export class GameModule implements Module {
 		@inject(GameService) private readonly _service: GameService,
 		@inject(AppModule) private readonly _app: AppModule,
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
-		@inject(SettingsModule) private readonly _settings: SettingsModule,
+		@inject(SettingsModule) public readonly settings: SettingsModule,
 		@inject(EngineModule) public readonly engine: EngineModule,
 		@inject(CameraModule) public readonly camera: CameraModule,
 		@inject(RendererModule) public readonly renderer: RendererModule,
@@ -44,7 +44,7 @@ export class GameModule implements Module {
 	}
 
 	public init(): void {
-		this._settings.init();
+		this.settings.init();
 		this.engine.init();
 		this.camera.init();
 		this.renderer.init();
@@ -53,7 +53,7 @@ export class GameModule implements Module {
 	}
 
 	public dispose(): void {
-		this._settings.dispose();
+		this.settings.dispose();
 		this.camera.dispose();
 		this.renderer.dispose();
 		this.engine.dispose();

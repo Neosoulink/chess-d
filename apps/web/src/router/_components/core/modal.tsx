@@ -22,7 +22,7 @@ export const Modal = ({
 		<section
 			data-name="modal"
 			className={cn(
-				"fixed h-dvh w-dvw z-50 top-0 left-0 transition-opacity duration-300 overflow-hidden backdrop-blur-xs",
+				"fixed h-dvh w-dvw z-50 top-0 left-0 transition-opacity duration-300 overflow-hidden",
 				withBgColor &&
 					"bg-linear-to-b from-primary/60 to-secondary/60 transition-colors",
 				!show && "opacity-0 pointer-events-none select-none",

@@ -11,11 +11,11 @@ import { AppModule } from "@quick-threejs/reactive/worker";
 import {
 	CircleGeometry,
 	Color,
-	DoubleSide,
 	Group,
 	Material,
 	Mesh,
 	MeshBasicMaterial,
+	MeshLambertMaterial,
 	MeshPhysicalMaterial,
 	PlaneGeometry,
 	SRGBColorSpace,
@@ -23,19 +23,25 @@ import {
 } from "three";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
+import {
+	SETTINGS_SUPPORTED_GRAPHICS_QUALITY,
+	SETTINGS_SUPPORTED_MATERIAL_THEMES
+} from "@/shared/constants";
 import { WorldService } from "../world.service";
 import { SettingsService } from "../../settings/settings.service";
-import { SETTINGS_SUPPORTED_MATERIAL_THEMES } from "@/shared/constants";
 
 @scoped(Lifecycle.ContainerScoped)
 export class ChessboardService {
-	public scene = new Group();
-	public material = new MeshPhysicalMaterial();
-	public hintMarkerMaterial = new MeshBasicMaterial({
+	public readonly scene = new Group();
+	public readonly labelsScene = new Group();
+	public readonly markersGeometry = new CircleGeometry(BOARD_CELL_SIZE / 2, 20);
+	public readonly markersMaterial = new MeshBasicMaterial({
 		transparent: true,
 		opacity: 0.45
 	});
-	public hintMarkerGeometry = new CircleGeometry(BOARD_CELL_SIZE / 2, 20);
+
+	public material: MeshLambertMaterial | MeshPhysicalMaterial =
+		new MeshLambertMaterial();
 	public nextMovesMarker: InstancedCellMakerModel;
 	public previousMovesMarker: InstancedCellMakerModel;
 	public inDangerMarker: InstancedCellMakerModel;
@@ -52,26 +58,26 @@ export class ChessboardService {
 		this.nextMovesMarker = new InstancedCellMakerModel(
 			this._chessboard.board.getInstancedCell(),
 			undefined,
-			this.hintMarkerGeometry,
-			this.hintMarkerMaterial
+			this.markersGeometry,
+			this.markersMaterial
 		);
 		this.previousMovesMarker = new InstancedCellMakerModel(
 			this._chessboard.board.getInstancedCell(),
 			undefined,
-			this.hintMarkerGeometry,
-			this.hintMarkerMaterial
+			this.markersGeometry,
+			this.markersMaterial
 		);
 		this.inDangerMarker = new InstancedCellMakerModel(
 			this._chessboard.board.getInstancedCell(),
 			undefined,
-			this.hintMarkerGeometry,
-			this.hintMarkerMaterial
+			this.markersGeometry,
+			this.markersMaterial
 		);
 		this.hintMarker = new InstancedCellMakerModel(
 			this._chessboard.board.getInstancedCell(),
 			undefined,
-			this.hintMarkerGeometry,
-			this.hintMarkerMaterial,
+			this.markersGeometry,
+			this.markersMaterial,
 			new Color(0x79cdf8)
 		);
 		this.cursorCoordMarker = new Mesh(
@@ -79,13 +85,12 @@ export class ChessboardService {
 			new MeshBasicMaterial({
 				color: 0xffed68,
 				transparent: true,
-				opacity: 0.45,
-				side: DoubleSide
+				opacity: 0.45
 			})
 		);
 		this.cursorCoordMarker.visible = false;
 		this.cursorCoordMarker.renderOrder = 3;
-		this.cursorCoordMarker.rotateX(Math.PI / 2);
+		this.cursorCoordMarker.rotateX(-(Math.PI / 2));
 		this.cursorCoordMarker.position.set(100, 100, 100);
 	}
 
@@ -120,9 +125,16 @@ export class ChessboardService {
 		const resources = this._app.loader.getLoadedResources();
 		const boardCells = this._chessboard.board.getInstancedCell();
 		const settingsThemeId =
-			this._settings.state.chessboard?.params?.theme?.value?.toString();
+			this._settings.state.chessboard?.params?.style?.value?.toString();
 		const settingsTheme =
 			SETTINGS_SUPPORTED_MATERIAL_THEMES[settingsThemeId || "default"];
+		const visualGraphicsId =
+			this._settings.state["visual-theme"]?.params?.[
+				"graphics-quality"
+			]?.value?.toString();
+		const visualGraphics = SETTINGS_SUPPORTED_GRAPHICS_QUALITY.find(
+			(quality) => quality.value === visualGraphicsId
+		);
 
 		let texture: Texture | null = null;
 		let roughness = 0.8;
@@ -134,7 +146,13 @@ export class ChessboardService {
 		let whiteSideColor: string = `#${COLOR_WHITE.getHexString()}`;
 		let blackSideColor: string = `#${COLOR_BLACK.getHexString()}`;
 
+		this.material.dispose();
 		this.material.map?.dispose();
+		this.material =
+			settingsTheme?.values?.physical &&
+			["high", "medium"].includes(visualGraphics?.value || "")
+				? new MeshPhysicalMaterial()
+				: new MeshLambertMaterial();
 
 		if (settingsThemeId === "use-theme") {
 			const primaryTheme =
@@ -166,6 +184,8 @@ export class ChessboardService {
 				texture.needsUpdate = true;
 			}
 
+			whiteSideColor = settingsTheme.values?.whiteSideColor ?? whiteSideColor;
+			blackSideColor = settingsTheme.values?.blackSideColor ?? blackSideColor;
 			roughness = settingsTheme.values?.roughness ?? roughness;
 			metalness = settingsTheme.values?.metalness ?? metalness;
 			sheen = settingsTheme.values?.sheen ?? sheen;
@@ -177,12 +197,16 @@ export class ChessboardService {
 		this.material.color.set(0xffffff);
 		this.material.transparent = true;
 		this.material.map = texture;
-		this.material.roughness = roughness;
-		this.material.metalness = metalness;
-		this.material.sheen = sheen;
-		this.material.ior = ior;
 		this.material.reflectivity = reflectivity;
-		this.material.transmission = transmission;
+		if (this.material instanceof MeshPhysicalMaterial) {
+			this.material.roughness = roughness;
+			this.material.metalness = metalness;
+			this.material.sheen = sheen;
+			this.material.ior = ior;
+			this.material.transmission = transmission;
+		} else if (visualGraphics?.value === "low" && settingsTheme?.values) {
+			this.material.opacity = settingsTheme.values.ior ? ior / 2 : 1;
+		}
 
 		if (
 			boardCells.material instanceof Material &&

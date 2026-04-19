@@ -33,6 +33,8 @@ export const SETTINGS_SUPPORTED_MATERIAL_THEMES: Record<
 			whiteSideColor?: string;
 			blackSideColor?: string;
 			opacity?: number;
+
+			physical?: boolean;
 			roughness?: number;
 			metalness?: number;
 			sheen?: number;
@@ -45,35 +47,42 @@ export const SETTINGS_SUPPORTED_MATERIAL_THEMES: Record<
 	default: {
 		label: "Default"
 	},
-	"use-theme": {
-		label: "Use Theme"
-	},
 	"aok-wood": {
 		label: "Wood",
 		values: {
+			physical: true,
 			textureId: "texture-aok-wood",
 			roughness: 0.45,
-			metalness: 0.02
+			metalness: 0.02,
+			blackSideColor: "#888888"
 		}
 	},
 	metal: {
 		label: "Metal",
 		values: {
+			physical: true,
 			roughness: 0.45,
 			metalness: 1,
-			sheen: 2
+			sheen: 2,
+			whiteSideColor: "#ffffff",
+			blackSideColor: "#888888"
 		}
 	},
 	glass: {
 		label: "Glass",
 		values: {
+			physical: true,
 			roughness: 0.4,
 			metalness: 0,
 			sheen: 0,
 			ior: 1.4,
 			transmission: 0.85,
-			reflectivity: 0.4
+			reflectivity: 0.4,
+			blackSideColor: "#666666"
 		}
+	},
+	"use-theme": {
+		label: "Use Theme"
 	}
 };
 
@@ -90,7 +99,7 @@ export const SETTINGS_SUPPORTED_HANDS_THEMES: Record<
 	},
 	black: {
 		label: "Black Gloves",
-		value: "#222222"
+		value: "#555555"
 	},
 	"use-theme": {
 		label: "Use Theme"
@@ -222,9 +231,9 @@ export const SETTINGS_DEFAULT_STATE: SettingsState = {
 		label: "Chessboard",
 		icon: "Chessboard",
 		params: {
-			theme: {
-				id: "settings-chessboard-theme",
-				label: "Theme",
+			style: {
+				id: "settings-chessboard-style",
+				label: "Style",
 				inputProps: {
 					type: "select",
 					value: Object.keys(SETTINGS_SUPPORTED_MATERIAL_THEMES)[0]
@@ -242,9 +251,9 @@ export const SETTINGS_DEFAULT_STATE: SettingsState = {
 		label: "Pieces",
 		icon: "ChessPawn",
 		params: {
-			theme: {
-				id: "settings-chessboard-theme",
-				label: "Theme",
+			style: {
+				id: "settings-pieces-style",
+				label: "Style",
 				inputProps: {
 					type: "select",
 					value: Object.keys(SETTINGS_SUPPORTED_MATERIAL_THEMES)[0]
@@ -273,9 +282,9 @@ export const SETTINGS_DEFAULT_STATE: SettingsState = {
 				dependsOn: ["visible"],
 				inputProps: { type: "checkbox", checked: true }
 			},
-			theme: {
-				id: "settings-hands-color",
-				label: "Color",
+			style: {
+				id: "settings-hands-style",
+				label: "Style",
 				dependsOn: ["visible"],
 				inputProps: {
 					type: "select",

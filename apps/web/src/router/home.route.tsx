@@ -8,7 +8,7 @@ export const HomeRoute = () => {
 	return (
 		<section
 			className={cn(
-				"fixed left-1/2 -translate-x-1/2 bottom-10 flex flex-col justify-center items-center w-fit gap-4 py-2 px-8 backdrop-blur-xs bg-linear-to-r from-primary/30 to-secondary/30 rounded-xl pointer-events-none transition-opacity duration-300",
+				"fixed left-1/2 -translate-x-1/2 bottom-10 flex flex-col justify-center items-center w-fit gap-4 py-2 px-8 bg-linear-to-r from-primary/60 to-secondary/60 rounded-xl pointer-events-none transition-opacity duration-300",
 				isOpen && "opacity-0"
 			)}
 		>

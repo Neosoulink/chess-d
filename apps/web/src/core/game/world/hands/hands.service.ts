@@ -1,4 +1,4 @@
-import { ChessboardModule } from "@chess-d/chessboard";
+import { ChessboardModule, COLOR_WHITE } from "@chess-d/chessboard";
 import { ColorSide, type ObservablePayload } from "@chess-d/shared";
 import { deserializeObject3D, serializeObject3D } from "@quick-threejs/utils";
 import { AppModule } from "@quick-threejs/reactive/worker";
@@ -7,9 +7,10 @@ import {
 	AnimationClip,
 	AnimationMixer,
 	DoubleSide,
+	FrontSide,
 	Group,
 	Material,
-	MeshPhysicalMaterial,
+	MeshLambertMaterial,
 	SkinnedMesh,
 	Vector3Like
 } from "three";
@@ -20,7 +21,10 @@ import { PiecesController } from "../chessboard/pieces/pieces.controller";
 import { SettingsService } from "../../settings/settings.service";
 import { WorldService } from "../world.service";
 import { HandsController } from "./hands.controller";
-import { SETTINGS_SUPPORTED_HANDS_THEMES } from "@/shared/constants";
+import {
+	SETTINGS_SUPPORTED_GRAPHICS_QUALITY,
+	SETTINGS_SUPPORTED_HANDS_THEMES
+} from "@/shared/constants";
 
 @scoped(Lifecycle.ContainerScoped)
 export class HandsService {
@@ -41,7 +45,7 @@ export class HandsService {
 	>;
 
 	public animationClips?: AnimationClip[];
-	public material = new MeshPhysicalMaterial();
+	public material = new MeshLambertMaterial();
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
@@ -92,7 +96,7 @@ export class HandsService {
 
 	public resetMaterials(): void {
 		const settingsThemeId =
-			this._settings.state.hands?.params?.theme?.value?.toString();
+			this._settings.state.hands?.params?.style?.value?.toString();
 		const settingsTheme =
 			SETTINGS_SUPPORTED_HANDS_THEMES[settingsThemeId || "white"];
 		const primaryThemeColor =
@@ -107,14 +111,11 @@ export class HandsService {
 		this.material.color.set(
 			(settingsThemeId === "use-theme"
 				? primaryThemeColor
-				: settingsTheme?.value) ?? "#ffffff"
+				: settingsTheme?.value) ?? COLOR_WHITE
 		);
-		this.material.side = DoubleSide;
+		this.material.side = FrontSide;
 		this.material.transparent = transparent;
 		this.material.opacity = transparent ? 0.55 : 1;
-		this.material.sheen = 2;
-		this.material.roughness = 0.45;
-		this.material.metalness = 0.02;
 
 		Object.values(this.hands).forEach((side) => {
 			const mesh = side.scene.children[0]?.children[0] as

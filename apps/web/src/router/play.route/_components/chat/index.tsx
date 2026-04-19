@@ -77,7 +77,7 @@ export const PlayChat = () => {
 		<section className="flex flex-col gap-2 h-fit z-10 absolute bottom-6 left-6 pointer-events-none select-none">
 			<ul
 				ref={chatListRef}
-				className="max-h-20 overflow-y-auto no-scrollbar mask-t-from-70% mask-t-to-transparent text-xs text-light/60"
+				className="max-h-20 overflow-y-auto no-scrollbar mask-t-from-70% mask-t-to-transparent text-xs"
 			>
 				<div className="flex flex-col gap-1">
 					{chats.map(({ timestamp, side, description, ...chat }, index) => (

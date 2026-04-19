@@ -17,22 +17,26 @@ import { Move } from "chess.js";
 import { AppModule } from "@quick-threejs/reactive/worker";
 import {
 	Color,
-	DoubleSide,
 	Material,
+	MeshLambertMaterial,
 	MeshPhysicalMaterial,
 	SRGBColorSpace,
 	Texture
 } from "three";
 import { inject, singleton } from "tsyringe";
 
-import { SETTINGS_SUPPORTED_MATERIAL_THEMES } from "@/shared/constants";
+import {
+	SETTINGS_SUPPORTED_GRAPHICS_QUALITY,
+	SETTINGS_SUPPORTED_MATERIAL_THEMES
+} from "@/shared/constants";
 import { SettingsService } from "@/core/game/settings/settings.service";
 import { PiecesController } from "./pieces.controller";
 import { WorldController } from "../../world.controller";
 
 @singleton()
 export class PiecesService {
-	public material = new MeshPhysicalMaterial();
+	public material: MeshLambertMaterial | MeshPhysicalMaterial =
+		new MeshLambertMaterial();
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
@@ -67,21 +71,36 @@ export class PiecesService {
 	public resetMaterials(): void {
 		const resources = this._app.loader.getLoadedResources();
 		const settingsThemeId =
-			this._settings.state.pieces?.params?.theme?.value?.toString();
+			this._settings.state.pieces?.params?.style?.value?.toString();
 		const settingsTheme =
 			SETTINGS_SUPPORTED_MATERIAL_THEMES[settingsThemeId || "default"];
+		const visualGraphicsId =
+			this._settings.state["visual-theme"]?.params?.[
+				"graphics-quality"
+			]?.value?.toString();
+		const visualGraphics = SETTINGS_SUPPORTED_GRAPHICS_QUALITY.find(
+			(quality) => quality.value === visualGraphicsId
+		);
+		const mediumPlusGraphics = ["high", "medium"].includes(
+			visualGraphics?.value || ""
+		);
 
 		let texture: Texture | null = null;
 		let roughness = 0.8;
 		let metalness = 0.1;
-		let sheen = 2;
+		let sheen = 1;
 		let ior = 1.5;
 		let reflectivity = 0;
 		let transmission = 0;
-		let whiteSideColor: string = `#${COLOR_WHITE.getHexString()}`;
-		let blackSideColor: string = `#${COLOR_BLACK.getHexString()}`;
+		let whiteSideColor = `#${COLOR_WHITE.getHexString()}`;
+		let blackSideColor = `#${COLOR_BLACK.getHexString()}`;
 
+		this.material.dispose();
 		this.material.map?.dispose();
+		this.material =
+			settingsTheme?.values?.physical && mediumPlusGraphics
+				? new MeshPhysicalMaterial()
+				: new MeshLambertMaterial();
 
 		if (settingsThemeId === "use-theme") {
 			const primaryTheme =
@@ -113,6 +132,8 @@ export class PiecesService {
 				texture.needsUpdate = true;
 			}
 
+			whiteSideColor = settingsTheme.values?.whiteSideColor ?? whiteSideColor;
+			blackSideColor = settingsTheme.values?.blackSideColor ?? blackSideColor;
 			roughness = settingsTheme.values?.roughness ?? roughness;
 			metalness = settingsTheme.values?.metalness ?? metalness;
 			sheen = settingsTheme.values?.sheen ?? sheen;
@@ -121,16 +142,20 @@ export class PiecesService {
 			transmission = settingsTheme.values?.transmission ?? transmission;
 		}
 
-		this.material.side = DoubleSide;
 		this.material.color.set(0xffffff);
 		this.material.transparent = true;
+		this.material.opacity = 1;
 		this.material.map = texture;
-		this.material.roughness = roughness;
-		this.material.metalness = metalness;
-		this.material.sheen = sheen;
-		this.material.ior = ior;
-		this.material.reflectivity = reflectivity;
-		this.material.transmission = transmission;
+		if (this.material instanceof MeshPhysicalMaterial) {
+			this.material.reflectivity = reflectivity;
+			this.material.roughness = roughness;
+			this.material.metalness = metalness;
+			this.material.sheen = sheen;
+			this.material.ior = ior;
+			this.material.transmission = transmission;
+		} else if (visualGraphics?.value === "low" && settingsTheme?.values) {
+			this.material.opacity = settingsTheme.values.ior ? ior / 2 : 1;
+		}
 
 		this._chessboard.world.getScene().traverseVisible((child) => {
 			if (!(child instanceof InstancedPieceModel)) return;
