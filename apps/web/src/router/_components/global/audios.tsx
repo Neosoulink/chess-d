@@ -11,17 +11,24 @@ import {
 	useGameStore,
 	useMainMenuStore,
 	useAudioStore,
-	useSettingsStore
+	useSettingsStore,
+	useChatStore
 } from "@/router/_stores";
 import { ChessboardController } from "@chess-d/chessboard/dist/core/chessboard.controller";
 import { MoveFlags, ObservablePayload } from "@chess-d/shared";
 
 export const GlobalAudios: FC = () => {
-	const { app: gameApp, gameState, isResourcesLoaded } = useGameStore();
+	const {
+		app: gameApp,
+		gameState,
+		playerSide,
+		isResourcesLoaded
+	} = useGameStore();
 	const { state: settingsState } = useSettingsStore();
 	const { isOpen, currentSections } = useMainMenuStore();
 	const { init, tracks, refreshInteractiveListeners, setVolumes } =
 		useAudioStore();
+	const { chat$ } = useChatStore();
 	const { key } = useLocation();
 
 	useEffect(() => {
@@ -148,6 +155,18 @@ export const GlobalAudios: FC = () => {
 
 		return () => worker?.removeEventListener("message", handleMessages);
 	}, [gameApp, isResourcesLoaded, tracks]);
+
+	useEffect(() => {
+		const subscription = chat$.subscribe((chat) => {
+			if (chat.side === playerSide) return;
+
+			const messageTrack = tracks["sfx-chat-message"];
+			messageTrack?.audio?.stop();
+			messageTrack?.audio?.play();
+		});
+
+		return () => subscription.unsubscribe();
+	}, [chat$, playerSide, tracks]);
 
 	useEffect(() => {
 		setTimeout(() => {

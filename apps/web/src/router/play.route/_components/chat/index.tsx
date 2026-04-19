@@ -20,8 +20,8 @@ const msgData = [
 		description: "Nice move!"
 	},
 	{
-		content: "Interesting move!",
-		description: "Interesting move!"
+		content: "Let me think...",
+		description: "Let me think..."
 	}
 ];
 

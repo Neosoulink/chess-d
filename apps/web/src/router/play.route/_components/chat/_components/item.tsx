@@ -22,7 +22,7 @@ export const ChatItem: FC<ChatStoreItem & { isPlayer: boolean }> = ({
 				<div className="absolute top-0 left-0 w-full h-full bg-linear-to-r from-primary/10 to-secondary/5" />
 			)}
 			<span>({isPlayer ? "You" : "Opponent"}):</span>
-			{isEmote && <Icon.HandSign size={20} />}
+			{isEmote ? <Icon.HandSign size={20} /> : <Icon.Chat size={16} />}
 			<span>{typeLabel} -</span>
 			<span>{content}</span>
 		</li>

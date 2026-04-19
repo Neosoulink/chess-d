@@ -78,7 +78,8 @@ export const LOADER_SUPPORTED_AUDIOS: {
 	{
 		id: "sfx-chat-message",
 		label: "Chat Message",
-		sourcePath: audioSfxChatMessagePath
+		sourcePath: audioSfxChatMessagePath,
+		options: { volume: 0.4 }
 	},
 	{
 		id: "sfx-in-check",
