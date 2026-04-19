@@ -2,13 +2,13 @@
 	--font-kelly-slab: "Kelly Slab", arial;
 	--font-comic-neue: "Comic Neue", sans-serif;
 
+	--color-primary: #4deeea;
+	--color-secondary: #a553fc;
 	--color-light: #f8f9fa;
 	--color-dark: #1a1a1a;
 	--color-positive: #2dfc49;
 	--color-negative: #fc4949;
 	--color-warning: #ffcc33;
-	--color-primary: #ffcc33;
-	--color-secondary: #f72585;
 
 	--tp-base-background-color: var(--color-dark);
 	--tp-base-shadow-color: var(--color-dark);

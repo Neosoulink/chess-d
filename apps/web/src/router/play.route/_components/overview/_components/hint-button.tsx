@@ -1,22 +1,22 @@
+import { SupportedAiModel } from "@chess-d/ai";
+import { DEFAULT_FEN } from "@chess-d/shared";
 import { RegisterModule } from "@quick-threejs/reactive";
 import { WorkerThread } from "@quick-threejs/worker";
 import { Move } from "chess.js";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
+import { Subscription } from "rxjs";
 
 import { getGameModeFromUrl } from "@/shared/utils";
 import { GameMode } from "@/shared/enum";
 import { useAudioStore, useGameStore } from "@/router/_stores";
 import { Icon } from "@/router/_components/core";
 import { GameOverviewButton } from "./button";
-import { Subscription } from "rxjs";
 import {
 	AI_WILL_PERFORM_MOVE_TOKEN,
 	CHESSBOARD_WILL_HINT_MARKER_TOKEN
 } from "@/shared/tokens";
-import { SupportedAiModel } from "@chess-d/ai";
 import { AiWillPerformMovePayload, MessageData } from "@/shared/types";
-import { DEFAULT_FEN } from "@chess-d/shared";
 
 /** @internal */
 const aiWorkerLocation = new URL(
@@ -83,7 +83,7 @@ export const GameOverviewHintButton: FC = () => {
 			value: {
 				ai: SupportedAiModel.basicBot,
 				fen: fen || DEFAULT_FEN,
-				registerOptions: { depth: 2 }
+				registerOptions: { depth: 3 }
 			}
 		} satisfies MessageData<AiWillPerformMovePayload>);
 	}, [aiWorker, gameState?.fen, gameState?.playerSide, gameState?.turn]);

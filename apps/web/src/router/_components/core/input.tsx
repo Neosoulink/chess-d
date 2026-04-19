@@ -34,7 +34,7 @@ export const Input = forwardRef<InputRef, InputProps>(
 				disabled={disabled}
 				type={type}
 				className={cn(
-					"bg-light/20 text-white text-lg text-shadow-neon-gold/40 block px-2.5 h-10 transition-all duration-250",
+					"bg-light/20 text-lg text-shadow-neon-gold/40 block px-2.5 h-10 transition-all duration-250",
 					"border-r-8 border-transparent",
 					"hover:bg-light/30 hover:text-shadow-[0_0_4px_var(--color-neon-gold)]",
 					"focus:ring-0 focus:outline-light/30 focus:bg-light/30",
