@@ -1,5 +1,6 @@
 import { ChessboardModule as ChessboardModuleBase } from "@chess-d/chessboard";
 import { Module } from "@quick-threejs/reactive";
+import { AppModule } from "@quick-threejs/reactive/worker";
 import { Subscription } from "rxjs";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
@@ -14,6 +15,7 @@ export class ChessboardModule implements Module {
 	private _subscriptions: (Subscription | undefined)[] = [];
 
 	constructor(
+		@inject(AppModule) private readonly _app: AppModule,
 		@inject(ChessboardController)
 		private readonly _controller: ChessboardController,
 		@inject(ChessboardService)
@@ -28,6 +30,9 @@ export class ChessboardModule implements Module {
 			this._controller.reset$.subscribe(
 				this._service.reset.bind(this._service)
 			),
+			this._controller.step$.subscribe(({ delta }) => {
+				this._service.update(delta);
+			}),
 			this._controller.cursorCoord$?.subscribe((position) => {
 				if (!position) return (this._service.cursorCoordMarker.visible = false);
 

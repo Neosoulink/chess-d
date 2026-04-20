@@ -29,6 +29,7 @@ export class ChessboardController {
 	public readonly settingsUpdate$: Observable<
 		ObservablePayload<SettingsController["update$"]>
 	>;
+	public readonly step$: WorldController["step$"];
 	public readonly pieceMoved$?: Observable<
 		(BoardCoord & { captured?: boolean })[]
 	>;
@@ -51,6 +52,8 @@ export class ChessboardController {
 		this.reset$ = this._worldController.resetDone$$.pipe(share());
 
 		this.settingsUpdate$ = this._settingsController.update$.pipe(share());
+
+		this.step$ = this._worldController.step$.pipe(share());
 
 		this.pieceMoved$ = this._engineController.pieceMoved$?.pipe(
 			filter(

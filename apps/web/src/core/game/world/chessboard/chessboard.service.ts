@@ -36,8 +36,7 @@ export class ChessboardService {
 	public readonly labelsScene = new Group();
 	public readonly markersGeometry = new CircleGeometry(BOARD_CELL_SIZE / 2, 20);
 	public readonly markersMaterial = new MeshBasicMaterial({
-		transparent: true,
-		opacity: 0.45
+		transparent: true
 	});
 
 	public material: MeshLambertMaterial | MeshPhysicalMaterial =
@@ -55,6 +54,38 @@ export class ChessboardService {
 		@inject(WorldService) private readonly _world: WorldService
 	) {
 		this.scene.name = "world-chessboard";
+
+		this.markersMaterial.defines = {
+			...(this.markersMaterial.defines ?? {}),
+			USE_UV: 1
+		};
+
+		this.markersMaterial.onBeforeCompile = (shader) => {
+			shader.uniforms.uTime = { value: 0 };
+			this.markersMaterial.userData.uTime = shader.uniforms.uTime;
+
+			shader.fragmentShader = shader.fragmentShader.replace(
+				"#include <common>",
+				"#include <common>\nuniform float uTime;"
+			);
+			shader.fragmentShader = shader.fragmentShader.replace(
+				"#include <color_fragment>",
+				/* glsl */ `#include <color_fragment>
+				{
+					vec2 p = vUv - vec2(0.5);
+
+					float r = length(p) * 2.0;
+					float wobble = sin(uTime * 2.2) * 0.5 + 0.5;
+					float ringR = mix(0.8, 0.9, wobble);
+					float thickness = 0.065;
+					float d = abs(r - ringR);
+					float ringMask = 1.0 - step( thickness, d );
+
+					diffuseColor.a *= ringMask;
+				}`
+			);
+		};
+
 		this.nextMovesMarker = new InstancedCellMakerModel(
 			this._chessboard.board.getInstancedCell(),
 			undefined,
@@ -267,5 +298,10 @@ export class ChessboardService {
 		this.resetVisual();
 		this.resetMarkers();
 		this.resetScenes();
+	}
+
+	public update(delta: number): void {
+		const u = this.markersMaterial.userData.uTime;
+		if (u) u.value += delta;
 	}
 }

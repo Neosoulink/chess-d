@@ -12,7 +12,7 @@ import {
 	SocketAuthInterface
 } from "@chess-d/shared";
 import { Move } from "chess.js";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "react-router";
 import { merge } from "rxjs";
 import { io } from "socket.io-client";
@@ -28,6 +28,7 @@ import {
 import { HANDS_SUPPORT_EMOTES } from "@/shared/constants";
 import { useChatStore } from "@/router/_stores/chat.store";
 import { HandsController } from "@/core/game/world/hands/hands.controller";
+import { Button, Icon, Input } from "@/router/_components/core";
 import { useGameStore, useLoaderStore } from "../../_stores";
 
 /** @internal */
@@ -47,10 +48,28 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 	const location = useLocation();
 	const [searchParams, setSearchParams] = useSearchParams();
 
-	const [currentPlayer, setCurrentPlayer] = useState<PlayerModel | undefined>();
-	const [opponentPlayer, setOpponentPlayer] = useState<
-		PlayerModel | undefined
-	>();
+	const [currentPlayer, setCurrentPlayer] = useState<PlayerModel>();
+	const [opponentPlayer, setOpponentPlayer] = useState<PlayerModel>();
+	const [inviteCopied, setInviteCopied] = useState(false);
+
+	const inviteCopiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+		null
+	);
+
+	const inviteUrl = useMemo(() => {
+		const roomId = searchParams.get("roomID");
+		if (!roomId) return "";
+
+		const params = new URLSearchParams();
+		params.set("mode", "multiplayer");
+		params.set("roomID", roomId);
+
+		return `${window.location.origin}/play?${params.toString()}`;
+	}, [searchParams]);
+
+	const showWaitingForOpponent = useMemo(() => {
+		return !!currentPlayer && !opponentPlayer && !!inviteUrl;
+	}, [currentPlayer, opponentPlayer, inviteUrl]);
 
 	const socket = useMemo(
 		() =>
@@ -386,5 +405,71 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 		};
 	}, [onDisconnect, socket]);
 
-	return null;
+	useEffect(() => {
+		return () => {
+			if (inviteCopiedTimeoutRef.current) {
+				clearTimeout(inviteCopiedTimeoutRef.current);
+			}
+		};
+	}, []);
+
+	useEffect(() => {
+		if (opponentPlayer) setInviteCopied(false);
+	}, [opponentPlayer]);
+
+	const handleCopyInviteLink = useCallback(() => {
+		if (!inviteUrl) return;
+
+		void navigator.clipboard.writeText(inviteUrl).then(
+			() => {
+				if (inviteCopiedTimeoutRef.current) {
+					clearTimeout(inviteCopiedTimeoutRef.current);
+				}
+				setInviteCopied(true);
+				inviteCopiedTimeoutRef.current = setTimeout(() => {
+					setInviteCopied(false);
+					inviteCopiedTimeoutRef.current = null;
+				}, 2000);
+			},
+			() => {}
+		);
+	}, [inviteUrl]);
+
+	return (
+		<>
+			{showWaitingForOpponent && (
+				<div className="fixed inset-0 z-20 flex items-center justify-center p-4 pointer-events-none">
+					<div
+						role="status"
+						className="pointer-events-auto w-full max-w-md bg-dark/90 p-4 shadow-lg flex flex-col gap-3"
+					>
+						<h3 className="text-center text-sm font-semibold animate-pulse">
+							Waiting for opponent
+						</h3>
+						<p className="text-center text-xs text-light/70">
+							No opponent found.
+							<br />
+							Share this link with your opponent to join the room.
+						</p>
+						<div className="flex gap-2 items-stretch">
+							<Input
+								readOnly
+								value={inviteUrl}
+								className="h-9 min-w-0 flex-1 text-xs"
+								aria-label="Room invite link"
+							/>
+							<Button
+								type="button"
+								className="h-9 shrink-0 px-3"
+								onClick={handleCopyInviteLink}
+							>
+								<Icon.Link size={16} />
+								{inviteCopied ? "Copied" : "Copy"}
+							</Button>
+						</div>
+					</div>
+				</div>
+			)}
+		</>
+	);
 };
