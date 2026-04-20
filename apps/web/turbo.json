@@ -8,7 +8,14 @@
 		"build": {
 			"dependsOn": ["^build"],
 			"outputs": ["dist/**"],
-			"env": ["PUBLIC_SERVER_HOST"]
+			"env": [
+				"PUBLIC_SERVER_HOST",
+				"PUBLIC_SITE_ORIGIN",
+				"VERCEL_URL",
+				"URL",
+				"DEPLOY_PRIME_URL",
+				"CF_PAGES_URL"
+			]
 		}
 	}
 }
