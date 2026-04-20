@@ -76,7 +76,7 @@ export const MainMenuNewGameAI: FC<MainMenuNewGameAIProps> = ({
 					type: "select",
 					name: "ai-opponent",
 					id: "ai-opponent",
-					value: values.ai,
+					value: values.ai as string,
 					className: "w-full",
 					onChange: (e) =>
 						handleChange({

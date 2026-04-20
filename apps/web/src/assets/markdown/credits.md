@@ -19,6 +19,7 @@ Resources, inspiration, mentions, etc ....
 - [ReactJS](https://react.dev/): A library used to handle the native web user interfaces.
 - [Typescript](https://www.typescriptlang.org/): JavaScript type safety programming language.
 - [TailwindCSS](https://tailwindcss.com/): A utility-first framework used to enhance the CSS experience.
+- [Turborepo](https://github.com/vercel/turborepo): Codebases build system.
 - `HTML`, `JavaScript` & `CSS`.
 
 ## Tools & software

@@ -11,7 +11,7 @@ import {
 	GAME_RESET_TOKEN,
 	GAME_UPDATED_TOKEN,
 	PIECE_WILL_MOVE_TOKEN
-} from "../../shared/tokens";
+} from "@/shared/tokens";
 import {
 	EngineUpdatedMessageData,
 	GameResetState,
@@ -19,14 +19,15 @@ import {
 	GameState,
 	MessageData,
 	MoveLike
-} from "../../shared/types";
-import { getGameModeFromUrl } from "../../shared/utils";
-import { SupportedSaveSlots } from "../../shared/enum";
+} from "@/shared/types";
+import { getGameModeFromUrl } from "@/shared/utils";
+import { SupportedSaveSlots } from "@/shared/enum";
 
 export interface GameStore {
 	app?: ContainerizedApp<RegisterModule>;
 	initialGameState?: GameResetState;
 	gameState?: GameState;
+	isGameAIPaused: boolean;
 	isResourcesLoaded: boolean;
 	playerSide: ColorSide;
 	startSide: ColorSide;
@@ -34,6 +35,7 @@ export interface GameStore {
 	setApp: (app?: ContainerizedApp<RegisterModule> | undefined) => void;
 	setInitialGameState: (state?: GameResetState) => void;
 	setGameState: (state?: GameState) => void;
+	setIsGameAIPaused: (paused: boolean) => void;
 	setIsResourcesLoaded: (bool: boolean) => void;
 	setPlayerSide: (side: ColorSide) => void;
 	setShowSummary: (show: boolean) => void;
@@ -52,6 +54,7 @@ export const gameStoreInitialState: Properties<GameStore> = {
 	app: undefined,
 	initialGameState: undefined,
 	gameState: undefined,
+	isGameAIPaused: false,
 	isResourcesLoaded: false,
 	playerSide: ColorSide.white,
 	startSide: ColorSide.white,
@@ -81,9 +84,8 @@ export const useGameStore = create<GameStore>((set, get) => {
 	const handleAppMessages = (e: MessageEvent<EngineUpdatedMessageData>) => {
 		const token = e.data?.token;
 
-		if (token === GAME_UPDATED_TOKEN && e.data?.value) {
+		if (token === GAME_UPDATED_TOKEN && e.data?.value)
 			setGameState(e.data.value);
-		}
 	};
 
 	return {
@@ -99,6 +101,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 		setInitialGameState: (state) => set(() => ({ initialGameState: state })),
 		setIsResourcesLoaded: (bool) => set(() => ({ isResourcesLoaded: bool })),
 		setGameState,
+		setIsGameAIPaused: (paused) => set(() => ({ isGameAIPaused: paused })),
 		setPlayerSide: (playerSide) => set(() => ({ playerSide })),
 		setShowSummary: (show) => set(() => ({ showSummary: show })),
 		getSaves,
@@ -183,6 +186,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
 			set(() => ({
 				initialGameState: undefined,
+				isGameAIPaused: false,
 				playerSide: state?.playerSide,
 				startSide: state?.startSide
 			}));

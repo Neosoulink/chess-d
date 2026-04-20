@@ -10,11 +10,12 @@ import { GameOverviewButton } from "../_components/button";
 import { GameOverviewHintButton } from "../_components/hint-button";
 
 export const GameOverviewControls: FC = () => {
-	const { undoMove, redoMove } = useGameStore();
+	const { undoMove, redoMove, isGameAIPaused, setIsGameAIPaused } =
+		useGameStore();
 	const { setOpen, setSections } = useMainMenuStore();
 	const [searchParams] = useSearchParams();
 
-	const gameMode = useMemo(
+	const gameMode = useMemo<GameMode | undefined>(
 		() => getGameModeFromUrl(searchParams),
 		[searchParams]
 	);
@@ -26,6 +27,12 @@ export const GameOverviewControls: FC = () => {
 
 	return (
 		<div className="flex gap-1 items-center justify-center">
+			{gameMode && [GameMode.ai, GameMode.simulation].includes(gameMode) && (
+				<GameOverviewButton onClick={() => setIsGameAIPaused(!isGameAIPaused)}>
+					{isGameAIPaused ? <Icon.Play /> : <Icon.Pause />}
+				</GameOverviewButton>
+			)}
+
 			{gameMode !== GameMode.multiplayer && (
 				<>
 					<GameOverviewButton onClick={undoMove}>

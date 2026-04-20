@@ -20,7 +20,9 @@ import { HourglassIcon } from "./hourglass";
 import { InfoIcon } from "./info";
 import { LinkIcon } from "./link";
 import { MenuIcon } from "./menu";
+import { PauseIcon } from "./pause";
 import { PictureIcon } from "./picture";
+import { PlayIcon } from "./play";
 import { PopupIcon } from "./popup";
 import { ProcessorIcon } from "./processor";
 import { RandomIcon } from "./random";
@@ -59,7 +61,9 @@ export const Icon = {
 	Info: InfoIcon,
 	Link: LinkIcon,
 	Menu: MenuIcon,
+	Pause: PauseIcon,
 	Picture: PictureIcon,
+	Play: PlayIcon,
 	Popup: PopupIcon,
 	Processor: ProcessorIcon,
 	Random: RandomIcon,

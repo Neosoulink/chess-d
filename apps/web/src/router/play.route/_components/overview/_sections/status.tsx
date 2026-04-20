@@ -19,7 +19,8 @@ const MspItem: FC<{
 };
 
 export const GameOverviewStatus: FC = () => {
-	const { gameState } = useGameStore();
+	const { gameState, isGameAIPaused } = useGameStore();
+
 	const [searchParams] = useSearchParams();
 
 	const gameMode = useMemo(
@@ -72,6 +73,10 @@ export const GameOverviewStatus: FC = () => {
 			)}
 
 			<MspItem content={`State: ${stateLabel}`} />
+
+			{gameMode &&
+				[GameMode.ai, GameMode.simulation].includes(gameMode) &&
+				isGameAIPaused && <MspItem content="Paused" />}
 		</div>
 	);
 };

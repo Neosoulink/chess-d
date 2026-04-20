@@ -62,7 +62,7 @@ export const MainMenuNewGameSimulation: FC<{
 						name: "ai-opponent",
 						id: "ai-opponent",
 						className: "w-full",
-						value: aiPlayerData?.model,
+						value: aiPlayerData?.model as string,
 						onChange: (e) =>
 							onChange({
 								aiPlayer: { ...aiPlayerData, model: e.target.value },

@@ -21,12 +21,15 @@ import {
 import {
 	AI_PERFORMED_MOVE_TOKEN,
 	AI_WILL_PERFORM_MOVE_TOKEN,
-	GAME_RESET_TOKEN,
 	GAME_UPDATED_TOKEN,
 	PIECE_WILL_MOVE_TOKEN
 } from "@/shared/tokens";
 import { getGameModeFromUrl } from "@/shared/utils";
-import { useGameStore, useLoaderStore } from "@/router/_stores";
+import {
+	useGameStore,
+	useLoaderStore,
+	useMainMenuStore
+} from "@/router/_stores";
 
 export interface PlayModeAIProps {}
 
@@ -40,8 +43,15 @@ const aiWorkerLocation = new URL(
 ) as unknown as string;
 
 export const PlayModeAI: FC<PlayModeAIProps> = () => {
-	const { app, initialGameState, resetGame, setInitialGameState } =
-		useGameStore();
+	const {
+		app,
+		isGameAIPaused,
+		initialGameState,
+		resetGame,
+		setInitialGameState,
+		setIsGameAIPaused
+	} = useGameStore();
+	const { isOpen: isMainMenuOpen } = useMainMenuStore();
 	const { setIsLoading } = useLoaderStore();
 	const location = useLocation();
 	const [searchParams] = useSearchParams();
@@ -62,11 +72,12 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 		initialGameState?.startSide || ColorSide.white
 	);
 
-	const stateRef = useRef<{
-		isPending: boolean;
-		isReady: boolean;
-	}>({ isPending: false, isReady: false });
+	const stateRef = useRef({ isPending: false, isReady: false });
 	const locationKeyRef = useRef<string | null>(null);
+	const isGameAIPausedRef = useRef(isGameAIPaused);
+	const pendingAiMoveRef = useRef<AiWillPerformMovePayload | null>(null);
+
+	isGameAIPausedRef.current = isGameAIPaused;
 
 	const init = useCallback(async () => {
 		setIsLoading(true);
@@ -104,6 +115,7 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 
 		stateRef.current.isPending = false;
 		stateRef.current.isReady = false;
+		pendingAiMoveRef.current = null;
 	}, [aiWorker]);
 
 	const performPieceMove = useCallback(
@@ -161,6 +173,24 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 		const gameMode = getGameModeFromUrl(searchParams);
 		const players: PlayerModel[] = [];
 
+		const postAiWillPerformMove = (value: AiWillPerformMovePayload) => {
+			const worker = aiWorker?.[0]?.worker;
+			if (!worker) return;
+
+			if (isGameAIPausedRef.current) {
+				pendingAiMoveRef.current = value;
+				return;
+			}
+
+			pendingAiMoveRef.current = null;
+			worker.postMessage({
+				token: AI_WILL_PERFORM_MOVE_TOKEN,
+				value
+			} satisfies MessageData<AiWillPerformMovePayload>);
+		};
+
+		let initialAiMoveTimeout: ReturnType<typeof setTimeout> | undefined;
+
 		if (gameMode === GameMode.simulation) {
 			const searchedAI1 = searchParams.get("ai1");
 			const searchedAI2 = searchParams.get("ai2");
@@ -200,22 +230,19 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 				!stateRef.current.isPending &&
 				stateRef.current.isReady
 			)
-				setTimeout(() => {
-					aiWorker?.[0]?.worker?.postMessage?.({
-						token: AI_WILL_PERFORM_MOVE_TOKEN,
-						value: {
-							fen: currentStartFen,
-							ai: (currentStartSide === aiPlayer1.color
-								? aiPlayer1.id
-								: aiPlayer2.id) as SupportedAiModel,
-							registerOptions: wrapRegisterOptions({
-								depth:
-									currentStartSide === aiPlayer1.color
-										? aiPlayer1.depth
-										: aiPlayer2.depth
-							})
-						}
-					} satisfies MessageData<AiWillPerformMovePayload>);
+				initialAiMoveTimeout = setTimeout(() => {
+					postAiWillPerformMove({
+						fen: currentStartFen,
+						ai: (currentStartSide === aiPlayer1.color
+							? aiPlayer1.id
+							: aiPlayer2.id) as SupportedAiModel,
+						registerOptions: wrapRegisterOptions({
+							depth:
+								currentStartSide === aiPlayer1.color
+									? aiPlayer1.depth
+									: aiPlayer2.depth
+						})
+					});
 				}, 1500);
 		} else {
 			const searchedAIParam = searchParams.get("ai");
@@ -241,17 +268,14 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 				stateRef.current.isReady &&
 				currentStartSide === aiPlayer.color
 			)
-				setTimeout(() => {
-					aiWorker?.[0]?.worker?.postMessage?.({
-						token: AI_WILL_PERFORM_MOVE_TOKEN,
-						value: {
-							fen: currentStartFen,
-							ai: aiPlayer.id as SupportedAiModel,
-							registerOptions: wrapRegisterOptions({
-								depth: searchedDepthParam
-							})
-						}
-					} satisfies MessageData<AiWillPerformMovePayload>);
+				initialAiMoveTimeout = setTimeout(() => {
+					postAiWillPerformMove({
+						fen: currentStartFen,
+						ai: aiPlayer.id as SupportedAiModel,
+						registerOptions: wrapRegisterOptions({
+							depth: searchedDepthParam
+						})
+					});
 				}, 1500);
 		}
 
@@ -260,17 +284,27 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 		) => {
 			if (!payload.data?.token) return;
 
-			if (payload.data.token === GAME_UPDATED_TOKEN && payload.data?.value?.fen)
-				players.forEach((player) => {
-					player.next({
-						token: "NOTIFIED",
-						value: {
-							...payload.data.value,
-							entity: player.getEntity(),
-							depth: player.depth
-						}
-					});
+			if (
+				payload.data.token !== GAME_UPDATED_TOKEN ||
+				!payload.data?.value?.fen
+			)
+				return;
+
+			if (gameMode !== GameMode.simulation) {
+				isGameAIPausedRef.current = false;
+				setIsGameAIPaused(false);
+			}
+
+			players.forEach((player) => {
+				player.next({
+					token: "NOTIFIED",
+					value: {
+						...payload.data.value,
+						entity: player.getEntity(),
+						depth: player.depth
+					}
 				});
+			});
 		};
 
 		const aiPerformedMoveSubscription: Subscription | undefined =
@@ -305,27 +339,25 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 				entity &&
 				entity.color === turn
 			)
-				aiWorker?.[0]?.worker?.postMessage?.({
-					token: AI_WILL_PERFORM_MOVE_TOKEN,
-					value: {
-						fen,
-						ai: entity.id as SupportedAiModel,
-						registerOptions: wrapRegisterOptions({ depth })
-					}
-				} satisfies MessageData<AiWillPerformMovePayload>);
+				postAiWillPerformMove({
+					fen,
+					ai: entity.id as SupportedAiModel,
+					registerOptions: wrapRegisterOptions({ depth })
+				});
 
 			if (payload.token === "PLACED_PIECE" && payload.value?.move)
 				return performPieceMove(payload.value.move);
 		});
+		const appWorker = appModule?.getWorkerThread()?.worker as
+			| Worker
+			| undefined;
 
-		appModule
-			?.getWorkerThread()
-			?.worker?.addEventListener("message", handleMessages);
+		appWorker?.addEventListener("message", handleMessages);
 
 		return () => {
-			appModule
-				?.getWorkerThread()
-				?.worker?.removeEventListener?.("message", handleMessages);
+			if (initialAiMoveTimeout) clearTimeout(initialAiMoveTimeout);
+			pendingAiMoveRef.current = null;
+			appWorker?.removeEventListener?.("message", handleMessages);
 			aiPerformedMoveSubscription?.unsubscribe?.();
 			playersSubscription.unsubscribe();
 		};
@@ -335,8 +367,30 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 		currentPlayerSide,
 		performPieceMove,
 		searchParams,
+		setIsGameAIPaused,
 		aiWorker
 	]);
+
+	useEffect(() => {
+		if (isMainMenuOpen) setIsGameAIPaused(true);
+	}, [isMainMenuOpen, setIsGameAIPaused]);
+
+	useEffect(() => {
+		if (isGameAIPaused) return;
+		if (!stateRef.current.isReady) return;
+
+		const worker = aiWorker?.[0]?.worker as Worker | undefined;
+		if (!worker) return;
+
+		const pending = pendingAiMoveRef.current;
+		if (!pending) return;
+
+		pendingAiMoveRef.current = null;
+		worker.postMessage({
+			token: AI_WILL_PERFORM_MOVE_TOKEN,
+			value: pending
+		} satisfies MessageData<AiWillPerformMovePayload>);
+	}, [isGameAIPaused, aiWorker]);
 
 	return null;
 };

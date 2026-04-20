@@ -19,7 +19,9 @@ const CHESS_LOADER_ICONS = [
 const ChessPiecesLoaderAnimation: FC<{ isActive: boolean }> = ({
 	isActive
 }) => {
-	const [activeIndex, setActiveIndex] = useState(0);
+	const [activeIndex, setActiveIndex] = useState(
+		Math.floor(Math.random() * CHESS_LOADER_ICONS.length)
+	);
 
 	useEffect(() => {
 		if (!isActive) return;
@@ -113,12 +115,6 @@ export const GlobalLoader: FC = () => {
 								: `Loading ${resourcesLoadStatus.currentLoad} (${resourcesLoadStatus.loadedCount}/${resourcesLoadStatus.toLoadCount})`}
 						</span>
 					</div>
-
-					{isResourcesLoaded && (
-						<span className="animate-pulse text-sm">
-							Press anywhere to start
-						</span>
-					)}
 				</div>
 			) : (
 				<div className="absolute bottom-12 left-0 px-12 flex items-end justify-between w-full">

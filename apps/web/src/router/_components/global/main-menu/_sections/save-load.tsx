@@ -1,3 +1,4 @@
+import { ColorSide } from "@chess-d/shared";
 import { Chessboard2 } from "@chrisoakman/chessboard2/dist/chessboard2.min.js";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
@@ -150,7 +151,13 @@ export const MainMenuSaveLoadSection: FC = () => {
 				setInitialGameState({
 					fen: save.fen,
 					pgn: save.pgn,
-					redoHistory: save.redoHistory
+					redoHistory: save.redoHistory,
+					preventPlayerToMove:
+						save.mode === GameMode.free
+							? { [ColorSide.white]: false, [ColorSide.black]: false }
+							: save.mode === GameMode.simulation
+								? { [ColorSide.white]: true, [ColorSide.black]: true }
+								: undefined
 				});
 				navigate(
 					save.mode === GameMode.ai

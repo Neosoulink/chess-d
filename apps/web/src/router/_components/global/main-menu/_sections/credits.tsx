@@ -58,7 +58,7 @@ export const MainMenuCreditsSection: FC = () => {
 			]}
 		>
 			<Markdown>{creditsText}</Markdown>
-			<a href="github.com/Neosoulink" title="Yeah!">
+			<a href="https://github.com/Neosoulink" title="Yeah!">
 				<img
 					alt="Yeah!"
 					src={yeahImgPath}
