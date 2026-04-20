@@ -1,12 +1,14 @@
 import { FC } from "react";
 import { Routes, Route, Outlet } from "react-router";
 
-import { Loader } from "./_components/custom";
 import {
 	GlobalExperience,
 	GlobalTheme,
 	GlobalMainMenu,
-	GlobalAudios
+	GlobalAudios,
+	GlobalTopRightSection,
+	GlobalTopLeftSection,
+	GlobalLoader
 } from "./_components/global";
 import { HomeRoute } from "./home.route";
 import { PlayRoute } from "./play.route";
@@ -22,8 +24,10 @@ export const Router: FC = () => (
 					<Outlet />
 					<GlobalTheme />
 					<GlobalMainMenu />
-					<Loader />
+					<GlobalLoader />
 					<GlobalAudios />
+					<GlobalTopLeftSection />
+					<GlobalTopRightSection />
 				</>
 			}
 		>

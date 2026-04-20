@@ -41,8 +41,11 @@
 	--font-kelly-slab: var(--font-kelly-slab);
 	--font-comic-neue: var(--font-comic-neue);
 
+	--color-*: initial;
 	--color-light: var(--color-light);
 	--color-dark: var(--color-dark);
+	--color-white: #ffffff;
+	--color-black: #000000;
 	--color-positive: var(--color-positive);
 	--color-negative: var(--color-negative);
 	--color-warning: var(--color-warning);

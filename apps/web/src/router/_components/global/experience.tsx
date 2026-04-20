@@ -43,7 +43,7 @@ export const GlobalExperience: FC = () => {
 	} = useSettingsStore();
 	const { notify: chatNotify } = useChatStore();
 	const { setIsLoading } = useLoaderStore();
-	const { key: routeKey, pathname } = useLocation();
+	const { key: routeKey, pathname, hash } = useLocation();
 
 	const rootDom = useMemo(() => document.getElementById("root"), []);
 
@@ -65,6 +65,8 @@ export const GlobalExperience: FC = () => {
 
 		stateRef.current.isPending = true;
 
+		const debugMode = devMode || hash?.includes("#debug");
+
 		setIsLoading(true);
 		setIsResourcesLoaded(false);
 		register({
@@ -73,7 +75,7 @@ export const GlobalExperience: FC = () => {
 			canvasWrapper: "parent",
 			fullScreen: false,
 			debug: {
-				enabled: devMode,
+				enabled: debugMode,
 				axesSizes: 5,
 				withMiniCamera: false,
 				enableControls: true
@@ -96,7 +98,7 @@ export const GlobalExperience: FC = () => {
 					}, 500);
 				});
 
-				if (devMode && rootDom) {
+				if (debugMode && rootDom) {
 					paneRef.current = new Pane();
 					statsRef.current = new Stats();
 

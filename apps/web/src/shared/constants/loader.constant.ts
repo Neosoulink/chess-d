@@ -4,7 +4,6 @@ import audioSfxChatMessagePath from "@/assets/audios/sfx-chat-message.mp3?url";
 import audioSfxGameDrawPath from "@/assets/audios/sfx-game-draw.mp3?url";
 import audioSfxGameFailPath from "@/assets/audios/sfx-game-fail.mp3?url";
 import audioSfxGameHintPath from "@/assets/audios/sfx-game-hint.mp3?url";
-import audioSfxGameStartPath from "@/assets/audios/sfx-game-start.mp3?url";
 import audioSfxGameWinPath from "@/assets/audios/sfx-game-win.mp3?url";
 import audioSfxInCheckPath from "@/assets/audios/sfx-in-check.mp3?url";
 import audioSfxIsCheckPath from "@/assets/audios/sfx-is-check.mp3?url";
@@ -53,11 +52,6 @@ export const LOADER_SUPPORTED_AUDIOS: {
 		label: "Game Fail",
 		sourcePath: audioSfxGameFailPath,
 		options: { volume: 0.4 }
-	},
-	{
-		id: "sfx-game-start",
-		label: "Game Start",
-		sourcePath: audioSfxGameStartPath
 	},
 	{
 		id: "sfx-game-win",

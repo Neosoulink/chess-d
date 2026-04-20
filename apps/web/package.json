@@ -2,6 +2,10 @@
 	"name": "web",
 	"private": true,
 	"version": "0.0.0",
+	"author": {
+		"name": "Neosoulink",
+		"url": "https://github.com/Neosoulink"
+	},
 	"scripts": {
 		"dev": "vite --host",
 		"build": "pnpm run lint && vite build",

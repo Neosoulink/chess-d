@@ -17,6 +17,8 @@ import { Move } from "chess.js";
 import { AppModule } from "@quick-threejs/reactive/worker";
 import {
 	Color,
+	DoubleSide,
+	FrontSide,
 	Material,
 	MeshLambertMaterial,
 	MeshPhysicalMaterial,
@@ -142,6 +144,8 @@ export class PiecesService {
 			transmission = settingsTheme.values?.transmission ?? transmission;
 		}
 
+		this.material.side =
+			visualGraphics?.value === "low" ? FrontSide : DoubleSide;
 		this.material.color.set(0xffffff);
 		this.material.transparent = true;
 		this.material.opacity = 1;

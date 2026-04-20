@@ -121,7 +121,7 @@ const OptionItem = ({
 			<div
 				className={cn(
 					"flex items-center gap-3 px-5 py-1.5 rounded-4xl w-full justify-start h-full",
-					"bg-linear-to-b from-dark/40 via-dark/40 to-dark/40 text-light"
+					"bg-linear-to-b from-dark/40 via-dark/40 to-dark/40"
 				)}
 			>
 				<span className="opacity-0 group-hover:opacity-100 transition-opacity z-10">

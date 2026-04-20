@@ -1,18 +1,19 @@
 import { gsap } from "gsap";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useLocation } from "react-router";
 
 import { cn } from "@/shared/utils";
 import { useMainMenuStore } from "@/router/_stores";
 import { MAIN_MENU_SECTIONS } from "@/shared/constants";
-import { Button, Modal, Icon } from "../../core";
+import { Modal } from "../../core";
+import { MainMenuCreditsSection } from "./_sections/credits";
 import { MainMenuMainSection } from "./_sections/main";
 import { MainMenuNewGameSection } from "./_sections/new-game";
 import { MainMenuSaveLoadSection } from "./_sections/save-load";
 import { MainMenuSettingsSection } from "./_sections/settings";
 
 /** @internal */
-const SUPPORTED_MAIN_MENU_SECTIONS = [
+const MAIN_MENU_SECTIONS_MAP = [
 	{
 		name: MAIN_MENU_SECTIONS.main,
 		component: MainMenuMainSection
@@ -32,14 +33,17 @@ const SUPPORTED_MAIN_MENU_SECTIONS = [
 	{
 		name: MAIN_MENU_SECTIONS.settings,
 		component: MainMenuSettingsSection
+	},
+	{
+		name: MAIN_MENU_SECTIONS.credits,
+		component: MainMenuCreditsSection
 	}
 ] as const;
 
 export const GlobalMainMenu = () => {
 	const location = useLocation();
 
-	const { isOpen, currentSections, setSections, toggleOpen, setOpen } =
-		useMainMenuStore();
+	const { isOpen, currentSections, setOpen } = useMainMenuStore();
 
 	const sectionRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
 	const prevSectionNameRef = useRef<string | null>(null);
@@ -50,26 +54,7 @@ export const GlobalMainMenu = () => {
 		return _currentSection || MAIN_MENU_SECTIONS.main;
 	}, [currentSections]);
 
-	const handleToggleOpen = useCallback(() => {
-		if (!isOpen) setSections(MAIN_MENU_SECTIONS.main);
-		toggleOpen();
-	}, [isOpen, setSections, toggleOpen]);
-
-	const handleEscPress = useCallback(
-		(event: KeyboardEvent) => {
-			if (event.key !== "Escape") return;
-			handleToggleOpen();
-		},
-		[handleToggleOpen]
-	);
-
 	useEffect(() => setOpen(false), [setOpen, location]);
-
-	useEffect(() => {
-		document.addEventListener("keydown", handleEscPress);
-		return () => document.removeEventListener("keydown", handleEscPress);
-	}, [handleEscPress]);
-
 	useEffect(() => {
 		if (!isOpen) return;
 
@@ -124,47 +109,30 @@ export const GlobalMainMenu = () => {
 	}, [currentSectionName, isOpen]);
 
 	return (
-		<>
-			<Button
-				className={cn(
-					"fixed top-12 right-6 z-60 size-9",
-					"bg-radial from-deep-space/20 to-primary/20 text-primary",
-					"border-primary/80 border",
-					"shadow-[inset_0_0_5px_var(--color-primary),0_0_0px_var(--color-primary)] hover:shadow-[inset_0_0_10px_var(--color-primary),0_0_3px_var(--color-primary)]"
-				)}
-				onClick={handleToggleOpen}
-			>
-				{(() => {
-					const OpenIcon = isOpen ? Icon.Cross : Icon.Menu;
-					return <OpenIcon size={isOpen ? 16 : 18} />;
-				})()}
-			</Button>
+		<Modal show={!!isOpen}>
+			{(() => {
+				return MAIN_MENU_SECTIONS_MAP.map(({ name, component }) => {
+					const Section = component;
+					const isActive = name === currentSectionName;
 
-			<Modal show={!!isOpen}>
-				{(() => {
-					return SUPPORTED_MAIN_MENU_SECTIONS.map(({ name, component }) => {
-						const Section = component;
-						const isActive = name === currentSectionName;
-
-						return (
-							<div
-								key={name}
-								ref={(el) => {
-									sectionRefs.current.set(name, el);
-								}}
-								className={cn(
-									"absolute inset-0 opacity-0 pointer-events-none z-10",
-									isOpen && isActive && "pointer-events-auto",
-									isActive && "opacity-100"
-								)}
-								inert={!isOpen || !isActive}
-							>
-								<Section />
-							</div>
-						);
-					});
-				})()}
-			</Modal>
-		</>
+					return (
+						<div
+							key={name}
+							ref={(el) => {
+								sectionRefs.current.set(name, el);
+							}}
+							className={cn(
+								"absolute inset-0 opacity-0 pointer-events-none z-10",
+								isOpen && isActive && "pointer-events-auto",
+								isActive && "opacity-100"
+							)}
+							inert={!isOpen || !isActive}
+						>
+							<Section />
+						</div>
+					);
+				});
+			})()}
+		</Modal>
 	);
 };

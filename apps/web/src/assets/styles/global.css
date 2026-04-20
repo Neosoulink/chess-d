@@ -41,6 +41,14 @@
 		@apply text-lg;
 	}
 
+	li {
+		@apply list-disc;
+	}
+
+	a {
+		@apply text-primary hover:underline;
+	}
+
 	button,
 	select,
 	textarea,

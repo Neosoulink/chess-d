@@ -17,6 +17,7 @@ import { HandSignIcon } from "./hand-sign";
 import { HintIcon } from "./hint";
 import { HomeIcon } from "./home";
 import { HourglassIcon } from "./hourglass";
+import { InfoIcon } from "./info";
 import { LinkIcon } from "./link";
 import { MenuIcon } from "./menu";
 import { PictureIcon } from "./picture";
@@ -30,6 +31,7 @@ import { SaveIcon } from "./save";
 import { SettingIcon } from "./setting";
 import { ShareIcon } from "./share";
 import { SunIcon } from "./sun";
+import { SupportIcon } from "./support";
 import { TrashIcon } from "./trash";
 import { VolumeOffIcon } from "./volume-off";
 import { VolumeOnIcon } from "./volume-on";
@@ -54,6 +56,7 @@ export const Icon = {
 	Hint: HintIcon,
 	Home: HomeIcon,
 	Hourglass: HourglassIcon,
+	Info: InfoIcon,
 	Link: LinkIcon,
 	Menu: MenuIcon,
 	Picture: PictureIcon,
@@ -65,8 +68,9 @@ export const Icon = {
 	Rocket: RocketIcon,
 	Save: SaveIcon,
 	Setting: SettingIcon,
-	Sun: SunIcon,
 	Share: ShareIcon,
+	Sun: SunIcon,
+	Support: SupportIcon,
 	Trash: TrashIcon,
 	VolumeOff: VolumeOffIcon,
 	VolumeOn: VolumeOnIcon

@@ -14,6 +14,7 @@ export interface AudioStore {
 	volumeMultiplier: number;
 	isMuted: boolean;
 	init: (resources: Record<string, any>) => void;
+	playTrack: (trackId: string) => void;
 	setVolumes: (volumeMultiplier?: number, mute?: boolean) => void;
 	getInteractiveElements: () => Element[];
 	createInteractiveListeners: () => void;
@@ -38,20 +39,21 @@ export const useAudioStore = create<AudioStore>((set, get) => {
 		];
 	};
 
-	const playSfxUiSelect = () => {
-		const sfxSelect = get().tracks["sfx-ui-select"];
+	const playTrack = (trackId: string) => {
+		const track = get().tracks[trackId];
+		if (!track?.audio || get().isMuted) return;
 
-		sfxSelect?.audio?.stop();
-		sfxSelect?.audio?.play();
+		track?.audio?.stop();
+		track?.audio?.play();
+	};
+
+	const playSfxUiSelect = () => {
+		playTrack("sfx-ui-select");
 	};
 
 	const playSfxUiClick = () => {
-		const sfxClick = get().tracks["sfx-ui-click"];
-		const sfxSelect = get().tracks["sfx-ui-select"];
-
-		sfxSelect?.audio?.stop();
-		sfxClick?.audio?.stop();
-		sfxClick?.audio?.play();
+		get().tracks["sfx-ui-select"]?.audio?.stop();
+		playTrack("sfx-ui-click");
 	};
 
 	const playSfxUiKey = (e: KeyboardEvent) => {
@@ -125,6 +127,7 @@ export const useAudioStore = create<AudioStore>((set, get) => {
 				track.audio?.setVolume((track.baseVolume ?? 1) * volume);
 			});
 		},
+		playTrack,
 		getInteractiveElements,
 		createInteractiveListeners,
 		removeInteractiveListeners,

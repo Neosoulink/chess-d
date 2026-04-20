@@ -1,11 +1,4 @@
-import {
-	ChangeEvent,
-	ComponentProps,
-	FC,
-	useEffect,
-	useMemo,
-	useState
-} from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import { SettingsState } from "@/shared/types";
 import { useMainMenuStore, useSettingsStore } from "@/router/_stores";

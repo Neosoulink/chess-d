@@ -18,15 +18,10 @@ import { ChessboardController } from "@chess-d/chessboard/dist/core/chessboard.c
 import { MoveFlags, ObservablePayload } from "@chess-d/shared";
 
 export const GlobalAudios: FC = () => {
-	const {
-		app: gameApp,
-		gameState,
-		playerSide,
-		isResourcesLoaded
-	} = useGameStore();
+	const { app: gameApp, gameState, isResourcesLoaded } = useGameStore();
 	const { state: settingsState } = useSettingsStore();
 	const { isOpen, currentSections } = useMainMenuStore();
-	const { init, tracks, refreshInteractiveListeners, setVolumes } =
+	const { init, tracks, refreshInteractiveListeners, setVolumes, playTrack } =
 		useAudioStore();
 	const { chat$ } = useChatStore();
 	const { key } = useLocation();
@@ -45,30 +40,18 @@ export const GlobalAudios: FC = () => {
 
 		const handleMessages = (e: MessageEvent<MessageData<any>>) => {
 			const { token, value } = e.data || {};
-			if (token === ENGINE_PIECE_SELECTED_TOKEN) {
-				const grabTrack = tracks["sfx-piece-grab"];
-
-				grabTrack?.audio?.stop();
-				grabTrack?.audio?.play();
-				return;
-			}
+			if (token === ENGINE_PIECE_SELECTED_TOKEN)
+				return playTrack("sfx-piece-grab");
 
 			if (token === PIECE_BOARD_COLLISION_TOKEN && value?.started) {
 				const safeValue: ObservablePayload<
 					ChessboardController["pieceCollidedBoard$$"]
 				> = value;
-				const pieceDropTrack = tracks["sfx-piece-collision"];
-				const pieceDropLowTrack = tracks["sfx-piece-collision-low"];
 
-				if (safeValue.pieceImpactSpeed > 1) {
-					pieceDropTrack?.audio?.stop();
-					pieceDropTrack?.audio?.play();
-					return;
-				}
+				if (safeValue.pieceImpactSpeed > 1)
+					return playTrack("sfx-piece-collision");
 
-				pieceDropLowTrack?.audio?.stop();
-				pieceDropLowTrack?.audio?.play();
-				return;
+				return playTrack("sfx-piece-collision-low");
 			}
 
 			if (token !== GAME_UPDATED_TOKEN || !value) return;
@@ -76,95 +59,56 @@ export const GlobalAudios: FC = () => {
 			const safeValue: Exclude<EngineUpdatedMessageData["value"], undefined> =
 				value;
 			const isPlayerMove = safeValue.playerSide === safeValue.turn;
-			const captureTrack = tracks["sfx-piece-capture"];
-			const capturedTrack = tracks["sfx-piece-captured"];
-			const castleTrack = tracks["sfx-piece-castle"];
-			const enPassantTrack = tracks["sfx-piece-en-passant"];
-			const gameWinTrack = tracks["sfx-game-win"];
-			const gameDrawTrack = tracks["sfx-game-draw"];
-			const gameFailTrack = tracks["sfx-game-fail"];
 
 			if (safeValue.isGameOver) {
-				if (safeValue.isCheckmate && !isPlayerMove) {
-					gameWinTrack?.audio?.stop();
-					gameWinTrack?.audio?.play();
-				} else if (
+				if (safeValue.isCheckmate && !isPlayerMove) playTrack("sfx-game-win");
+				else if (
 					safeValue.isDraw ||
 					safeValue.isDrawByFiftyMoves ||
 					safeValue.isInsufficientMaterial ||
 					safeValue.isStalemate ||
 					safeValue.isThreefoldRepetition
-				) {
-					gameDrawTrack?.audio?.stop();
-					gameDrawTrack?.audio?.play();
-				} else {
-					gameFailTrack?.audio?.stop();
-					gameFailTrack?.audio?.play();
-				}
+				)
+					playTrack("sfx-game-draw");
+				else playTrack("sfx-game-fail");
 
 				return;
 			}
 
 			if (safeValue.move?.captured) {
-				if (!isPlayerMove) {
-					captureTrack?.audio?.stop();
-					captureTrack?.audio?.play();
-				} else {
-					capturedTrack?.audio?.stop();
-					capturedTrack?.audio?.play();
-				}
+				if (!isPlayerMove) playTrack("sfx-piece-capture");
+				else playTrack("sfx-piece-captured");
 			}
 
 			if (safeValue.inCheck || safeValue.isCheck) {
-				const inCheckTrack = tracks["sfx-in-check"];
-				const isCheckTrack = tracks["sfx-is-check"];
-
-				if (isPlayerMove) {
-					inCheckTrack?.audio?.stop();
-					inCheckTrack?.audio?.play();
-				} else {
-					isCheckTrack?.audio?.stop();
-					isCheckTrack?.audio?.play();
-				}
+				if (isPlayerMove) playTrack("sfx-in-check");
+				else playTrack("sfx-is-check");
 			}
 
-			if (
-				safeValue.move?.promotion &&
-				safeValue.turn === safeValue.playerSide
-			) {
-				const promotedTrack = tracks["sfx-piece-promoted"];
-				promotedTrack?.audio?.stop();
-				promotedTrack?.audio?.play();
-			}
+			if (safeValue.move?.promotion && safeValue.turn === safeValue.playerSide)
+				playTrack("sfx-piece-promoted");
 
 			if (
 				safeValue.move?.flags === MoveFlags.kingside_castle ||
 				safeValue.move?.flags === MoveFlags.queenside_castle
-			) {
-				castleTrack?.audio?.stop();
-				castleTrack?.audio?.play();
-			}
-
-			if (safeValue.move?.flags === MoveFlags.en_passant) {
-				enPassantTrack?.audio?.stop();
-				enPassantTrack?.audio?.play();
-			}
+			)
+				playTrack("sfx-piece-castle");
+			else if (safeValue.move?.flags === MoveFlags.en_passant)
+				playTrack("sfx-piece-en-passant");
 		};
 
 		worker?.addEventListener("message", handleMessages);
 
 		return () => worker?.removeEventListener("message", handleMessages);
-	}, [gameApp, isResourcesLoaded, tracks]);
+	}, [gameApp, isResourcesLoaded, playTrack]);
 
 	useEffect(() => {
 		const subscription = chat$.subscribe((chat) => {
-			const messageTrack = tracks["sfx-chat-message"];
-			messageTrack?.audio?.stop();
-			messageTrack?.audio?.play();
+			playTrack("sfx-chat-message");
 		});
 
 		return () => subscription.unsubscribe();
-	}, [chat$, tracks]);
+	}, [chat$, playTrack]);
 
 	useEffect(() => {
 		setTimeout(() => {
