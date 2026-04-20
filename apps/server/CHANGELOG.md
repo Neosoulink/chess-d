@@ -12,6 +12,10 @@
   - Initialize `webSocket` support.
     - Use `WS` library
   - @chess-d/api@0.1.0
+  - feat(api): init base resources
+    - Add base directives
+    - Add base plugins
+    - Add base scalars
 
 ## 0.1.0
 
