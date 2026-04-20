@@ -45,33 +45,33 @@ export default defineConfig(({ command }) => {
 	const siteOrigin = resolveSiteOrigin(command);
 
 	return {
-	css: {
-		postcss: {
-			plugins: [autoprefixer]
-		}
-	},
-	plugins: [react(), tailwindcss(), siteOriginHtmlPlugin(siteOrigin)],
-	base: "./",
-	worker: {
-		format: "es"
-	},
-	build: {
-		rollupOptions: {
-			input: {
-				"game-worker": "src/core/game/game.worker.ts",
-				"ai-worker": "src/core/ai/ai.worker.ts",
-				index: "index.html"
-			},
-			output: {
-				entryFileNames: "[name].js"
+		css: {
+			postcss: {
+				plugins: [autoprefixer]
 			}
-		}
-	},
-	resolve: {
-		alias: {
-			"@": resolve(__dirname, "src/")
-		}
-	},
-	envPrefix: "PUBLIC_"
-};
+		},
+		plugins: [react(), tailwindcss(), siteOriginHtmlPlugin(siteOrigin)],
+		base: "./",
+		worker: {
+			format: "es"
+		},
+		build: {
+			rollupOptions: {
+				input: {
+					"game-worker": "src/core/game/game.worker.ts",
+					"ai-worker": "src/core/ai/ai.worker.ts",
+					index: "index.html"
+				},
+				output: {
+					entryFileNames: "[name].js"
+				}
+			}
+		},
+		resolve: {
+			alias: {
+				"@": resolve(__dirname, "src/")
+			}
+		},
+		envPrefix: "PUBLIC_"
+	};
 });
