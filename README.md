@@ -1,4 +1,4 @@
-![chess-dimension-thumbnail](./apps/web/public/thumbnail-alt.png)
+![chess-dimension-thumbnail](./apps/web/public/thumbnail.png)
 
 # @chess-dimension
 
