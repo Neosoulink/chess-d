@@ -18,7 +18,7 @@ export const PlayRoute: FC = () => {
 
 	return (
 		<>
-			<PlayChat />
+			{gameMode !== GameMode.simulation && <PlayChat />}
 			<PlayOverview />
 			<PlaySummary />
 

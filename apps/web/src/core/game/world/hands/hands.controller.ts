@@ -42,11 +42,9 @@ export class HandsController {
 		ObservablePayload<SettingsController["update$"]>
 	>;
 	public readonly step$: WorldController["step$"];
-	public readonly pieceSelected$?: Observable<
-		ObservablePayload<
-			ReturnType<ChessboardModule["pieces"]["getPieceSelected$"]>
-		>
-	>;
+	public readonly pieceSelected$?: Observable<{
+		side: ColorSide;
+	}>;
 	public readonly pieceMoving$?: Observable<
 		ObservablePayload<ReturnType<ChessboardModule["pieces"]["getPieceMoving$"]>>
 	>;
@@ -92,9 +90,15 @@ export class HandsController {
 			filter(() => !!this._settingsService.state.hands?.params?.visible?.value),
 			share()
 		);
-		this.pieceSelected$ = this._chessboard.pieces
-			.getPieceSelected$()
-			?.pipe(share());
+		this.pieceSelected$ = merge(
+			this._chessboard.pieces
+				.getPieceSelected$()
+				?.pipe(map((payload) => ({ side: payload.piece.color }))) ||
+				new Observable<{ side: ColorSide }>(),
+			this._piecesController.playerMovedPiece$.pipe(
+				map((move) => ({ side: move.color as ColorSide }))
+			)
+		)?.pipe(share());
 		this.pieceMoving$ = this._chessboard.pieces
 			.getPieceMoving$()
 			?.pipe(share());

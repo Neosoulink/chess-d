@@ -70,6 +70,7 @@ Exclusively resourced from [SvgRepo Orchid-Line](https://www.svgrepo.com/collect
 - [Threejs-journey](https://threejs-journey.com/) by [Bruno SImon](https://bruno-simon.com/) to learn everything about web 3D.
 - [NestJS courses](https://courses.nestjs.com/) to master scalable backend integrations.
 - [Build a Simple Chess AI in JavaScript](https://dev.to/zeyu2001/build-a-simple-chess-ai-in-javascript-18eg) by [Zeyu2001](https://github.com/zeyu2001/chess-ai)
+- [[Blender Tutorial]](https://www.youtube.com/watch?v=ZwsDZNP5m2k&t=3s) Modeling a hand and applying rigging (thanks [Kiril](https://github.com/Kirilbt))
 - [Chess-api Stockfish](https://chess-api.com/): A free REST for streaming position analysis. by [ChrisC](https://x.com/stealz_pl)
 
 ## Thanks You

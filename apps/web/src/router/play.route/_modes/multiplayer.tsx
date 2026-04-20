@@ -11,7 +11,6 @@ import {
 	SocketActionMessagePayload,
 	SocketAuthInterface
 } from "@chess-d/shared";
-import { Move } from "chess.js";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "react-router";
 import { merge } from "rxjs";
@@ -22,8 +21,7 @@ import { PlayerModel } from "@/shared/models";
 import {
 	GAME_UPDATED_TOKEN,
 	HAND_STARTED_EMOTE_TOKEN,
-	HAND_WILL_EMOTE_TOKEN,
-	PIECE_WILL_MOVE_TOKEN
+	HAND_WILL_EMOTE_TOKEN
 } from "@/shared/tokens";
 import { HANDS_SUPPORT_EMOTES } from "@/shared/constants";
 import { useChatStore } from "@/router/_stores/chat.store";
@@ -41,8 +39,13 @@ interface SocketPayload {
 export interface PlayModeMultiplayerProps {}
 
 export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
-	const { app, initialGameState, setInitialGameState, resetGame } =
-		useGameStore();
+	const {
+		app,
+		initialGameState,
+		setInitialGameState,
+		resetGame,
+		performPieceMove
+	} = useGameStore();
 	const { chat$, notify: chatNotify } = useChatStore();
 	const { setIsLoading } = useLoaderStore();
 	const location = useLocation();
@@ -184,16 +187,6 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 		[setSearchParams, socket]
 	);
 
-	const moveBoardPiece = useCallback(
-		(move: Move) => {
-			app?.module?.getWorkerThread()?.worker?.postMessage?.({
-				token: PIECE_WILL_MOVE_TOKEN,
-				value: move
-			} satisfies MessageData<Move>);
-		},
-		[app?.module]
-	);
-
 	const onMovePerformed = useCallback(
 		(data: GameUpdatedPayload) => {
 			opponentPlayer?.next({
@@ -305,7 +298,8 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 			)
 				socket.emit(SOCKET_MOVE_PERFORMED_TOKEN, value);
 
-			if (payload.token === "PLACED_PIECE" && move) return moveBoardPiece(move);
+			if (payload.token === "PLACED_PIECE" && move)
+				return performPieceMove(move);
 		});
 
 		const handleMessages = (
@@ -331,7 +325,14 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 			subscription.unsubscribe();
 			appWorker?.removeEventListener("message", handleMessages);
 		};
-	}, [app, currentPlayer, opponentPlayer, moveBoardPiece, socket, app?.module]);
+	}, [
+		app,
+		currentPlayer,
+		opponentPlayer,
+		performPieceMove,
+		socket,
+		app?.module
+	]);
 
 	useEffect(() => {
 		const sub = chat$.subscribe((chat) => {

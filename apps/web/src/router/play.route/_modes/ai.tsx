@@ -21,8 +21,7 @@ import {
 import {
 	AI_PERFORMED_MOVE_TOKEN,
 	AI_WILL_PERFORM_MOVE_TOKEN,
-	GAME_UPDATED_TOKEN,
-	PIECE_WILL_MOVE_TOKEN
+	GAME_UPDATED_TOKEN
 } from "@/shared/tokens";
 import { getGameModeFromUrl } from "@/shared/utils";
 import {
@@ -49,7 +48,8 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 		initialGameState,
 		resetGame,
 		setInitialGameState,
-		setIsGameAIPaused
+		setIsGameAIPaused,
+		performPieceMove
 	} = useGameStore();
 	const { isOpen: isMainMenuOpen } = useMainMenuStore();
 	const { setIsLoading } = useLoaderStore();
@@ -117,16 +117,6 @@ export const PlayModeAI: FC<PlayModeAIProps> = () => {
 		stateRef.current.isReady = false;
 		pendingAiMoveRef.current = null;
 	}, [aiWorker]);
-
-	const performPieceMove = useCallback(
-		(move: Move) => {
-			appModule?.getWorkerThread()?.worker?.postMessage?.({
-				token: PIECE_WILL_MOVE_TOKEN,
-				value: move
-			} satisfies MessageData<Move>);
-		},
-		[appModule]
-	);
 
 	const wrapRegisterOptions = useCallback(
 		(options?: Partial<AiRegisterOptions>): AiRegisterOptions => {

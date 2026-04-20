@@ -6,7 +6,6 @@ import {
 	AnimationAction,
 	AnimationClip,
 	AnimationMixer,
-	DoubleSide,
 	FrontSide,
 	Group,
 	Material,
@@ -17,14 +16,11 @@ import {
 import type { GLTF } from "three/examples/jsm/Addons.js";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
-import { PiecesController } from "../chessboard/pieces/pieces.controller";
+import { SETTINGS_SUPPORTED_HANDS_THEMES } from "@/shared/constants";
 import { SettingsService } from "../../settings/settings.service";
+import { PiecesController } from "../chessboard/pieces/pieces.controller";
 import { WorldService } from "../world.service";
 import { HandsController } from "./hands.controller";
-import {
-	SETTINGS_SUPPORTED_GRAPHICS_QUALITY,
-	SETTINGS_SUPPORTED_HANDS_THEMES
-} from "@/shared/constants";
 
 @scoped(Lifecycle.ContainerScoped)
 export class HandsService {
@@ -150,82 +146,93 @@ export class HandsService {
 		this._setupHands();
 	}
 
-	public handlePieceSelected(
-		payload: ObservablePayload<
-			ReturnType<ChessboardModule["pieces"]["getPieceMoving$"]>
-		>
-	) {
-		const mesh = this.hands[payload.colorSide].scene.children[0]?.children[0];
+	public handlePieceSelected(payload: { side: ColorSide }) {
+		const { side } = payload;
+		const mesh = this.hands[side].scene.children[0]?.children[0];
 		const params = {
-			wrist: 0.1,
-			thumb: 0.5,
-			index: 0.25,
-			middle: 0.4,
-			ring: 1.25,
-			pinky: 1.25,
-			thumbz: -0.15,
-			indexz: -0.3,
-			middlez: -0.08,
-			ringz: -0.22,
-			pinkyz: -0.52
+			indexX: 0.6,
+			indexY: 0.1,
+			indexZ: 0.07,
+
+			middleX: 0.7,
+			middleY: 0.1,
+			middleZ: -0.08,
+
+			pinkyX: 1.25,
+			pinkyY: 0.1,
+			pinkyZ: -0.52,
+
+			ringY: 0.1,
+			ringX: 1.25,
+			ringZ: -0.22,
+
+			thumbX: 0.2,
+			thumbY: -0.2,
+			thumbZ: -0.45,
+
+			wristX: 0.1,
+			wristY: 0.1,
+			wristZ: 0.1
 		};
-		const hand = this.hands[payload.colorSide];
+		const hand = this.hands[side];
 
 		if (!(mesh instanceof SkinnedMesh)) return;
 
 		hand.animation.mixer?.stopAllAction();
 
-		const wrist = mesh.skeleton.bones[0]!;
+		// const wrist = mesh.skeleton.bones[0]!;
 		const wrist1 = mesh.skeleton.bones[1]!;
 		const wrist2 = mesh.skeleton.bones[2]!;
 		const wrist3 = mesh.skeleton.bones[6]!;
 		const wrist4 = mesh.skeleton.bones[10]!;
 		const wrist5 = mesh.skeleton.bones[14]!;
 		const wrist6 = mesh.skeleton.bones[18]!;
-		wrist1.rotation.x = params.wrist;
-		wrist2.rotation.x = params.wrist;
-		wrist3.rotation.x = params.wrist;
-		wrist4.rotation.x = params.wrist;
-		wrist5.rotation.x = params.wrist;
-		wrist6.rotation.x = params.wrist;
+		wrist1.rotation.x = params.wristX;
+		wrist2.rotation.x = params.wristX;
+		wrist3.rotation.x = params.wristX;
+		wrist4.rotation.x = params.wristX;
+		wrist5.rotation.x = params.wristX;
+		wrist6.rotation.x = params.wristX;
 
 		const thumb1 = mesh.skeleton.bones[3]!;
 		const thumb2 = mesh.skeleton.bones[4]!;
 		const thumb3 = mesh.skeleton.bones[5]!;
-		thumb1.rotation.x = params.thumb;
-		thumb2.rotation.x = params.thumb;
-		thumb3.rotation.x = params.thumb;
-		thumb1.rotation.z = params.thumbz;
-		thumb2.rotation.z = params.thumbz;
-		thumb3.rotation.z = params.thumbz;
+		thumb1.rotation.x = params.thumbX;
+		thumb2.rotation.x = params.thumbX;
+		thumb3.rotation.x = params.thumbX;
+		thumb1.rotation.z = params.thumbZ;
+		thumb1.rotation.y = params.thumbY;
+		thumb2.rotation.z = params.thumbZ;
+		thumb3.rotation.z = params.thumbZ;
 
 		const index1 = mesh.skeleton.bones[7]!;
 		const index2 = mesh.skeleton.bones[8]!;
 		const index3 = mesh.skeleton.bones[9]!;
-		index1.rotation.x = params.index;
-		index2.rotation.x = params.index;
-		index3.rotation.x = params.index;
+		index1.rotation.x = params.indexX;
+		index2.rotation.x = params.indexX;
+		index3.rotation.x = params.indexX;
+		index2.rotation.z = params.indexZ;
 
 		const middle1 = mesh.skeleton.bones[11]!;
 		const middle2 = mesh.skeleton.bones[12]!;
 		const middle3 = mesh.skeleton.bones[13]!;
-		middle1.rotation.x = params.middle;
-		middle2.rotation.x = params.middle;
-		middle3.rotation.x = params.middle;
+		middle1.rotation.x = params.middleX;
+		middle2.rotation.x = params.middleX;
+		middle3.rotation.x = params.middleX;
 
 		const ring1 = mesh.skeleton.bones[15]!;
 		const ring2 = mesh.skeleton.bones[16]!;
 		const ring3 = mesh.skeleton.bones[17]!;
-		ring1.rotation.x = params.ring;
-		ring2.rotation.x = params.ring;
-		ring3.rotation.x = params.ring;
+		ring1.rotation.x = params.ringX;
+		ring2.rotation.x = params.ringX;
+		ring3.rotation.x = params.ringX;
 
 		const pinky1 = mesh.skeleton.bones[19]!;
 		const pinky2 = mesh.skeleton.bones[20]!;
 		const pinky3 = mesh.skeleton.bones[21]!;
-		pinky1.rotation.x = params.pinky;
-		pinky2.rotation.x = params.pinky;
-		pinky3.rotation.x = params.pinky;
+		pinky1.rotation.x = params.pinkyX;
+		pinky2.rotation.x = params.pinkyX;
+		pinky3.rotation.x = params.pinkyX;
 	}
 
 	public setHandPosition(colorSide: ColorSide, position: Vector3Like) {
@@ -237,18 +244,23 @@ export class HandsService {
 			ReturnType<ChessboardModule["pieces"]["getPieceMoving$"]>
 		>
 	) {
+		const { colorSide } = payload;
 		const position = payload.cellsIntersection?.point || payload.lastPosition;
-		const pieceHeight = payload.pieceGeometry.boundingBox
+		const whiteSide = colorSide === ColorSide.white;
+		const x = position?.x || 0;
+		const y = payload.pieceGeometry.boundingBox
 			? payload.pieceGeometry.boundingBox.max.y -
 				payload.pieceGeometry.boundingBox.min.y
 			: 2;
+		const z = position?.z || 0;
+		const xOffset = 0.2;
+		const yOffset = 0.8;
+		const zOffset = 1.7;
 
-		this.setHandPosition(payload.colorSide, {
-			x: position?.x || 0,
-			y: pieceHeight + 0.8,
-			z:
-				(position?.z || 0) +
-				(payload.colorSide === ColorSide.white ? -1.7 : 1.7)
+		this.setHandPosition(colorSide, {
+			x: x + (whiteSide ? -xOffset : xOffset),
+			y: y + yOffset,
+			z: z + (whiteSide ? -zOffset : zOffset)
 		});
 	}
 
