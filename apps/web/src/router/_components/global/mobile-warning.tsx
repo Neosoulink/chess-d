@@ -69,10 +69,11 @@ export const GlobalMobileWarning: FC = () => {
 							id="mobile-support-modal-desc"
 							className="text-sm text-light/85 leading-relaxed text-pretty"
 						>
-							This experience is mostly tuned for desktop and larger displays.
-							On phones and narrow viewports you may find layouts cramped,
-							controls awkward...
+							This experience was mostly tuned for desktop and larger displays.
+							On phones and narrow viewports you may find cropped layouts,
+							awkward controls...
 						</p>
+
 						<p className="text-sm text-light/85 leading-relaxed text-pretty">
 							Let me know if having a better mobile or small-screen experience
 							matters to you by{" "}
