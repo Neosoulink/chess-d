@@ -1,5 +1,21 @@
 # @chess-d/configs
 
+## 0.1.3
+
+### Patch Changes
+
+- 766af20: # 03-30-2036
+
+  ## refactor(web): frontend improvement
+  - Colorful visual
+  - Better controls accessibility
+  - Code optimization and cleanness
+  - Upgrade `quick-three` versions upgrade
+
+- a4ed7fd: # 03-31-2026
+
+  ## chore(deps): upgrade chess.js version
+
 ## 0.1.2
 
 ### Patch Changes
