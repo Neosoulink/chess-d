@@ -17,7 +17,7 @@ export type InputProps = (Omit<InputHTMLAttributes<HTMLInputElement>, "type"> &
 };
 
 export const Input = forwardRef<InputRef, InputProps>(
-	({ multiple, className, disabled, invalid, type, ...props }, ref) => {
+	({ className, disabled, invalid, type, ...props }, ref) => {
 		const Comp = useMemo(
 			() =>
 				type === "select"

@@ -61,7 +61,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => {
 
 	return {
 		...settingsStoreInitialState,
-		applyState: (state = {}, force = false) => {
+		applyState: (state = {}) => {
 			const newState = getSafeLocalState();
 
 			Object.entries(state).forEach(([sectionKey, sectionData]) => {

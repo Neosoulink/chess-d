@@ -22,7 +22,7 @@ export const chatStoreInitialState: Omit<Properties<ChatStore>, "chat$"> = {
 	chats: []
 };
 
-export const useChatStore = create<ChatStore>((set, get) => {
+export const useChatStore = create<ChatStore>((set) => {
 	const chat$$ = new Subject<ChatStoreItem>();
 	const chat$ = chat$$.asObservable();
 

@@ -27,7 +27,6 @@ const CustomButton = ({
 export const GlobalTopRightSection = () => {
 	const {
 		isOpen: isMainMenuOpen,
-		currentSections: currentMainMenuSections,
 		setSections: setMainMenuSections,
 		toggleOpen: toggleMainMenuOpen,
 		setOpen: setMainMenuOpen

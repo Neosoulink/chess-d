@@ -160,7 +160,7 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 		]
 	);
 
-	const onLeftRoom = useCallback((playerId: string) => {
+	const onLeftRoom = useCallback(() => {
 		setOpponentPlayer(undefined);
 	}, []);
 

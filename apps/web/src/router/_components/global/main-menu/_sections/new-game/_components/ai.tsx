@@ -54,7 +54,7 @@ export const MainMenuNewGameAI: FC<MainMenuNewGameAIProps> = ({
 	useEffect(() => {
 		onChange({ ...values, aiOpponent: "basicBot" });
 		return () => onChange();
-	}, []);
+	}, [onChange]);
 
 	useEffect(() => {
 		onChange({
@@ -64,7 +64,7 @@ export const MainMenuNewGameAI: FC<MainMenuNewGameAIProps> = ({
 					? AI_STOCKFISH_DEFAULT_DEPTH
 					: AI_DEFAULT_DEPTH
 		});
-	}, [values.ai]);
+	}, [values.ai, onChange]);
 
 	return (
 		<>

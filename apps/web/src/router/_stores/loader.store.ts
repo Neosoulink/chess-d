@@ -13,7 +13,7 @@ export const loaderStoreInitialState: Properties<LoaderStore> = {
 	showResourcesProgress: true
 };
 
-export const useLoaderStore = create<LoaderStore>((set, get) => ({
+export const useLoaderStore = create<LoaderStore>((set) => ({
 	...loaderStoreInitialState,
 	setIsLoading: (isLoading: boolean) => set(() => ({ isLoading })),
 	setShowResourcesProgress: (showResourcesProgress: boolean) =>

@@ -1,9 +1,5 @@
 import { AiWillPerformMovePayload } from "@/shared/types";
-import {
-	type AiRegisterOptions,
-	register,
-	SupportedAiModel
-} from "@chess-d/ai";
+import { register, SupportedAiModel } from "@chess-d/ai";
 import { Chess, Move, validateFen } from "chess.js";
 import { inject, Lifecycle, scoped } from "tsyringe";
 

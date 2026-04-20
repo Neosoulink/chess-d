@@ -1,7 +1,6 @@
 import { FC, useEffect } from "react";
 
 import { useSettingsStore } from "@/router/_stores";
-import { SETTINGS_SUPPORTED_THEMES_COLORS } from "@/shared/constants";
 
 export const GlobalTheme: FC = () => {
 	const { state: storeState = {} } = useSettingsStore();

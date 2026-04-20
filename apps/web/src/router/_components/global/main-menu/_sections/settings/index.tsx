@@ -87,7 +87,7 @@ export const MainMenuSettingsSection: FC = () => {
 		}
 
 		return isTrue;
-	}, [currentState]);
+	}, [currentState, formattedState]);
 
 	const canApplyChanges = useMemo(() => {
 		if (hasInvalidState) return false;
@@ -113,7 +113,7 @@ export const MainMenuSettingsSection: FC = () => {
 		}
 
 		return isTrue;
-	}, [currentState, storeState]);
+	}, [currentState, storeState, hasInvalidState]);
 
 	const canResetDefault = useMemo(() => {
 		return (

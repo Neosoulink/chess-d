@@ -173,7 +173,7 @@ export const MainMenuSaveLoadSection: FC = () => {
 			setSaves(saves);
 			setOpen(false);
 		},
-		[isSaveView, saveState, navigate]
+		[isSaveView, saveState, navigate, getSaves, setInitialGameState, setOpen]
 	);
 
 	const handleGameSaveItemErase = (slot: Parameters<typeof saveState>[0]) => {

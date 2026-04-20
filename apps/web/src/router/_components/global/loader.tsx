@@ -1,9 +1,9 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { Icon } from "../core/icon";
 import { cn } from "@/shared/utils";
 
-import { useAudioStore, useGameStore, useLoaderStore } from "../../_stores";
+import { useGameStore, useLoaderStore } from "@/router/_stores";
 
 /** @internal */
 const CHESS_LOADER_ICONS = [

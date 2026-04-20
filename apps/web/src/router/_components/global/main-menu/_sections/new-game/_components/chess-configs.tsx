@@ -111,7 +111,7 @@ export const NewGameChessConfig = () => {
 			mapBoard?.destroy();
 			mapElement.remove();
 		};
-	}, [setInitialGameState, showMap]);
+	}, [setInitialGameState, showMap, changeMapFen]);
 
 	useEffect(() => {
 		if (fen && validateFen(fen).ok) {

@@ -101,7 +101,7 @@ export const MainMenuNewGameSection = () => {
 
 	useEffect(() => {
 		refreshInteractiveListeners();
-	}, [gameModeConfigs]);
+	}, [gameModeConfigs, refreshInteractiveListeners]);
 
 	return (
 		<ModalSection

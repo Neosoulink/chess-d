@@ -84,7 +84,6 @@ const OptionItem = ({
 	asLink,
 	disabled,
 	action,
-	icon,
 	children,
 	...props
 }: ComponentPropsWithRef<"button"> & {

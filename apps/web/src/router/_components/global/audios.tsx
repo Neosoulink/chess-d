@@ -30,7 +30,7 @@ export const GlobalAudios: FC = () => {
 		if (!gameApp || !isResourcesLoaded) return;
 
 		init(gameApp.module.loader.getLoadedResources());
-	}, [gameApp, isResourcesLoaded]);
+	}, [gameApp, isResourcesLoaded, init]);
 
 	useEffect(() => {
 		if (!gameApp || !isResourcesLoaded) return;
@@ -103,9 +103,7 @@ export const GlobalAudios: FC = () => {
 	}, [gameApp, isResourcesLoaded, playTrack]);
 
 	useEffect(() => {
-		const subscription = chat$.subscribe((chat) => {
-			playTrack("sfx-chat-message");
-		});
+		const subscription = chat$.subscribe(() => playTrack("sfx-chat-message"));
 
 		return () => subscription.unsubscribe();
 	}, [chat$, playTrack]);
@@ -132,7 +130,8 @@ export const GlobalAudios: FC = () => {
 		key,
 		isOpen,
 		currentSections,
-		settingsState
+		settingsState,
+		setVolumes
 	]);
 
 	return null;

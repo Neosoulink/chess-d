@@ -4,7 +4,6 @@ import { Subscription } from "rxjs";
 
 import { HandsService } from "./hands.service";
 import { HandsController } from "./hands.controller";
-import { ColorSide } from "@chess-d/shared";
 
 @singleton()
 export class HandsModule implements Module {

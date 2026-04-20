@@ -11,7 +11,7 @@ export const historyModalStoreInitialState: Properties<historyModalStore> = {
 	isOpen: false
 };
 
-export const useHistoryModalStore = create<historyModalStore>((set, get) => ({
+export const useHistoryModalStore = create<historyModalStore>((set) => ({
 	...historyModalStoreInitialState,
 	setIsOpen: (isOpen: boolean) => set(() => ({ isOpen })),
 	toggleOpen: () => set((state) => ({ isOpen: !state.isOpen }))
