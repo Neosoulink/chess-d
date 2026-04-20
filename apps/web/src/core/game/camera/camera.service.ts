@@ -11,15 +11,25 @@ import { CameraController } from "./camera.controller";
 @scoped(Lifecycle.ContainerScoped)
 export class CameraService {
 	private readonly Y_POSITION_SCALE = 24;
+	private readonly CAMERA_SIDE_OFFSET = 7;
 
 	private _yPositionMultiplier = 0.5;
 	private _yPosition = 12;
+	private _cameraSideX = 0;
 
 	constructor(
 		@inject(AppModule) private readonly _app: AppModule,
 		@inject(SettingsService) private readonly _settings: SettingsService,
 		@inject(EngineService) private readonly _engineService: EngineService
 	) {}
+
+	private _resolveCameraSideX(side: string, playerSide: ColorSide): number {
+		if (side !== "left" && side !== "right") return 0;
+		const flip = playerSide === ColorSide.white ? 1 : -1;
+		return side === "left"
+			? -this.CAMERA_SIDE_OFFSET * flip
+			: this.CAMERA_SIDE_OFFSET * flip;
+	}
 
 	public reset() {
 		const camera = this._app.camera.instance() as PerspectiveCamera;
@@ -39,8 +49,15 @@ export class CameraService {
 		);
 		this._yPosition = this.Y_POSITION_SCALE * this._yPositionMultiplier;
 
+		const sideRaw =
+			this._settings.state["camera"]?.params["side-position"]?.value;
+		this._cameraSideX = this._resolveCameraSideX(
+			typeof sideRaw === "string" ? sideRaw : "default",
+			playerSide
+		);
+
 		camera.position.set(
-			0,
+			this._cameraSideX,
 			this._yPosition,
 			(playerSide === ColorSide.white ? -1 : 1) * 9
 		);
@@ -57,7 +74,7 @@ export class CameraService {
 		const camera = this._app.camera.instance();
 
 		camera?.position.copy({
-			x: -20 + progress * 20,
+			x: -20 + progress * (20 + this._cameraSideX),
 			y: progress * this._yPosition,
 			z: (playerSide === ColorSide.white ? -1 : 1) * 9 * progress
 		});
@@ -70,7 +87,7 @@ export class CameraService {
 		const camera = this._app.camera.instance();
 		camera?.lookAt(0, 0, 0);
 		camera?.position.set(
-			Math.sin(data.elapsed * 0.1) * 10,
+			Math.sin(data.elapsed * 0.1) * 10 + this._cameraSideX,
 			this._yPosition,
 			Math.cos(data.elapsed * 0.1) * 10
 		);

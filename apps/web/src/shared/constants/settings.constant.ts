@@ -17,6 +17,12 @@ export const SETTINGS_SUPPORTED_GRAPHICS_QUALITY = [
 	{ value: "high", label: "High" }
 ] as const;
 
+export const SETTINGS_SUPPORTED_CAMERA_SIDE = [
+	{ value: "default", label: "Default" },
+	{ value: "left", label: "Left" },
+	{ value: "right", label: "Right" }
+] as const;
+
 export const SETTINGS_SUPPORTED_TEXTURES = LOADER_SUPPORTED_TEXTURES.map(
 	(texture) => ({
 		value: texture.id,
@@ -213,6 +219,18 @@ export const SETTINGS_DEFAULT_STATE: SettingsState = {
 					value: 40,
 					pattern: "[0-9]{2}-[0-9]{2}-[0-9]{2}"
 				}
+			},
+			"side-position": {
+				id: "settings-camera-side-position",
+				label: "Side position",
+				inputProps: {
+					type: "select",
+					value: SETTINGS_SUPPORTED_CAMERA_SIDE[0].value
+				},
+				options: SETTINGS_SUPPORTED_CAMERA_SIDE.map((side) => ({
+					value: side.value,
+					label: side.label
+				}))
 			},
 			"y-position": {
 				id: "settings-camera-y-position",
