@@ -8,7 +8,8 @@ import {
 	GlobalAudios,
 	GlobalTopRightSection,
 	GlobalTopLeftSection,
-	GlobalLoader
+	GlobalLoader,
+	GlobalMobileWarning
 } from "./_components/global";
 import { HomeRoute } from "./home.route";
 import { PlayRoute } from "./play.route";
@@ -28,6 +29,7 @@ export const Router: FC = () => (
 					<GlobalAudios />
 					<GlobalTopLeftSection />
 					<GlobalTopRightSection />
+					<GlobalMobileWarning />
 				</>
 			}
 		>

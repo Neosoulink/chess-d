@@ -439,10 +439,10 @@ export const PlayModeMultiplayer: FC<PlayModeMultiplayerProps> = () => {
 	return (
 		<>
 			{showWaitingForOpponent && (
-				<div className="fixed inset-0 z-20 flex items-center justify-center p-4 pointer-events-none">
+				<div className="fixed inset-0 z-40 flex items-center justify-center p-4 pointer-events-none">
 					<div
 						role="status"
-						className="pointer-events-auto w-full max-w-md bg-dark/90 p-4 shadow-lg flex flex-col gap-3"
+						className="pointer-events-auto w-full max-w-md bg-dark/95 p-4 shadow-lg flex flex-col gap-3 border border-light/15"
 					>
 						<h3 className="text-center text-sm font-semibold animate-pulse">
 							Waiting for opponent

@@ -28,18 +28,22 @@ export const Modal = ({
 				!show && "opacity-0 pointer-events-none select-none",
 				className
 			)}
+			role="dialog"
+			aria-modal="true"
 			{...props}
 		>
-			{onClose && (
-				<Button className="absolute top-5 right-5 h-10 w-10" onClick={onClose}>
-					<Icon.Cross />
-				</Button>
-			)}
-
 			{withBgColor && (
 				<div className="absolute top-0 left-0 w-full h-full bg-black/75 z-0" />
 			)}
 
+			{onClose && (
+				<Button
+					className="absolute top-5 right-5 h-10 w-10 z-10"
+					onClick={onClose}
+				>
+					<Icon.Cross />
+				</Button>
+			)}
 			{children}
 		</section>
 	);

@@ -1,3 +1,5 @@
+![chess-dimension-thumbnail](./apps/web/public/thumbnail.png)
+
 # @chess-dimension
 
 Open-source Web 3D chess game.
