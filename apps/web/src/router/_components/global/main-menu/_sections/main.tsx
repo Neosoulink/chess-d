@@ -8,7 +8,7 @@ import { cn } from "@/shared/utils";
 import { Button, Icon } from "@/router/_components/core";
 import { MainMenuSection } from "../_components/section";
 
-import NeymarkChessBackgroundPath from "@/assets/images/illustrations/neymark-chess.png?url";
+import NeymarkChessBackgroundPath from "@/assets/images/illustrations/neymark-chess.jpg?url";
 
 /** @internal */
 const LogoTitle: FC = () => {

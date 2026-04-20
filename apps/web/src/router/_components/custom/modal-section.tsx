@@ -4,7 +4,7 @@ import { FC, MouseEventHandler, PropsWithChildren } from "react";
 import { Button, Divider, Icon } from "../core";
 import { TitleDivider } from "./title-divider";
 
-import NeymarkChessBackgroundPath from "@/assets/images/illustrations/neymark-chess.png?url";
+import NeymarkChessBackgroundPath from "@/assets/images/illustrations/neymark-chess.jpg?url";
 
 export interface ModalSectionProps extends PropsWithChildren {
 	header?: {

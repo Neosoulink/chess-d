@@ -13,7 +13,7 @@ import audioSfxPieceCollisionPath from "@/assets/audios/sfx-piece-collision.mp3?
 import audioSfxPieceGrabPath from "@/assets/audios/sfx-piece-grab.mp3?url";
 import audioSfxUiClickPath from "@/assets/audios/sfx-ui-click.mp3?url";
 import audioSfxUiSelectPath from "@/assets/audios/sfx-ui-select.mp3?url";
-import envMapCyanPurpleNebulaPath from "@/assets/images/environments/cyan-purple-nebula-low.png?url";
+import envMapCyanPurpleNebulaPath from "@/assets/images/environments/cyan-purple-nebula-low.jpg?url";
 import envMapDarkBlueNebulaPath from "@/assets/images/environments/dark-blue-nebula.jpg?url";
 import envMapRoadPath from "@/assets/images/environments/road.jpg?url";
 import envMapPureSkyPath from "@/assets/images/environments/pure-sky.jpg?url";

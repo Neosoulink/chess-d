@@ -108,9 +108,9 @@ export const WORLD_MAP_THEME_PRESETS_CONFIGS: {
 		values: {
 			environment: {
 				mapId: "env-map-world-cyan-purple-nebula-low",
-				intensity: 1.1,
+				intensity: 0.8,
 				backgroundMapId: "env-map-world-dark-blue-nebula",
-				backgroundMapIntensity: 3
+				backgroundMapIntensity: 1.1
 			},
 			lights: {
 				sunIntensity: 1,

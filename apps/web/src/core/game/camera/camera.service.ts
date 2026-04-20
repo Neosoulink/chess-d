@@ -11,7 +11,7 @@ import { CameraController } from "./camera.controller";
 @scoped(Lifecycle.ContainerScoped)
 export class CameraService {
 	private readonly Y_POSITION_SCALE = 24;
-	private readonly CAMERA_SIDE_OFFSET = 7;
+	private readonly CAMERA_SIDE_OFFSET = 10;
 
 	private _yPositionMultiplier = 0.5;
 	private _yPosition = 12;
@@ -25,7 +25,7 @@ export class CameraService {
 
 	private _resolveCameraSideX(side: string, playerSide: ColorSide): number {
 		if (side !== "left" && side !== "right") return 0;
-		const flip = playerSide === ColorSide.white ? 1 : -1;
+		const flip = playerSide === ColorSide.white ? -1 : 1;
 		return side === "left"
 			? -this.CAMERA_SIDE_OFFSET * flip
 			: this.CAMERA_SIDE_OFFSET * flip;
