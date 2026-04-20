@@ -2,20 +2,11 @@ import { Subscription } from "rxjs";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
 import { BoardService } from "./board.service";
-import { WorldService } from "../world/world.service";
-import { BoardController } from "./board.controller";
-
 @scoped(Lifecycle.ContainerScoped)
 export class BoardModule {
 	private _subscriptions: (Subscription | undefined)[] = [];
 
-	constructor(
-		@inject(WorldService) private readonly _worldService: WorldService,
-		@inject(BoardService)
-		public readonly _service: BoardService,
-		@inject(BoardController)
-		private readonly _boardController: BoardController
-	) {}
+	constructor(@inject(BoardService) public readonly _service: BoardService) {}
 
 	public getInstancedCell() {
 		return this._service.instancedCell;

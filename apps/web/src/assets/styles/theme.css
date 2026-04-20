@@ -1,0 +1,54 @@
+:root {
+	--font-kelly-slab: "Kelly Slab", arial;
+	--font-comic-neue: "Comic Neue", sans-serif;
+
+	--color-primary: #4deeea;
+	--color-secondary: #a553fc;
+	--color-light: #f8f9fa;
+	--color-dark: #1a1a1a;
+	--color-positive: #2dfc49;
+	--color-negative: #fc4949;
+	--color-warning: #ffcc33;
+
+	--tp-base-background-color: var(--color-dark);
+	--tp-base-shadow-color: var(--color-dark);
+	--tp-button-background-color: var(--color-primary);
+	--tp-button-background-color-active: var(--color-light);
+	--tp-button-background-color-focus: var(--color-light);
+	--tp-button-background-color-hover: var(--color-light);
+	--tp-button-foreground-color: var(--color-dark);
+	--tp-container-background-color: var(--color-dark);
+	--tp-container-background-color-active: var(--color-dark);
+	--tp-container-background-color-focus: var(--color-dark);
+	--tp-container-background-color-hover: var(--color-dark);
+	--tp-container-foreground-color: var(--color-light);
+	--tp-groove-foreground-color: var(--color-dark);
+	--tp-input-background-color: color-mix(
+		in srgb,
+		var(--color-light) 15%,
+		transparent
+	);
+	--tp-input-background-color-active: var(--color-dark);
+	--tp-input-background-color-focus: var(--color-dark);
+	--tp-input-background-color-hover: var(--color-dark);
+	--tp-input-foreground-color: var(--color-light);
+	--tp-label-foreground-color: var(--color-light);
+	--tp-monitor-background-color: var(--color-dark);
+	--tp-monitor-foreground-color: var(--color-light);
+}
+
+@theme {
+	--font-kelly-slab: var(--font-kelly-slab);
+	--font-comic-neue: var(--font-comic-neue);
+
+	--color-*: initial;
+	--color-light: var(--color-light);
+	--color-dark: var(--color-dark);
+	--color-white: #ffffff;
+	--color-black: #000000;
+	--color-positive: var(--color-positive);
+	--color-negative: var(--color-negative);
+	--color-warning: var(--color-warning);
+	--color-primary: var(--color-primary);
+	--color-secondary: var(--color-secondary);
+}

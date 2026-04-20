@@ -99,10 +99,7 @@ export class WorldController {
 								progress: 1,
 								onUpdate: () => subscriber.next(params.progress)
 							})
-							.then(() => {
-								subscriber.next(params.progress);
-								subscriber.complete();
-							});
+							.then(() => subscriber.complete());
 					})
 			)
 		);

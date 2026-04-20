@@ -1,3 +1,5 @@
+import { Collider } from "@dimforge/rapier3d-compat";
+import { Subscription } from "rxjs";
 import { inject, singleton } from "tsyringe";
 import { Physics } from "@chess-d/rapier";
 
@@ -8,7 +10,6 @@ import { WorldModule } from "./world/world.module";
 import { BoardModule } from "./board/board.module";
 import { PiecesModule } from "./pieces/pieces.module";
 import { DebugModule } from "./debug/debug.module";
-import { Subscription } from "rxjs";
 import { ObservablePayload } from "@chess-d/shared";
 
 @singleton()
@@ -39,13 +40,21 @@ export class ChessboardModule {
 		this._subscriptions.push(
 			this._controller.update$$.subscribe(({ cursor, timestep }) => {
 				this._service.update(cursor);
-				this.physics.step(timestep);
+				this.physics.step(timestep, this._service.physicsEventQueue);
 			})
 		);
 	}
 
 	public getIntersections() {
 		return this._service.getIntersections();
+	}
+
+	public getEventQueue() {
+		return this._service.physicsEventQueue;
+	}
+
+	public getPieceCollidedBoard$() {
+		return this._controller.pieceCollidedBoard$;
 	}
 
 	public update(payload: ObservablePayload<ChessboardController["update$$"]>) {
@@ -59,6 +68,8 @@ export class ChessboardModule {
 		this.pieces.dispose();
 		this.debug.dispose();
 
+		this._service.physicsEventQueue.clear();
+		this._service.physicsEventQueue.free();
 		this._subscriptions.forEach((sub) => sub.unsubscribe());
 	}
 }

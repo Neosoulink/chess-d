@@ -1,4 +1,3 @@
-import { ObservablePayload } from "@chess-d/shared";
 import {
 	filter,
 	fromEvent,

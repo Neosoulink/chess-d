@@ -7,6 +7,7 @@ export interface PlayerMessagePayload
 	extends MessageData<
 		Partial<EngineUpdatedMessageData["value"]> & {
 			entity?: PlayerEntity;
+			depth?: number;
 		},
 		"PICKED_PIECE" | "PLACED_PIECE" | "NOTIFIED"
 	> {}

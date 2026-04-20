@@ -1,0 +1,30 @@
+@utility no-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		@apply hidden;
+	}
+}
+
+@utility scrollbar-x-gradient {
+	&::-webkit-scrollbar-thumb {
+		@apply rounded-none cursor-grab bg-linear-to-r from-primary from-30% to-secondary;
+	}
+}
+
+@utility scrollbar-x-thin {
+	&::-webkit-scrollbar {
+		@apply w-0.5;
+	}
+}
+
+@utility scrollbar-y-thin {
+	&::-webkit-scrollbar {
+		@apply h-0.5;
+	}
+}
+
+@utility text-shadow {
+	text-shadow: 0 0 0.15rem var(--color-dark);
+}

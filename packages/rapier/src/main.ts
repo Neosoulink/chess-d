@@ -1,5 +1,10 @@
 import type Rapier from "@dimforge/rapier3d-compat";
-import { RigidBody, RigidBodyType } from "@dimforge/rapier3d-compat";
+import {
+	EventQueue,
+	PhysicsHooks,
+	RigidBody,
+	RigidBodyType
+} from "@dimforge/rapier3d-compat";
 
 import {
 	Box3,
@@ -349,9 +354,13 @@ export class Physics {
 	 *
 	 * @param timestep The timestep length, in seconds.
 	 */
-	public step(timestep?: number) {
+	public step(
+		timestep?: number,
+		eventQueue?: EventQueue,
+		hooks?: PhysicsHooks
+	) {
 		if (typeof timestep === "number") this.world.timestep = timestep;
-		this.world.step();
+		this.world.step(eventQueue, hooks);
 
 		for (let i = 0, l = this.physicalObjects.length; i < l; i++) {
 			const object = this.physicalObjects[i];

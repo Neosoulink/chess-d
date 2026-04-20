@@ -7,11 +7,13 @@ export class PlayerModel
 	extends Subject<PlayerMessagePayload>
 	implements PlayerEntity
 {
+	/** @todo Rename to `side` */
 	public color = ColorSide.black;
+	public depth?: number;
 
-	public id?: string | undefined;
-	public host?: boolean | undefined;
-	public connectedAt?: number | undefined;
+	public id?: string;
+	public host?: boolean;
+	public connectedAt?: number;
 
 	public setEntity(player: PlayerEntity): void {
 		this.color = player.color;

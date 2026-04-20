@@ -11,7 +11,8 @@ export class MatrixCellModel extends Matrix4 {
 
 	constructor(
 		public readonly coord: BoardCoord = { col: 0, row: 0 },
-		public color = ColorSide.white
+		public readonly index: number = 0,
+		public side = ColorSide.white
 	) {
 		super();
 	}

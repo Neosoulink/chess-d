@@ -1,7 +1,10 @@
 import {
 	ChessboardModule,
+	COLOR_BLACK,
+	COLOR_WHITE,
 	InstancedPieceModel,
-	MatrixPieceModel
+	MatrixPieceModel,
+	PIECE_DEFAULT_HEIGHT_Y_OFFSET
 } from "@chess-d/chessboard";
 import {
 	ColorSide,
@@ -11,17 +14,36 @@ import {
 	squareToCoord
 } from "@chess-d/shared";
 import { Move } from "chess.js";
-import { Color, DoubleSide, Mesh, MeshPhysicalMaterial } from "three";
+import { AppModule } from "@quick-threejs/reactive/worker";
+import {
+	Color,
+	DoubleSide,
+	FrontSide,
+	Material,
+	MeshLambertMaterial,
+	MeshPhysicalMaterial,
+	SRGBColorSpace,
+	Texture
+} from "three";
 import { inject, singleton } from "tsyringe";
 
+import {
+	SETTINGS_SUPPORTED_GRAPHICS_QUALITY,
+	SETTINGS_SUPPORTED_MATERIAL_THEMES
+} from "@/shared/constants";
+import { SettingsService } from "@/core/game/settings/settings.service";
 import { PiecesController } from "./pieces.controller";
+import { WorldController } from "../../world.controller";
 
 @singleton()
 export class PiecesService {
-	public material = new MeshPhysicalMaterial();
+	public material: MeshLambertMaterial | MeshPhysicalMaterial =
+		new MeshLambertMaterial();
 
 	constructor(
-		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule
+		@inject(AppModule) private readonly _app: AppModule,
+		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
+		@inject(SettingsService) private readonly _settings: SettingsService
 	) {}
 
 	public resetPositions() {
@@ -29,12 +51,12 @@ export class PiecesService {
 			for (const pieceType of Object.values(PieceType).filter(
 				(type) => type.length === 1
 			)) {
-				const group = this._chessboard.pieces.getGroups()[color][
-					pieceType
-				] as InstancedPieceModel;
-				for (const piece of group.pieces || []) {
+				const group = this._chessboard.pieces.getGroups()[color][pieceType] as
+					| InstancedPieceModel
+					| undefined;
+				for (const piece of group?.pieces || []) {
 					piece.physics?.rigidBody.setBodyType(1, false);
-					group.setPieceCoord(
+					group?.setPieceCoord(
 						piece.instanceId,
 						this._chessboard.board.getInstancedCell(),
 						piece.coord
@@ -49,16 +71,109 @@ export class PiecesService {
 	}
 
 	public resetMaterials(): void {
-		this.material.side = DoubleSide;
+		const resources = this._app.loader.getLoadedResources();
+		const settingsThemeId =
+			this._settings.state.pieces?.params?.style?.value?.toString();
+		const settingsTheme =
+			SETTINGS_SUPPORTED_MATERIAL_THEMES[settingsThemeId || "default"];
+		const visualGraphicsId =
+			this._settings.state["visual-theme"]?.params?.[
+				"graphics-quality"
+			]?.value?.toString();
+		const visualGraphics = SETTINGS_SUPPORTED_GRAPHICS_QUALITY.find(
+			(quality) => quality.value === visualGraphicsId
+		);
+		const mediumPlusGraphics = ["high", "medium"].includes(
+			visualGraphics?.value || ""
+		);
+
+		let texture: Texture | null = null;
+		let roughness = 0.8;
+		let metalness = 0.1;
+		let sheen = 1;
+		let ior = 1.5;
+		let reflectivity = 0;
+		let transmission = 0;
+		let whiteSideColor = `#${COLOR_WHITE.getHexString()}`;
+		let blackSideColor = `#${COLOR_BLACK.getHexString()}`;
+
+		this.material.dispose();
+		this.material.map?.dispose();
+		this.material =
+			settingsTheme?.values?.physical && mediumPlusGraphics
+				? new MeshPhysicalMaterial()
+				: new MeshLambertMaterial();
+
+		if (settingsThemeId === "use-theme") {
+			const primaryTheme =
+				this._settings.state["visual-theme"]?.params[
+					"primary-theme"
+				]?.value?.toString();
+			const secondaryTheme =
+				this._settings.state["visual-theme"]?.params[
+					"secondary-theme"
+				]?.value?.toString();
+
+			if (primaryTheme) whiteSideColor = primaryTheme;
+			if (secondaryTheme)
+				blackSideColor =
+					primaryTheme === secondaryTheme
+						? "#" +
+							COLOR_BLACK.clone()
+								.lerp(new Color(secondaryTheme), 0.25)
+								.getHexString()
+						: secondaryTheme;
+		} else if (settingsTheme) {
+			const textureImage =
+				settingsTheme.values?.textureId &&
+				resources[settingsTheme.values.textureId];
+
+			if (textureImage) {
+				texture = new Texture(textureImage);
+				texture.colorSpace = SRGBColorSpace;
+				texture.needsUpdate = true;
+			}
+
+			whiteSideColor = settingsTheme.values?.whiteSideColor ?? whiteSideColor;
+			blackSideColor = settingsTheme.values?.blackSideColor ?? blackSideColor;
+			roughness = settingsTheme.values?.roughness ?? roughness;
+			metalness = settingsTheme.values?.metalness ?? metalness;
+			sheen = settingsTheme.values?.sheen ?? sheen;
+			ior = settingsTheme.values?.ior ?? ior;
+			reflectivity = settingsTheme.values?.reflectivity ?? reflectivity;
+			transmission = settingsTheme.values?.transmission ?? transmission;
+		}
+
+		this.material.side =
+			visualGraphics?.value === "low" ? FrontSide : DoubleSide;
 		this.material.color.set(0xffffff);
 		this.material.transparent = true;
 		this.material.opacity = 1;
-		this.material.sheen = 2;
-		this.material.roughness = 0.45;
-		this.material.metalness = 0.02;
+		this.material.map = texture;
+		if (this.material instanceof MeshPhysicalMaterial) {
+			this.material.reflectivity = reflectivity;
+			this.material.roughness = roughness;
+			this.material.metalness = metalness;
+			this.material.sheen = sheen;
+			this.material.ior = ior;
+			this.material.transmission = transmission;
+		} else if (visualGraphics?.value === "low" && settingsTheme?.values) {
+			this.material.opacity = settingsTheme.values.ior ? ior / 2 : 1;
+		}
 
 		this._chessboard.world.getScene().traverseVisible((child) => {
-			if (child instanceof InstancedPieceModel) child.material = this.material;
+			if (!(child instanceof InstancedPieceModel)) return;
+
+			if (
+				child.material instanceof Material &&
+				child.material.uuid !== this.material.uuid
+			)
+				child.material.dispose();
+
+			child.material = this.material;
+			child.setPiecesColor(
+				child.piecesSide === ColorSide.white ? whiteSideColor : blackSideColor
+			);
 		});
 	}
 
@@ -103,7 +218,6 @@ export class PiecesService {
 		piece.physics?.rigidBody.setBodyType(0, true);
 		piece.physics?.collider.setMass(1);
 
-		// setTimeout(() => {
 		this._chessboard.pieces.getPieceDeselected$$().next({
 			piece,
 			cell,
@@ -116,7 +230,6 @@ export class PiecesService {
 			instancedPiece,
 			pieceGeometry
 		});
-		// }, 0);
 	}
 
 	public handlePiecePromoted(
@@ -131,5 +244,39 @@ export class PiecesService {
 
 		promotedPiece?.physics?.rigidBody.setBodyType(0, true);
 		promotedPiece?.physics?.collider.setMass(1);
+	}
+
+	public handleIntroAnimation(
+		progress: ObservablePayload<WorldController["introAnimation$"]>
+	) {
+		const piecesGroups = this._chessboard.pieces.getGroups();
+
+		Object.values(piecesGroups).forEach((group) => {
+			Object.values(group).forEach((instancedPiece) => {
+				if (instancedPiece instanceof InstancedPieceModel)
+					for (
+						let pieceInstanceId = 0;
+						pieceInstanceId < instancedPiece.count || 0;
+						pieceInstanceId++
+					) {
+						const geometry = instancedPiece.geometry;
+						const geometryHight = geometry.boundingBox?.max.y || 0;
+						const piece = instancedPiece?.getPieceByInstanceId(pieceInstanceId);
+						const yOffset = 1 + PIECE_DEFAULT_HEIGHT_Y_OFFSET;
+
+						if (piece) {
+							this._chessboard.pieces.setPiecePosition(piece, {
+								...piece.position,
+								y:
+									PieceType.pawn === piece.type
+										? geometryHight + yOffset - progress
+										: progress > 0.3
+											? geometryHight + yOffset - (progress - 0.3) * 1.43
+											: geometryHight + yOffset
+							});
+						}
+					}
+			});
+		});
 	}
 }

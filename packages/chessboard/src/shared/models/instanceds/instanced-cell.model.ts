@@ -1,4 +1,4 @@
-import { BoxGeometry, InstancedMesh } from "three";
+import { BoxGeometry, Color, InstancedMesh } from "three";
 import {
 	BOARD_CELL_SIZE,
 	BOARD_MATRIX_RANGE_SIZE,
@@ -12,6 +12,11 @@ import { MatrixCellModel } from "../matrixes/matrix-cell.model";
 
 export class InstancedCellModel extends InstancedMesh {
 	public readonly cells: MatrixCellModel[][] = [];
+
+	public readonly cellSideColors: Record<ColorSide, Color> = {
+		[ColorSide.black]: COLOR_BLACK.clone(),
+		[ColorSide.white]: COLOR_WHITE.clone()
+	};
 
 	constructor() {
 		super(
@@ -50,13 +55,46 @@ export class InstancedCellModel extends InstancedMesh {
 		return super.dispose();
 	}
 
-	setSquareColor(index: number, side: ColorSide): void {
+	/**
+	 * @experimental
+	 *
+	 * @todo: Make sure this matches the old logic at from `BoardService#initCells`
+	 */
+	public addCell(coord: BoardCoord, side: ColorSide): void {
+		const row = coord.row - 1;
+		const col = coord.col - 1;
+		const index = row * BOARD_MATRIX_RANGE_SIZE + col;
+		const newCell = new MatrixCellModel(coord, index, side);
+
+		if (!this.cells[row]) this.cells[row] = [];
+
+		this.cells[row]![col] = newCell;
+
+		this.applyCellColor(index);
+	}
+
+	public applyCellColor(index: number): void {
 		const cell = this.getCellByIndex(index);
 		if (!cell) return;
 
-		const color = side === ColorSide.black ? COLOR_BLACK : COLOR_WHITE;
-		cell.color = side;
+		this.setColorAt(index, this.cellSideColors[cell.side]);
+	}
 
-		return this.setColorAt(index, color);
+	public applyCellsColors(): void {
+		this.cells.forEach((cellRow) => {
+			cellRow.forEach((cell) => {
+				this.applyCellColor(cell.index);
+			});
+		});
+	}
+
+	public setCellSideColors(
+		side: ColorSide,
+		color: string | number | Color
+	): void {
+		this.cellSideColors[side].set(color);
+
+		this.applyCellsColors();
+		if (this.instanceColor) this.instanceColor.needsUpdate = true;
 	}
 }

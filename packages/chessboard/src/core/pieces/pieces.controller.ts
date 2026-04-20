@@ -25,8 +25,8 @@ import {
 	MatrixPieceModel,
 	InstancedPieceModel,
 	PieceNotificationPayload,
-	MOUSE_DOWN_OBSERVABLE_TOKEN,
-	MOUSE_UP_OBSERVABLE_TOKEN
+	POINTER_DOWN_OBSERVABLE_TOKEN,
+	POINTER_UP_OBSERVABLE_TOKEN
 } from "../../shared";
 import { ChessboardService } from "../chessboard.service";
 import { ResourcesService } from "../resources/resources.service";
@@ -53,10 +53,10 @@ export class PiecesController {
 	>;
 
 	constructor(
-		@inject(MOUSE_DOWN_OBSERVABLE_TOKEN)
-		private readonly _mousedown$: Observable<MouseEvent>,
-		@inject(MOUSE_UP_OBSERVABLE_TOKEN)
-		private readonly _mouseup$: Observable<MouseEvent>,
+		@inject(POINTER_DOWN_OBSERVABLE_TOKEN)
+		private readonly _pointerdown$: Observable<PointerEvent>,
+		@inject(POINTER_UP_OBSERVABLE_TOKEN)
+		private readonly _pointerup$: Observable<PointerEvent>,
 		@inject(ChessboardController)
 		private readonly _chessboardController: ChessboardController,
 		@inject(ChessboardService)
@@ -64,7 +64,7 @@ export class PiecesController {
 		@inject(ResourcesService)
 		private readonly _resourcesService: ResourcesService
 	) {
-		this.pieceSelected$ = this._mousedown$.pipe(
+		this.pieceSelected$ = this._pointerdown$.pipe(
 			map(() => {
 				const intersections = this._coreComponent.getIntersections();
 				const piecesIntersection = intersections.find(
@@ -139,7 +139,7 @@ export class PiecesController {
 							lastPosition: lastPosition ?? payload.lastPosition
 						} satisfies PieceNotificationPayload;
 					}),
-					takeUntil(this._mouseup$)
+					takeUntil(this._pointerup$)
 				)
 			),
 			share()
@@ -148,7 +148,7 @@ export class PiecesController {
 		this.pieceDeselected$ = merge(
 			this.pieceMoving$!.pipe(
 				switchMap((payload) =>
-					this._mouseup$.pipe(
+					this._pointerup$.pipe(
 						map(() => {
 							const { cellsIntersection } = payload;
 							const instancedCell = cellsIntersection?.object;

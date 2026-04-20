@@ -1,9 +1,9 @@
-import { inject, singleton } from "tsyringe";
+import { inject, Lifecycle, scoped } from "tsyringe";
 import { Chess, Color, Move, PieceSymbol } from "chess.js";
 
 import { PieceSquareTable, PieceSquareTables } from "../../shared";
 
-@singleton()
+@scoped(Lifecycle.ContainerScoped)
 export class ZeyuService {
 	/** @description Contain the pieces weights */
 	PIECES_WEIGHTS: Record<PieceSymbol, number> = {

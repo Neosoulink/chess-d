@@ -1,4 +1,4 @@
-import { BLACK, Color, WHITE } from "chess.js";
+import { BLACK, type Color, WHITE } from "chess.js";
 
 export enum MoveFlags {
 	non_capture = "n",

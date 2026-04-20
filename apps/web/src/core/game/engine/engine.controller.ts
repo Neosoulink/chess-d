@@ -18,22 +18,26 @@ import {
 import {
 	EngineNotificationPayload,
 	EnginePieceMovedNotificationPayload,
-	MessageData
-} from "../../../shared/types";
+	MessageData,
+	MoveLike
+} from "@/shared/types";
 import {
 	ENGINE_WILL_REDO_TOKEN,
+	ENGINE_WILL_GO_TO_MOVE_TOKEN,
 	ENGINE_WILL_UNDO_TOKEN
-} from "../../../shared/tokens/engine.token";
+} from "@/shared/tokens/engine.token";
 
 @scoped(Lifecycle.ContainerScoped)
 export class EngineController {
 	public readonly undo$$ = new Subject();
 	public readonly redo$$ = new Subject();
+	public readonly goToMove$$ = new Subject<{ move: MoveLike }>();
 
 	public readonly pieceSelected$?: Observable<EngineNotificationPayload>;
 	public readonly pieceMoved$?: Observable<EnginePieceMovedNotificationPayload>;
-	public readonly undo$: Observable<unknown>;
-	public readonly redo$: Observable<unknown>;
+	public readonly undo$: Observable<void>;
+	public readonly redo$: Observable<void>;
+	public readonly goToMove$: Observable<{ move: MoveLike }>;
 
 	constructor(
 		@inject(Chess) private readonly _game: Chess,
@@ -84,6 +88,17 @@ export class EngineController {
 				filter<any>(
 					(e: MessageEvent<MessageData>) =>
 						e.data.token === ENGINE_WILL_REDO_TOKEN
+				),
+				map((e: MessageEvent<MessageData>) => e.data.value)
+			)
+		);
+
+		this.goToMove$ = merge(
+			this.goToMove$$,
+			fromEvent(self, "message").pipe(
+				filter<any>(
+					(e: MessageEvent<MessageData>) =>
+						e.data.token === ENGINE_WILL_GO_TO_MOVE_TOKEN
 				),
 				map((e: MessageEvent<MessageData>) => e.data.value)
 			)

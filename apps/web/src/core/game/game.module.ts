@@ -4,13 +4,14 @@ import { AppModule } from "@quick-threejs/reactive/worker";
 import { Subscription } from "rxjs";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
+import { CameraModule } from "./camera/camera.module";
+import { DebugModule } from "./debug/debug.module";
 import { EngineModule } from "./engine/engine.module";
 import { GameController } from "./game.controller";
 import { GameService } from "./game.service";
-import { WorldModule } from "./world/world.module";
-import { DebugModule } from "./debug/debug.module";
 import { RendererModule } from "./renderer/renderer.module";
-import { CameraModule } from "./camera/camera.module";
+import { SettingsModule } from "./settings/settings.module";
+import { WorldModule } from "./world/world.module";
 
 @scoped(Lifecycle.ContainerScoped)
 export class GameModule implements Module {
@@ -21,6 +22,7 @@ export class GameModule implements Module {
 		@inject(GameService) private readonly _service: GameService,
 		@inject(AppModule) private readonly _app: AppModule,
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
+		@inject(SettingsModule) public readonly settings: SettingsModule,
 		@inject(EngineModule) public readonly engine: EngineModule,
 		@inject(CameraModule) public readonly camera: CameraModule,
 		@inject(RendererModule) public readonly renderer: RendererModule,
@@ -29,7 +31,7 @@ export class GameModule implements Module {
 	) {
 		this._subscriptions.push(
 			this._app
-				.mousemove$?.()
+				.pointermove$?.()
 				.subscribe(this._service.updateCursorPosition.bind(this._service)),
 			this._app.timer.step$().subscribe(({ delta }) => {
 				this._chessboard.update({
@@ -42,6 +44,7 @@ export class GameModule implements Module {
 	}
 
 	public init(): void {
+		this.settings.init();
 		this.engine.init();
 		this.camera.init();
 		this.renderer.init();
@@ -50,6 +53,7 @@ export class GameModule implements Module {
 	}
 
 	public dispose(): void {
+		this.settings.dispose();
 		this.camera.dispose();
 		this.renderer.dispose();
 		this.engine.dispose();

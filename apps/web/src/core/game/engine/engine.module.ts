@@ -28,6 +28,9 @@ export class EngineModule implements Module {
 			this._controller.redo$.subscribe(
 				this._service.handleRedo.bind(this._service)
 			),
+			this._controller.goToMove$.subscribe(
+				this._service.handleGoToMove.bind(this._service)
+			),
 			this._gameController.reset$.subscribe(
 				this._service.reset.bind(this._service)
 			)

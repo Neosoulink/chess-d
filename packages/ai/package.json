@@ -14,17 +14,18 @@
 		"dist"
 	],
 	"dependencies": {
-		"chess.js": "1.2.0",
+		"chess.js": "1.4.0",
 		"threads": "^1.7.0"
 	},
 	"devDependencies": {
 		"@chess-d/configs": "workspace:*",
+		"@chess-d/shared": "workspace:*",
 		"reflect-metadata": "^0.2.0",
 		"tsyringe": "^4.8.0",
-		"typescript": "^5.5.3"
+		"typescript": "^5.6.0"
 	},
 	"peerDependencies": {
-		"chess.js": "1.2.0",
+		"chess.js": "1.4.0",
 		"threads": "^1.7.0"
 	},
 	"keywords": [

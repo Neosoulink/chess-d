@@ -1,5 +1,5 @@
 import { inject, singleton } from "tsyringe";
-import { Vector3, Vector3Like } from "three";
+import { MeshBasicMaterial, Vector3, Vector3Like } from "three";
 import { copyProperties } from "@quick-threejs/utils";
 import {
 	BoardCoord,
@@ -34,6 +34,8 @@ export class PiecesService {
 		[ColorSide.black]: {}
 	};
 
+	public readonly material = new MeshBasicMaterial();
+
 	constructor(
 		@inject(INITIAL_FEN_TOKEN) private readonly _initialFen: string,
 		@inject(Physics) private readonly _physics: Physics,
@@ -58,6 +60,7 @@ export class PiecesService {
 			color,
 			coords.length,
 			geometry,
+			this.material,
 			pieces
 		);
 
@@ -74,7 +77,7 @@ export class PiecesService {
 		newGroup: InstancedPieceModel<Type, Color>
 	) {
 		// @ts-ignore <unsupported never type>
-		this.groups[newGroup.piecesColor][newGroup.piecesType] = newGroup;
+		this.groups[newGroup.piecesSide][newGroup.piecesType] = newGroup;
 	}
 
 	public clear() {
@@ -133,12 +136,12 @@ export class PiecesService {
 		});
 	}
 
-	public getPieceByCoord<Type extends PieceType, Color extends ColorSide>(
+	public getPieceByCoord<Type extends PieceType, Side extends ColorSide>(
 		pieceGroup: Type,
-		pieceColor: Color,
+		pieceSide: Side,
 		coord: BoardCoord
-	): MatrixPieceModel<Type, Color> | undefined {
-		const group = this.groups?.[pieceColor]?.[pieceGroup];
+	): MatrixPieceModel<Type, Side> | undefined {
+		const group = this.groups?.[pieceSide]?.[pieceGroup];
 		const piece = group?.pieces.find((piece) => {
 			if (
 				group &&
@@ -153,7 +156,7 @@ export class PiecesService {
 
 		if (!group || !piece) return undefined;
 
-		return piece as unknown as MatrixPieceModel<Type, Color>;
+		return piece as unknown as MatrixPieceModel<Type, Side>;
 	}
 
 	public setPiecePosition<Type extends PieceType, Color extends ColorSide>(
@@ -169,7 +172,7 @@ export class PiecesService {
 	public setPieceCoord<Type extends PieceType, Color extends ColorSide>(
 		piece: MatrixPieceModel<Type, Color>,
 		coord: BoardCoord,
-		offset?: Vector3Like
+		offset?: Partial<Vector3Like>
 	) {
 		this.groups?.[piece.color]?.[piece.type]?.setPieceCoord(
 			piece.instanceId,

@@ -9,9 +9,9 @@ export const configureTweakpane = (
 	const params: Record<string, unknown> = {};
 	const paneFolder = pane.addFolder({ title: "Debug" });
 
-	paneFolder.expanded = true;
+	paneFolder.expanded = false;
 
-	Object.keys(DEBUG_OPTIONS).forEach((folderTitle, index) => {
+	Object.keys(DEBUG_OPTIONS).forEach((folderTitle) => {
 		const folderParams = DEBUG_OPTIONS[folderTitle];
 		const folder = paneFolder.addFolder({
 			title: folderTitle,

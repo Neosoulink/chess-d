@@ -13,7 +13,6 @@ import {
 	NeutralToneMapping,
 	NoToneMapping,
 	PCFShadowMap,
-	PCFSoftShadowMap,
 	ReinhardToneMapping,
 	SRGBColorSpace,
 	VSMShadowMap
@@ -21,6 +20,9 @@ import {
 import { BindingParams } from "tweakpane";
 
 import { DebugService } from "../../core/game/debug/debug.service";
+import { ColorSide, ObservablePayload } from "@chess-d/shared";
+import { HANDS_SUPPORT_EMOTES } from "./hands.constant";
+import { HandsController } from "@/core/game/world/hands/hands.controller";
 
 export const DEBUG_OPTIONS: Record<
 	string,
@@ -140,11 +142,10 @@ export const DEBUG_OPTIONS: Record<
 				(self.rendererInstance.shadowMap.needsUpdate = !!value)
 		},
 		"Shadows Type": {
-			default: PCFSoftShadowMap,
+			default: PCFShadowMap,
 			config: {
 				options: {
 					BasicShadowMap,
-					PCFSoftShadowMap,
 					PCFShadowMap,
 					VSMShadowMap
 				}
@@ -165,98 +166,100 @@ export const DEBUG_OPTIONS: Record<
 		"Sun visible": {
 			default: true,
 			func: ({ self, value }) =>
-				(self.worldService.lights.sun.visible = !!value)
+				(self.woldMapService.lights.sun.visible = !!value)
 		},
 		"Sun Intensity": {
 			default: 1.1,
 			config: { min: 0, max: 5, step: 0.1 },
 			func: ({ self, value }) =>
-				(self.worldService.lights.sun.intensity = Number(value) || 0)
+				(self.woldMapService.lights.sun.intensity = Number(value) || 0)
 		},
 		"Sun Position": {
 			default: { x: 0, y: 5, z: 0 },
 			func: ({ self, value }) =>
-				self.worldService.lights.sun.position.copy(value as any)
+				self.woldMapService.lights.sun.position.copy(value as any)
 		},
 		"Sun LookAt": {
 			default: { x: 0, y: 0, z: 0 },
 			func: ({ self, value }) =>
-				self.worldService.lights.sun.lookAt(value as any)
+				self.woldMapService.lights.sun.lookAt(value as any)
 		},
 		"Sun Color": {
 			default: "#ffffff",
 			func: ({ self, value }) =>
-				self.worldService.lights.sun.color.set(value as string)
+				self.woldMapService.lights.sun.color.set(value as string)
 		},
 
 		// SUN REFLECTION
 		"Sun reflection Visible": {
 			default: true,
 			func: ({ self, value }) =>
-				(self.worldService.lights.sunReflection.visible = !!value)
+				(self.woldMapService.lights.sunReflection.visible = !!value)
 		},
 		"Sun reflection Intensity": {
 			default: 1,
 			config: { min: 0, max: 5, step: 0.1 },
 			func: ({ self, value }) =>
-				(self.worldService.lights.sunReflection.intensity = Number(value) || 0)
+				(self.woldMapService.lights.sunReflection.intensity =
+					Number(value) || 0)
 		},
 		"Sun reflection Position": {
 			default: { x: 0, y: 5, z: 0 },
 			func: ({ self, value }) =>
-				self.worldService.lights.sunReflection.position.copy(value as any)
+				self.woldMapService.lights.sunReflection.position.copy(value as any)
 		},
 		"Sun reflection LookAt": {
 			default: { x: 0, y: 0, z: 0 },
 			func: ({ self, value }) =>
-				self.worldService.lights.sunReflection.lookAt(value as any)
+				self.woldMapService.lights.sunReflection.lookAt(value as any)
 		},
 		"Sun reflection Color": {
 			default: "#ffffff",
 			func: ({ self, value }) =>
-				self.worldService.lights.sunReflection.color.set(value as string)
+				self.woldMapService.lights.sunReflection.color.set(value as string)
 		},
 
 		// SUN PROPAGATION
 		"Sun propagation Visible": {
 			default: true,
 			func: ({ self, value }) =>
-				(self.worldService.lights.sunPropagation.visible = !!value)
+				(self.woldMapService.lights.sunPropagation.visible = !!value)
 		},
 		"Sun propagation Intensity": {
 			default: 1,
 			config: { min: 0, max: 5, step: 0.1 },
 			func: ({ self, value }) =>
-				(self.worldService.lights.sunPropagation.intensity = Number(value) || 0)
+				(self.woldMapService.lights.sunPropagation.intensity =
+					Number(value) || 0)
 		},
 		"Sun propagation Color": {
 			default: "#ffffff",
 			func: ({ self, value }) =>
-				self.worldService.lights.sunPropagation.color.set(value as string)
+				self.woldMapService.lights.sunPropagation.color.set(value as string)
 		},
 
 		"Reset Lights": {
 			default: "$button",
-			func: ({ self }) => self.worldService.resetLights()
+			func: ({ self }) => self.woldMapService.resetLights()
 		},
 
 		// SHADOWS
 		"Shadows Cast": {
 			default: true,
 			func: ({ self, value }) =>
-				(self.worldService.lights.sun.castShadow = !!value)
+				(self.woldMapService.lights.sun.castShadow = !!value)
 		},
 		"Shadows Bias": {
 			default: 0,
 			config: { min: -0.05, max: 0.05, step: 0.001 },
 			func: ({ self, value }) =>
-				(self.worldService.lights.sun.shadow.bias = Number(value) || 0)
+				(self.woldMapService.lights.sun.shadow.bias = Number(value) || 0)
 		},
 		"Shadows Normal Bias": {
 			default: 0.05,
 			config: { min: -0.05, max: 0.05, step: 0.001 },
 			func: ({ self, value }) =>
-				(self.worldService.lights.sun.shadow.normalBias = Number(value) || 0)
+				(self.woldMapService.lights.sun.shadow.normalBias = Number(value) || 0)
 		},
 		"Shadows Map Size": {
 			default: 2048,
@@ -271,49 +274,51 @@ export const DEBUG_OPTIONS: Record<
 			},
 			func: ({ self, value }) => {
 				const mapSize = Number(value) || 0;
-				self.worldService.lights.sun.shadow.mapSize.set(mapSize, mapSize);
-				self.worldService.lights.sun.shadow.map?.setSize(mapSize, mapSize);
+				self.woldMapService.lights.sun.shadow.mapSize.set(mapSize, mapSize);
+				self.woldMapService.lights.sun.shadow.map?.setSize(mapSize, mapSize);
 			}
 		},
 		"Shadows Near": {
 			default: 0.1,
 			config: { min: 0, max: 1 },
 			func: ({ self, value }) =>
-				(self.worldService.lights.sun.shadow.camera.near = Number(value) || 0)
+				(self.woldMapService.lights.sun.shadow.camera.near = Number(value) || 0)
 		},
 		"Shadows Far": {
 			default: 50,
 			config: { min: 0, max: 50 },
 			func: ({ self, value }) =>
-				(self.worldService.lights.sun.shadow.camera.far = Number(value) || 0)
+				(self.woldMapService.lights.sun.shadow.camera.far = Number(value) || 0)
 		},
 		"Shadows Top": {
 			default: 8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
-				(self.worldService.lights.sun.shadow.camera.top = Number(value) || 0)
+				(self.woldMapService.lights.sun.shadow.camera.top = Number(value) || 0)
 		},
 		"Shadows Bottom": {
 			default: -8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
-				(self.worldService.lights.sun.shadow.camera.bottom = Number(value) || 0)
+				(self.woldMapService.lights.sun.shadow.camera.bottom =
+					Number(value) || 0)
 		},
 		"Shadows Left": {
 			default: -8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
-				(self.worldService.lights.sun.shadow.camera.left = Number(value) || 0)
+				(self.woldMapService.lights.sun.shadow.camera.left = Number(value) || 0)
 		},
 		"Shadows Right": {
 			default: 8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
-				(self.worldService.lights.sun.shadow.camera.right = Number(value) || 0)
+				(self.woldMapService.lights.sun.shadow.camera.right =
+					Number(value) || 0)
 		},
 		"Reset Shadows": {
 			default: "$button",
-			func: ({ self }) => self.worldService.resetShadows()
+			func: ({ self }) => self.woldMapService.resetShadows()
 		},
 
 		// MATERIALS
@@ -327,49 +332,84 @@ export const DEBUG_OPTIONS: Record<
 				}
 			},
 			func: ({ self, value }) =>
-				(self.worldService.defaultMaterial.side = value as any)
+				(self.woldMapService.defaultMaterial.side = value as any)
 		},
 		"Material Color": {
 			default: "#ffffff",
 			func: ({ self, value }) =>
-				self.worldService.defaultMaterial.color.set(value as string)
+				self.woldMapService.defaultMaterial.color.set(value as string)
 		},
 		"Material Transparent": {
 			default: true,
 			func: ({ self, value }) =>
-				(self.worldService.defaultMaterial.transparent = !!value)
+				(self.woldMapService.defaultMaterial.transparent = !!value)
 		},
 		"Material Opacity": {
 			default: 1,
 			config: { min: 0, max: 1, step: 0.01 },
 			func: ({ self, value }) =>
-				(self.worldService.defaultMaterial.opacity = Number(value) || 0)
+				(self.woldMapService.defaultMaterial.opacity = Number(value) || 0)
 		},
 		"Material Sheen": {
 			default: 2,
 			config: { min: 0, max: 5, step: 0.1 },
 			func: ({ self, value }) =>
-				(self.worldService.defaultMaterial.sheen = Number(value) || 0)
+				(self.woldMapService.defaultMaterial.sheen = Number(value) || 0)
 		},
 		"Material Roughness": {
 			default: 0.45,
 			config: { min: 0, max: 1, step: 0.01 },
 			func: ({ self, value }) =>
-				(self.worldService.defaultMaterial.roughness = Number(value) || 0)
+				(self.woldMapService.defaultMaterial.roughness = Number(value) || 0)
 		},
 		"Material Metalness": {
 			default: 0.02,
 			config: { min: 0, max: 1, step: 0.01 },
 			func: ({ self, value }) =>
-				(self.worldService.defaultMaterial.metalness = Number(value) || 0)
+				(self.woldMapService.defaultMaterial.metalness = Number(value) || 0)
+		},
+		"Material Ior": {
+			default: 1.5,
+			config: { min: 0, max: 2, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.woldMapService.defaultMaterial.ior = Number(value) || 0)
+		},
+		"Material Transmission": {
+			default: 0,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.woldMapService.defaultMaterial.transmission = Number(value) || 0)
+		},
+		"Material Reflectivity": {
+			default: 0.3,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.woldMapService.defaultMaterial.reflectivity = Number(value) || 0)
 		},
 		"Reset Material": {
 			default: "$button",
-			func: ({ self }) => self.worldService.resetMaterials()
+			func: ({ self }) => self.woldMapService.resetMaterials()
 		}
 	},
 
 	Hands: {
+		...HANDS_SUPPORT_EMOTES.map((emote) => ({
+			[`Emote ${emote.key}`]: {
+				default: "$button",
+				func: ({ self }) =>
+					self.handsController.emote$$.next({
+						side: ColorSide.white,
+						duration: 3,
+						emote
+					} satisfies ObservablePayload<HandsController["emote$$"]>)
+			}
+		})).reduce(
+			(acc, emote) => ({
+				...acc,
+				...emote
+			}),
+			{}
+		),
 		"Material Side": {
 			default: DoubleSide,
 			config: {
@@ -416,9 +456,98 @@ export const DEBUG_OPTIONS: Record<
 			func: ({ self, value }) =>
 				(self.handsService.material.metalness = Number(value) || 0)
 		},
+		"Material Ior": {
+			default: 1.5,
+			config: { min: 0, max: 2, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.handsService.material.ior = Number(value) || 0)
+		},
+		"Material Transmission": {
+			default: 0,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.handsService.material.transmission = Number(value) || 0)
+		},
+		"Material Reflectivity": {
+			default: 0.3,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.handsService.material.reflectivity = Number(value) || 0)
+		},
 		"Reset Material": {
 			default: "$button",
 			func: ({ self }) => self.handsService.resetMaterials()
+		}
+	},
+
+	Chessboard: {
+		"Chessboard Side": {
+			default: DoubleSide,
+			config: {
+				options: {
+					DoubleSide,
+					FrontSide,
+					BackSide
+				}
+			},
+			func: ({ self, value }) =>
+				(self.chessboardService.material.side = value as any)
+		},
+		"Chessboard Color": {
+			default: "#ffffff",
+			func: ({ self, value }) =>
+				self.chessboardService.material.color.set(value as string)
+		},
+		"Chessboard Transparent": {
+			default: true,
+			func: ({ self, value }) =>
+				(self.chessboardService.material.transparent = !!value)
+		},
+		"Chessboard Opacity": {
+			default: 1,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.chessboardService.material.opacity = Number(value) || 0)
+		},
+		"Chessboard Sheen": {
+			default: 2,
+			config: { min: 0, max: 5, step: 0.1 },
+			func: ({ self, value }) =>
+				(self.chessboardService.material.sheen = Number(value) || 0)
+		},
+		"Chessboard Roughness": {
+			default: 0.45,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.chessboardService.material.roughness = Number(value) || 0)
+		},
+		"Chessboard Metalness": {
+			default: 0.02,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.chessboardService.material.metalness = Number(value) || 0)
+		},
+		"Chessboard Ior": {
+			default: 1.5,
+			config: { min: 0, max: 2, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.chessboardService.material.ior = Number(value) || 0)
+		},
+		"Chessboard Transmission": {
+			default: 0,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.chessboardService.material.transmission = Number(value) || 0)
+		},
+		"Chessboard Reflectivity": {
+			default: 0.3,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.chessboardService.material.reflectivity = Number(value) || 0)
+		},
+		"Reset Materials": {
+			default: "$button",
+			func: ({ self }) => self.chessboardService.resetMaterials()
 		}
 	},
 
@@ -468,6 +597,24 @@ export const DEBUG_OPTIONS: Record<
 			config: { min: 0, max: 1, step: 0.01 },
 			func: ({ self, value }) =>
 				(self.piecesService.material.metalness = Number(value) || 0)
+		},
+		"Pieces Ior": {
+			default: 1.5,
+			config: { min: 0, max: 2, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.piecesService.material.ior = Number(value) || 0)
+		},
+		"Pieces Transmission": {
+			default: 0,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.piecesService.material.transmission = Number(value) || 0)
+		},
+		"Pieces Reflectivity": {
+			default: 0.3,
+			config: { min: 0, max: 1, step: 0.01 },
+			func: ({ self, value }) =>
+				(self.piecesService.material.reflectivity = Number(value) || 0)
 		},
 		"Reset Materials": {
 			default: "$button",

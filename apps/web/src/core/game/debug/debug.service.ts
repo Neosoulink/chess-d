@@ -7,11 +7,13 @@ import { inject, singleton } from "tsyringe";
 
 import { DEBUG_OPTIONS } from "../../../shared/constants";
 import { WorldService } from "../world/world.service";
-import { RendererModule } from "../renderer/renderer.module";
 import { RendererService } from "../renderer/renderer.service";
 import { HandsService } from "../world/hands/hands.service";
 import { PiecesService } from "../world/chessboard/pieces/pieces.service";
 import { CameraService } from "../camera/camera.service";
+import { HandsController } from "../world/hands/hands.controller";
+import { MapService } from "../world/map/map.service";
+import { ChessboardService } from "../world/chessboard/chessboard.service";
 
 @singleton()
 export class DebugService {
@@ -23,12 +25,15 @@ export class DebugService {
 	constructor(
 		@inject(AppModule) public readonly app: AppModule,
 		@inject(ChessboardModule) public readonly chessboard: ChessboardModule,
-		@inject(RendererModule) public readonly renderer: RendererModule,
 		@inject(RendererService) public readonly rendererService: RendererService,
 		@inject(CameraService) public readonly cameraService: CameraService,
 		@inject(WorldService) public readonly worldService: WorldService,
-		@inject(HandsService) public readonly handsService: HandsService,
-		@inject(PiecesService) public readonly piecesService: PiecesService
+		@inject(MapService) public readonly woldMapService: MapService,
+		@inject(HandsController) public readonly handsController: HandsController,
+		@inject(ChessboardService)
+		public readonly chessboardService: ChessboardService,
+		@inject(PiecesService) public readonly piecesService: PiecesService,
+		@inject(HandsService) public readonly handsService: HandsService
 	) {
 		this.enabled = this.app.debug.enabled();
 		this.rendererInstance = this.app.renderer.instance()!;

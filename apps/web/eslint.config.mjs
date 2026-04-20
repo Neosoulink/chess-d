@@ -6,6 +6,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import tsParser from "@typescript-eslint/parser";
 import tsEslint from "typescript-eslint";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,14 +20,6 @@ const compat = new FlatCompat({
 export default defineConfig(
 	...tsEslint.configs.recommended,
 	{ ignores: ["dist"] },
-	{
-		files: ["./src/**/*.js?(x)", "./src/**/*.ts?(x)"],
-		languageOptions: {
-			parserOptions: {
-				project: "./tsconfig.app.json"
-			}
-		}
-	},
 	{
 		files: ["**/*.{ts,tsx}"],
 		languageOptions: {
@@ -45,5 +38,15 @@ export default defineConfig(
 			]
 		}
 	},
-	...compat.extends("./node_modules/@chess-d/configs/eslint/base.js")
+	...compat.extends("./node_modules/@chess-d/configs/eslint/base.js"),
+	{
+		files: ["./src/**/*.{ts,tsx,js,jsx}"],
+		languageOptions: {
+			parser: tsParser,
+			parserOptions: {
+				project: "./tsconfig.app.json",
+				tsconfigRootDir: __dirname
+			}
+		}
+	}
 );

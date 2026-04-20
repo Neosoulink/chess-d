@@ -19,6 +19,9 @@ export class MapModule implements Module {
 			),
 			this._controller.introAnimation$.subscribe(
 				this._service.handleIntroAnimation.bind(this._service)
+			),
+			this._controller.settingsUpdate$.subscribe(
+				this._service.handleSettingsUpdate.bind(this._service)
 			)
 		);
 	}

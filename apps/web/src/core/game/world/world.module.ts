@@ -1,5 +1,4 @@
 import { Module } from "@quick-threejs/reactive";
-import { AppModule } from "@quick-threejs/reactive/worker";
 import { inject, Lifecycle, scoped } from "tsyringe";
 import { Subscription } from "rxjs";
 
@@ -16,7 +15,6 @@ export class WorldModule implements Module {
 	constructor(
 		@inject(WorldController) private readonly _controller: WorldController,
 		@inject(WorldService) private readonly _service: WorldService,
-		@inject(AppModule) private readonly _app: AppModule,
 		@inject(HandsModule) private readonly _hands: HandsModule,
 		@inject(ChessboardModule) private readonly _chessboard: ChessboardModule,
 		@inject(MapModule) private readonly _map: MapModule
@@ -26,12 +24,7 @@ export class WorldModule implements Module {
 				this._service.reset.bind(this._service)();
 				this._controller.resetDone$$.next();
 			}),
-			this._controller.step$.subscribe(
-				this._service.update.bind(this._service)
-			),
-			this._controller.introAnimation$.subscribe(
-				this._service.handleIntroAnimation.bind(this._service)
-			)
+			this._controller.step$.subscribe(this._service.update.bind(this._service))
 		);
 	}
 

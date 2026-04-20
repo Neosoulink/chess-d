@@ -1,10 +1,10 @@
 import {
-	BOARD_CELL_SIZE,
 	BOARD_RANGE_CELLS_HALF_SIZE,
 	BoardCoord,
-	ObservablePayload
+	ObservablePayload,
+	squareToCoord
 } from "@chess-d/shared";
-import { filter, map, Observable, share } from "rxjs";
+import { filter, fromEvent, map, merge, Observable, share } from "rxjs";
 import { inject, Lifecycle, scoped } from "tsyringe";
 
 import { WorldController } from "../world.controller";
@@ -16,28 +16,44 @@ import {
 	MatrixCellModel
 } from "@chess-d/chessboard";
 import { Vector3Like } from "three";
+import { SettingsController } from "../../settings/settings.controller";
+import { MessageData } from "@/shared/types";
+import { CHESSBOARD_WILL_HINT_MARKER_TOKEN } from "@/shared/tokens";
+import { Move } from "chess.js";
 
 @scoped(Lifecycle.ContainerScoped)
 export class ChessboardController {
 	public readonly reset$: Observable<
 		ObservablePayload<WorldController["resetDone$$"]>
 	>;
+	public readonly settingsUpdate$: Observable<
+		ObservablePayload<SettingsController["update$"]>
+	>;
+	public readonly step$: WorldController["step$"];
 	public readonly pieceMoved$?: Observable<
 		(BoardCoord & { captured?: boolean })[]
 	>;
 	public readonly cursorCoord$?: Observable<Vector3Like | undefined>;
+	public readonly hintMarker$: Observable<BoardCoord[]>;
+	public readonly resetMarkers$: Observable<void>;
 
 	constructor(
 		@inject(AppModule)
 		private readonly _app: AppModule,
 		@inject(ChessboardModule)
 		private readonly _chessboard: ChessboardModule,
+		@inject(SettingsController)
+		private readonly _settingsController: SettingsController,
 		@inject(WorldController)
 		private readonly _worldController: WorldController,
 		@inject(EngineController)
 		private readonly _engineController: EngineController
 	) {
 		this.reset$ = this._worldController.resetDone$$.pipe(share());
+
+		this.settingsUpdate$ = this._settingsController.update$.pipe(share());
+
+		this.step$ = this._worldController.step$.pipe(share());
 
 		this.pieceMoved$ = this._engineController.pieceMoved$?.pipe(
 			filter(
@@ -65,7 +81,7 @@ export class ChessboardController {
 			})
 		);
 
-		this.cursorCoord$ = this._app.mousemove$?.().pipe(
+		this.cursorCoord$ = this._app.pointermove$?.().pipe(
 			map(() => {
 				const intersections = this._chessboard.getIntersections();
 				const cellsIntersection = intersections.find(
@@ -91,5 +107,24 @@ export class ChessboardController {
 					: undefined;
 			})
 		);
+
+		this.hintMarker$ = fromEvent(self, "message").pipe(
+			filter<any>(
+				(payload: MessageEvent<MessageData<any>>) =>
+					payload.data.token === CHESSBOARD_WILL_HINT_MARKER_TOKEN
+			),
+			map((payload: MessageEvent<MessageData<{ move: Move }>>) => {
+				const { move } = payload.data.value || {};
+				if (!move) return [];
+
+				return [squareToCoord(move.from), squareToCoord(move.to)];
+			})
+		);
+
+		this.resetMarkers$ = merge(
+			this._engineController.undo$,
+			this._engineController.redo$,
+			this._engineController.goToMove$
+		).pipe(map(() => undefined));
 	}
 }
