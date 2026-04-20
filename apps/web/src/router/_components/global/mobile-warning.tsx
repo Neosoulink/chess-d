@@ -51,46 +51,50 @@ export const GlobalMobileWarning: FC = () => {
 			aria-labelledby="mobile-support-modal-title"
 			aria-describedby="mobile-support-modal-desc"
 		>
-			<div
-				className={cn(
-					"max-w-md w-full rounded-sm border border-light/15 bg-dark/90 p-6 shadow-lg",
-					"flex flex-col gap-4 text-center z-10"
-				)}
-			>
-				<h2
-					id="mobile-support-modal-title"
-					className="text-lg font-medium text-balance"
-				>
-					Sorry — small screens not fully supported yet
-				</h2>
-				<p
-					id="mobile-support-modal-desc"
-					className="text-sm text-light/85 leading-relaxed text-pretty"
-				>
-					This experience is mostly tuned for desktop and larger displays. On
-					phones and narrow viewports you may find layouts cramped, controls
-					awkward...
-				</p>
-				<p className="text-sm text-light/85 leading-relaxed text-pretty">
-					Let me know if having a better mobile or small-screen experience
-					matters to you by{" "}
-					<a
-						href={MOBILE_SUPPORT_ISSUE_URL}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="text-neon-gold underline underline-offset-2 hover:text-light transition-colors"
+			{show && (
+				<>
+					<div
+						className={cn(
+							"max-w-md w-full rounded-sm border border-light/15 bg-dark/90 p-6 shadow-lg",
+							"flex flex-col gap-4 text-center z-10"
+						)}
 					>
-						opening a GitHub issue
-					</a>
-				</p>
-				<Button
-					type="button"
-					className="w-full justify-center text-base mt-1"
-					onClick={dismiss}
-				>
-					Continue anyway
-				</Button>
-			</div>
+						<h2
+							id="mobile-support-modal-title"
+							className="text-lg font-medium text-balance"
+						>
+							Sorry — small screens not fully supported yet
+						</h2>
+						<p
+							id="mobile-support-modal-desc"
+							className="text-sm text-light/85 leading-relaxed text-pretty"
+						>
+							This experience is mostly tuned for desktop and larger displays.
+							On phones and narrow viewports you may find layouts cramped,
+							controls awkward...
+						</p>
+						<p className="text-sm text-light/85 leading-relaxed text-pretty">
+							Let me know if having a better mobile or small-screen experience
+							matters to you by{" "}
+							<a
+								href={MOBILE_SUPPORT_ISSUE_URL}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-neon-gold underline underline-offset-2 hover:text-light transition-colors"
+							>
+								opening a GitHub issue
+							</a>
+						</p>
+						<Button
+							type="button"
+							className="w-full justify-center text-base mt-1"
+							onClick={dismiss}
+						>
+							Continue anyway
+						</Button>
+					</div>
+				</>
+			)}
 		</Modal>
 	);
 };
