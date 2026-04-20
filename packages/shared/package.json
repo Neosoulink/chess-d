@@ -2,7 +2,7 @@
 	"name": "@chess-d/shared",
 	"private": true,
 	"description": "Shared utilities for the chess-d ecosystem",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"publishConfig": {
 		"access": "public"
 	},

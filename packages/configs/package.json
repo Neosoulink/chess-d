@@ -1,6 +1,6 @@
 {
 	"name": "@chess-d/configs",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"files": [
 		"./eslint/*",
 		"./prettier/*",
