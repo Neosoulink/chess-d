@@ -57,23 +57,25 @@ const LogoTitle: FC = () => {
 	}, [currentSections, isOpen]);
 
 	return (
-		<section className="flex -ml-4 pointer-events-none select-none relative z-10 w-fit">
+		<section className="flex flex-col md:flex-row justify-center md:justify-start md:-ml-4 pointer-events-none select-none relative z-10 md:w-fit gap-4 md:gap-0">
 			<Icon.ChessKnight
 				ref={logoRef}
 				withGradientStroke
-				size={190}
 				filter="drop-shadow(0px 0px 30px color-mix(in srgb, var(--color-primary) 30%, transparent))"
-				className="origin-center"
+				className="origin-center size-28 md:size-48 -ml-6 md:ml-0"
 			/>
 
 			<h1
 				ref={splitRef}
 				className={cn(
-					"text-9xl leading-32 flex flex-col w-full -ml-4",
-					"text-shadow-primary/40 text-shadow-[0_0_10px_var(--color-primary)]"
+					"text-4xl sm:text-6xl md:text-9xl leading-12 md:leading-32 flex justify-center md:justify-start flex-col md:w-full md:-ml-4",
+					"text-shadow-primary/40 text-shadow-[0_0_10px_var(--color-primary)] text-nowrap"
 				)}
 			>
-				Chess <span className="text-6xl pl-12">Dimension</span>
+				Chess{" "}
+				<span className="text-4xl sm:text-5xl md:text-6xl md:pl-12">
+					Dimension
+				</span>
 			</h1>
 		</section>
 	);
@@ -195,7 +197,7 @@ export const MainMenuMainSection: FC = () => {
 	}, [currentSections, isOpen]);
 
 	return (
-		<MainMenuSection className="flex flex-col justify-center gap-10 pt-5 pb-3 pl-10">
+		<MainMenuSection className="flex flex-col justify-center gap-5 md:gap-10 pt-5 pb-3 pl-10">
 			<img
 				src={NeymarkChessBackgroundPath}
 				alt="Neymark Chess Background"
@@ -212,9 +214,7 @@ export const MainMenuMainSection: FC = () => {
 							optionRefs.current.set(option.children, el);
 						}}
 						className="w-full max-w-96"
-						style={{
-							paddingRight: `${index * 20}px`
-						}}
+						style={{ paddingRight: `${index * 20}px` }}
 					>
 						<OptionItem {...option} />
 					</div>

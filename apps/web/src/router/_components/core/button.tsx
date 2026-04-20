@@ -29,7 +29,7 @@ export const Button = ({
 		<Comp
 			className={cn(
 				"h-10 px-2 bg-light/20 flex justify-center items-center gap-2 pointer-events-auto transition-[border-color,background-color,color,opacity] duration-250",
-				"hover:bg-light/30 hover:text-shadow-[0_0_4px_color-mix(in_srgb,var(--color-neon-gold)_25%,transparent)] text-current hover:no-underline",
+				"hover:bg-light/30 hover:text-shadow-[0_0_4px_color-mix(in_srgb,var(--color-neon-gold)_25%,transparent)] text-current hover:no-underline text-nowrap",
 				withClickEffect && "active:scale-110",
 				disabled && "opacity-30 pointer-events-none select-none",
 				className
