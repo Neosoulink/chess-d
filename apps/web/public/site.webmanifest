@@ -1,11 +1,10 @@
 {
-	"manifest_version": 3,
-	"id": "/",
+	"id": "./",
 	"name": "Chess Dimension",
 	"short_name": "Chess-D",
 	"description": "Open-source Web 3D chess game.",
-	"": "en",
-	"dlangir": "ltr",
+	"lang": "en",
+	"dir": "ltr",
 	"start_url": "/",
 	"scope": "/",
 	"display": "standalone",
@@ -15,9 +14,9 @@
 	"categories": ["games", "entertainment"],
 	"icons": [
 		{
-			"src": "/logo.png",
+			"src": "./logo.png",
 			"type": "image/png",
-			"sizes": "200x200",
+			"sizes": "192x192",
 			"purpose": "any"
 		}
 	]
