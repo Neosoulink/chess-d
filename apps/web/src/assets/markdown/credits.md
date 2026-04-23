@@ -8,7 +8,7 @@ Resources, inspiration, mentions, etc ....
 ## 💻 Engine & Coding Tools
 
 - [Three.JS](https://github.com/mrdoob/three.js/): A general-purpose cross-browser 3D library. Used for all 3D-related integrations.
-- [@quick-threejs/reactive](https://github.com/Neosoulink/quick-threejs/blob/master/packages/reactive): A reactive worker-threads-based `Three.JS` extension.
+- [@quick-threejs/reactive](https://github.com/Neosoulink/quick-threejs/tree/master/packages/reactive): A reactive worker-threads-based `Three.JS` extension.
 - [RapierJs](https://rapier.rs/): The 3D physics engine.
 - [RxJs](https://github.com/ReactiveX/rxjs): The reactive library.
 - [NestJs](https://github.com/nestjs/nest): The server-side framework.
