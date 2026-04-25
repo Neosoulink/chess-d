@@ -10,6 +10,7 @@ import {
 	FrontSide,
 	LinearSRGBColorSpace,
 	LinearToneMapping,
+	MeshPhysicalMaterial,
 	NeutralToneMapping,
 	NoToneMapping,
 	PCFShadowMap,
@@ -243,25 +244,25 @@ export const DEBUG_OPTIONS: Record<
 			func: ({ self }) => self.woldMapService.resetLights()
 		},
 
-		// SHADOWS
-		"Shadows Cast": {
+		// SUN SHADOWS
+		"Sun Shadows Cast": {
 			default: true,
 			func: ({ self, value }) =>
 				(self.woldMapService.lights.sun.castShadow = !!value)
 		},
-		"Shadows Bias": {
+		"Sun Shadows Bias": {
 			default: 0,
 			config: { min: -0.05, max: 0.05, step: 0.001 },
 			func: ({ self, value }) =>
 				(self.woldMapService.lights.sun.shadow.bias = Number(value) || 0)
 		},
-		"Shadows Normal Bias": {
+		"Sun Shadows Normal Bias": {
 			default: 0.05,
 			config: { min: -0.05, max: 0.05, step: 0.001 },
 			func: ({ self, value }) =>
 				(self.woldMapService.lights.sun.shadow.normalBias = Number(value) || 0)
 		},
-		"Shadows Map Size": {
+		"Sun Shadows Map Size": {
 			default: 2048,
 			config: {
 				options: {
@@ -278,45 +279,144 @@ export const DEBUG_OPTIONS: Record<
 				self.woldMapService.lights.sun.shadow.map?.setSize(mapSize, mapSize);
 			}
 		},
-		"Shadows Near": {
+		"Sun Shadows Radius": {
+			default: 2.5,
+			config: { min: 0, max: 5, step: 0.1 },
+			func: ({ self, value }) =>
+				(self.woldMapService.lights.sun.shadow.radius = Number(value) || 0)
+		},
+		"Sun Shadows Near": {
 			default: 0.1,
 			config: { min: 0, max: 1 },
 			func: ({ self, value }) =>
 				(self.woldMapService.lights.sun.shadow.camera.near = Number(value) || 0)
 		},
-		"Shadows Far": {
+		"Sun Shadows Far": {
 			default: 50,
 			config: { min: 0, max: 50 },
 			func: ({ self, value }) =>
 				(self.woldMapService.lights.sun.shadow.camera.far = Number(value) || 0)
 		},
-		"Shadows Top": {
+		"Sun Shadows Top": {
 			default: 8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
 				(self.woldMapService.lights.sun.shadow.camera.top = Number(value) || 0)
 		},
-		"Shadows Bottom": {
+		"Sun Shadows Bottom": {
 			default: -8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
 				(self.woldMapService.lights.sun.shadow.camera.bottom =
 					Number(value) || 0)
 		},
-		"Shadows Left": {
+		"Sun Shadows Left": {
 			default: -8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
 				(self.woldMapService.lights.sun.shadow.camera.left = Number(value) || 0)
 		},
-		"Shadows Right": {
+		"Sun Shadows Right": {
 			default: 8,
 			config: { min: -20, max: 20 },
 			func: ({ self, value }) =>
 				(self.woldMapService.lights.sun.shadow.camera.right =
 					Number(value) || 0)
 		},
-		"Reset Shadows": {
+
+		// SUN REFLECTION SHADOWS
+		"Sun reflection Shadows Cast": {
+			default: true,
+			func: ({ self, value }) =>
+				(self.woldMapService.lights.sunReflection.castShadow = !!value)
+		},
+		"Sun reflection Shadows Bias": {
+			default: 0,
+			config: { min: -0.05, max: 0.05, step: 0.001 },
+			func: ({ self, value }) =>
+				(self.woldMapService.lights.sunReflection.shadow.bias =
+					Number(value) || 0)
+		},
+		"Sun reflection Shadows Normal Bias": {
+			default: 0.05,
+			config: { min: -0.05, max: 0.05, step: 0.001 },
+			func: ({ self, value }) =>
+				(self.woldMapService.lights.sunReflection.shadow.normalBias =
+					Number(value) || 0)
+		},
+		"Sun reflection Shadows Map Size": {
+			default: 2048,
+			config: {
+				options: {
+					["Ultra Low"]: 256,
+					Low: 512,
+					Normal: 1024,
+					High: 2048,
+					["Very High"]: 4096
+				}
+			},
+			func: ({ self, value }) => {
+				const mapSize = Number(value) || 0;
+				self.woldMapService.lights.sunReflection.shadow.mapSize.set(
+					mapSize,
+					mapSize
+				);
+				self.woldMapService.lights.sunReflection.shadow.map?.setSize(
+					mapSize,
+					mapSize
+				);
+			}
+		},
+		"Sun reflection Shadows Radius": {
+			default: 2.5,
+			config: { min: 0, max: 5, step: 0.1 },
+			func: ({ self, value }) =>
+				(self.woldMapService.lights.sunReflection.shadow.radius =
+					Number(value) || 0)
+		},
+		"Sun reflection Shadows Near": {
+			default: 0.1,
+			config: { min: 0, max: 1 },
+			func: ({ self, value }) =>
+				(self.woldMapService.lights.sunReflection.shadow.camera.near =
+					Number(value) || 0)
+		},
+		"Sun reflection Shadows Far": {
+			default: 50,
+			config: { min: 0, max: 50 },
+			func: ({ self, value }) =>
+				(self.woldMapService.lights.sunReflection.shadow.camera.far =
+					Number(value) || 0)
+		},
+		"Sun reflection Shadows Top": {
+			default: 8,
+			config: { min: -20, max: 20 },
+			func: ({ self, value }) =>
+				(self.woldMapService.lights.sun.shadow.camera.top = Number(value) || 0)
+		},
+		"Sun reflection Shadows Bottom": {
+			default: -8,
+			config: { min: -20, max: 20 },
+			func: ({ self, value }) =>
+				(self.woldMapService.lights.sunReflection.shadow.camera.bottom =
+					Number(value) || 0)
+		},
+		"Sun reflection Shadows Left": {
+			default: -8,
+			config: { min: -20, max: 20 },
+			func: ({ self, value }) =>
+				(self.woldMapService.lights.sunReflection.shadow.camera.left =
+					Number(value) || 0)
+		},
+		"Sun reflection Shadows Right": {
+			default: 8,
+			config: { min: -20, max: 20 },
+			func: ({ self, value }) =>
+				(self.woldMapService.lights.sunReflection.shadow.camera.right =
+					Number(value) || 0)
+		},
+
+		"Reset Sun Shadows": {
 			default: "$button",
 			func: ({ self }) => self.woldMapService.resetShadows()
 		},
@@ -332,59 +432,84 @@ export const DEBUG_OPTIONS: Record<
 				}
 			},
 			func: ({ self, value }) =>
-				(self.woldMapService.defaultMaterial.side = value as any)
+				(self.woldMapService.material.side = value as any)
 		},
 		"Material Color": {
 			default: "#ffffff",
 			func: ({ self, value }) =>
-				self.woldMapService.defaultMaterial.color.set(value as string)
+				self.woldMapService.material.color.set(value as string)
 		},
 		"Material Transparent": {
 			default: true,
 			func: ({ self, value }) =>
-				(self.woldMapService.defaultMaterial.transparent = !!value)
+				(self.woldMapService.material.transparent = !!value)
 		},
 		"Material Opacity": {
 			default: 1,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.woldMapService.defaultMaterial.opacity = Number(value) || 0)
+			func: ({ self, value }) => {
+				self.woldMapService.material.opacity = Number(value) || 0;
+			}
 		},
 		"Material Sheen": {
 			default: 2,
 			config: { min: 0, max: 5, step: 0.1 },
-			func: ({ self, value }) =>
-				(self.woldMapService.defaultMaterial.sheen = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.woldMapService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.sheen = Number(value) || 0;
+			}
 		},
 		"Material Roughness": {
 			default: 0.45,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.woldMapService.defaultMaterial.roughness = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.woldMapService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.roughness = Number(value) || 0;
+			}
 		},
 		"Material Metalness": {
 			default: 0.02,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.woldMapService.defaultMaterial.metalness = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.woldMapService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.metalness = Number(value) || 0;
+			}
 		},
 		"Material Ior": {
 			default: 1.5,
 			config: { min: 0, max: 2, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.woldMapService.defaultMaterial.ior = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.woldMapService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.ior = Number(value) || 0;
+			}
 		},
 		"Material Transmission": {
 			default: 0,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.woldMapService.defaultMaterial.transmission = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.woldMapService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.transmission = Number(value) || 0;
+			}
 		},
 		"Material Reflectivity": {
 			default: 0.3,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.woldMapService.defaultMaterial.reflectivity = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.woldMapService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.reflectivity = Number(value) || 0;
+			}
 		},
 		"Reset Material": {
 			default: "$button",
@@ -441,38 +566,62 @@ export const DEBUG_OPTIONS: Record<
 		"Material Sheen": {
 			default: 2,
 			config: { min: 0, max: 5, step: 0.1 },
-			func: ({ self, value }) =>
-				(self.handsService.material.sheen = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.handsService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.sheen = Number(value) || 0;
+			}
 		},
 		"Material Roughness": {
 			default: 0.45,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.handsService.material.roughness = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.handsService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.roughness = Number(value) || 0;
+			}
 		},
 		"Material Metalness": {
 			default: 0.02,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.handsService.material.metalness = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.handsService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.metalness = Number(value) || 0;
+			}
 		},
 		"Material Ior": {
 			default: 1.5,
 			config: { min: 0, max: 2, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.handsService.material.ior = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.handsService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.ior = Number(value) || 0;
+			}
 		},
 		"Material Transmission": {
 			default: 0,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.handsService.material.transmission = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.handsService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.transmission = Number(value) || 0;
+			}
 		},
 		"Material Reflectivity": {
 			default: 0.3,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.handsService.material.reflectivity = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.handsService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.reflectivity = Number(value) || 0;
+			}
 		},
 		"Reset Material": {
 			default: "$button",
@@ -512,32 +661,52 @@ export const DEBUG_OPTIONS: Record<
 		"Chessboard Sheen": {
 			default: 2,
 			config: { min: 0, max: 5, step: 0.1 },
-			func: ({ self, value }) =>
-				(self.chessboardService.material.sheen = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.chessboardService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.sheen = Number(value) || 0;
+			}
 		},
 		"Chessboard Roughness": {
 			default: 0.45,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.chessboardService.material.roughness = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.chessboardService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.roughness = Number(value) || 0;
+			}
 		},
 		"Chessboard Metalness": {
 			default: 0.02,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.chessboardService.material.metalness = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.chessboardService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.metalness = Number(value) || 0;
+			}
 		},
 		"Chessboard Ior": {
 			default: 1.5,
 			config: { min: 0, max: 2, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.chessboardService.material.ior = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.chessboardService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.ior = Number(value) || 0;
+			}
 		},
 		"Chessboard Transmission": {
 			default: 0,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.chessboardService.material.transmission = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.chessboardService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.transmission = Number(value) || 0;
+			}
 		},
 		"Chessboard Reflectivity": {
 			default: 0.3,
@@ -583,32 +752,52 @@ export const DEBUG_OPTIONS: Record<
 		"Pieces Sheen": {
 			default: 2,
 			config: { min: 0, max: 5, step: 0.1 },
-			func: ({ self, value }) =>
-				(self.piecesService.material.sheen = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.piecesService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.sheen = Number(value) || 0;
+			}
 		},
 		"Pieces Roughness": {
 			default: 0.45,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.piecesService.material.roughness = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.piecesService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.roughness = Number(value) || 0;
+			}
 		},
 		"Pieces Metalness": {
 			default: 0.02,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.piecesService.material.metalness = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.piecesService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.metalness = Number(value) || 0;
+			}
 		},
 		"Pieces Ior": {
 			default: 1.5,
 			config: { min: 0, max: 2, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.piecesService.material.ior = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.piecesService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.ior = Number(value) || 0;
+			}
 		},
 		"Pieces Transmission": {
 			default: 0,
 			config: { min: 0, max: 1, step: 0.01 },
-			func: ({ self, value }) =>
-				(self.piecesService.material.transmission = Number(value) || 0)
+			func: ({ self, value }) => {
+				const material = self.piecesService.material;
+
+				if (material instanceof MeshPhysicalMaterial)
+					material.transmission = Number(value) || 0;
+			}
 		},
 		"Pieces Reflectivity": {
 			default: 0.3,

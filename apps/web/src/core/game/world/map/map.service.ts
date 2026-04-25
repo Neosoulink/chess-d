@@ -264,11 +264,13 @@ export class MapService {
 			this._settings.state["visual-theme"]?.params["graphics-quality"]?.value;
 		const shadowMapSize =
 			graphicsQuality === "low" ? 256 : graphicsQuality === "high" ? 1024 : 512;
-
+		const shadowRadius =
+			graphicsQuality === "low" ? 1.5 : graphicsQuality === "high" ? 2.5 : 2.25;
 		this.lights.sun.castShadow =
 			isEnabled && (this.themePreset?.values?.lights?.sunCastShadow ?? true);
 		this.lights.sun.shadow.bias = 0;
 		this.lights.sun.shadow.normalBias = 0.05;
+		this.lights.sun.shadow.radius = shadowRadius;
 		this.lights.sun.shadow.mapSize.set(shadowMapSize, shadowMapSize);
 		this.lights.sun.shadow.map?.setSize(shadowMapSize, shadowMapSize);
 		this.lights.sun.shadow.camera.far = BOARD_RANGE_CELLS_SIZE * 2.25;
@@ -283,6 +285,7 @@ export class MapService {
 			(this.themePreset?.values?.lights?.sunReflectionCastShadow ?? false);
 		this.lights.sunReflection.shadow.bias = 0;
 		this.lights.sunReflection.shadow.normalBias = 0.05;
+		this.lights.sunReflection.shadow.radius = shadowRadius;
 		this.lights.sunReflection.shadow.mapSize.set(shadowMapSize, shadowMapSize);
 		this.lights.sunReflection.shadow.map?.setSize(shadowMapSize, shadowMapSize);
 		this.lights.sunReflection.shadow.camera.far = BOARD_RANGE_CELLS_SIZE * 2.25;
